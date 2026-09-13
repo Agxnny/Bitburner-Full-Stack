@@ -7,6 +7,8 @@ const REPOSITORY = "Agxnny/Bitburner-Full-Stack";
 const BRANCH = "main";
 const RAW_BASE = `https://raw.githubusercontent.com/${REPOSITORY}/${BRANCH}`;
 const VERSION_PATH = "deployment/version.json";
+const VALIDATION_FAILURE_VERSION_PATH = "deployment/validation/failure-version.json";
+const VALIDATION_FAILURE_FIXTURE = "staging-failure";
 const STATE_PATH = "data/deployment-state.txt";
 const PENDING_STATE_PATH = "data/deployment-pending.txt";
 const REPORT_PATH = "data/git-pull-report.json";
@@ -21,6 +23,7 @@ export async function main(ns) {
         ["allow-downgrade", false],
         ["expect-revision", -1],
         ["dry-run", false],
+        ["validation-failure", false],
     ]);
 
     if (ns.getHostname() !== "home") {
@@ -32,12 +35,17 @@ export async function main(ns) {
     const nonce = `${startedAt}-${Math.floor(Math.random() * 1_000_000_000)}`;
     const localState = readJsonFile(ns, STATE_PATH);
     const stagedPaths = [];
+    const validationFailure = Boolean(flags["validation-failure"]);
+    const descriptorPath = validationFailure ? VALIDATION_FAILURE_VERSION_PATH : VERSION_PATH;
     let descriptor = null;
-    let report = createReport(startedAt, localState, flags);
+    let report = createReport(startedAt, localState, flags, descriptorPath);
 
     try {
-        descriptor = await fetchJson(ns, VERSION_PATH, `${STAGE_ROOT}/version-${nonce}.txt`, nonce);
+        if (validationFailure) validateValidationOptions(flags);
+
+        descriptor = await fetchJson(ns, descriptorPath, `${STAGE_ROOT}/version-${nonce}.txt`, nonce);
         validateDescriptor(descriptor);
+        if (validationFailure) validateFailureFixture(descriptor);
         report.remote = { version: descriptor.version, revision: descriptor.revision };
 
         const expectedRevision = Number(flags["expect-revision"]);
@@ -100,6 +108,10 @@ export async function main(ns) {
             source, target, action, deferred: deferredSelf,
         }));
         report.counts = countActions(report.files);
+
+        if (validationFailure) {
+            throw new Error("Validation fixture unexpectedly staged successfully; activation blocked.");
+        }
 
         if (flags["dry-run"]) {
             report.status = "dry-run";
@@ -177,7 +189,7 @@ export async function main(ns) {
     }
 }
 
-function createReport(startedAt, localState, flags) {
+function createReport(startedAt, localState, flags, descriptorPath) {
     return {
         schemaVersion: 1,
         startedAt,
@@ -196,6 +208,8 @@ function createReport(startedAt, localState, flags) {
             allowDowngrade: Boolean(flags["allow-downgrade"]),
             expectedRevision: Number(flags["expect-revision"]),
             dryRun: Boolean(flags["dry-run"]),
+            validationFailure: Boolean(flags["validation-failure"]),
+            descriptorPath,
         },
         counts: { unchanged: 0, refreshed: 0, updated: 0, added: 0 },
         files: [],
@@ -242,6 +256,18 @@ async function fetchJson(ns, sourcePath, localPath, bustValue) {
 
 function cacheBust(url, value) {
     return `${url}${url.includes("?") ? "&" : "?"}cb=${encodeURIComponent(value)}`;
+}
+
+function validateValidationOptions(flags) {
+    if (flags.force || flags["allow-downgrade"] || Number(flags["expect-revision"]) >= 0 || flags["dry-run"]) {
+        throw new Error("--validation-failure may not be combined with deployment override flags.");
+    }
+}
+
+function validateFailureFixture(value) {
+    if (value.validationFixture !== VALIDATION_FAILURE_FIXTURE) {
+        throw new Error("Validation failure descriptor is missing its required fixture marker.");
+    }
 }
 
 function validateDescriptor(value) {
