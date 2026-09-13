@@ -17,7 +17,7 @@ A revision is immutable once published and must never be reused for different de
 
 `data/git-pull-report.json`
 
-The report records local/remote release identity, pull options, per-file action, aggregate counts, timestamps, success/clean state, errors, and alarms.
+The report records local/remote release identity, pull options, descriptor path, per-file action, aggregate counts, timestamps, success/clean state, errors, and alarms.
 
 File actions are:
 - `unchanged`: remote content matched local content and no write was required
@@ -34,3 +34,21 @@ If the remote revision is lower than the locally committed revision, the normal 
 ## Puller self-refresh
 
 The main puller never overwrites itself while running. It stages and activates the helper, exits, then `git-pull-self-update.js` cache-busts and downloads the puller after the original PID has stopped. Deployment state is committed only after that self-refresh succeeds.
+
+## Validation fixture
+
+`--validation-failure` is a fixed regression-test mode for failed staging/download preservation. It reads only `deployment/validation/failure-version.json`; it is not a general descriptor override.
+
+The fixture manifest stages the two real bootstrap files and then requests `deployment/validation/INTENTIONALLY-MISSING.js`. That file must not exist, so staging should fail before activation.
+
+Safety rules for this mode:
+- it may not be combined with `--force`, `--allow-downgrade`, `--expect-revision`, or `--dry-run`
+- the descriptor must contain the `staging-failure` fixture marker
+- even if every fixture file unexpectedly stages successfully, the puller throws before activation
+- validation mode must never advance `data/deployment-state.txt`
+
+Expected test command:
+
+`gp --validation-failure`
+
+Expected result is a `FAIL` line identifying the intentionally missing source. The committed deployment revision and managed bootstrap files must remain unchanged.
