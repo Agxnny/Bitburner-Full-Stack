@@ -4,7 +4,7 @@
 **M1 — Reliable Deployment**
 
 ## Status
-M1 implementation is in progress. The bootstrap puller, post-exit self-update helper, deployment version state, manifest, compact terminal reporting, detailed JSON pull reporting, and stale-revision alarm behavior exist and are now being validated in Bitburner. The update watcher/dashboard and persistent runtime-unit restart policy are not implemented yet.
+M1 implementation is in progress. The bootstrap puller, post-exit self-update helper, deployment version state, manifest, compact terminal reporting, detailed JSON pull reporting, stale-revision alarm behavior, forced-refresh behavior, and a safe failed-staging validation fixture now exist. The update watcher/dashboard and persistent runtime-unit restart policy are not implemented yet.
 
 ## Completed
 - Repository initialized.
@@ -21,6 +21,9 @@ M1 implementation is in progress. The bootstrap puller, post-exit self-update he
 - Same-revision no-op path validated.
 - Stale-revision protection validated: local r4 versus remote r3 was blocked and raised the dedicated stale alarm.
 - Canonical `gp` shell alias corrected to `src/bootstrap/git-pull.js`; incident recorded as FIX-001.
+- Forced same-revision refresh validated at r3: both managed bootstrap files were reported as `refreshed`, helper completion committed cleanly, and local/remote revision remained r3.
+- Safe failed-staging regression fixture implemented under `deployment/validation/`.
+- Real deployment descriptor published as `v0.1.0-r4` to deliver the validation harness.
 
 ## Active feature
 **M1 — Reliable Deployment / bootstrap puller validation**
@@ -30,15 +33,17 @@ Current files:
 - `src/bootstrap/git-pull-self-update.js`
 - `deployment/version.json`
 - `deployment/manifest.json`
+- `deployment/validation/failure-version.json`
+- `deployment/validation/failure-manifest.json`
 - `data/git-pull-report.json` (runtime-generated, protected)
 
-## Next feature work
-1. Validate forced same-revision refresh behavior and reporting.
-2. Validate failed staging/download preservation behavior.
-3. Record and fix any additional runtime/API issues in `FIXES.md`.
-4. Mark bootstrap puller validation complete once all safety cases pass.
-5. Design/implement the persistent update watcher and simple React approval dashboard.
-6. Extend the manifest to runtime units, change detection, staged validation, and persistent-process restart authorization.
+## Exact next step
+1. Pull the normal `v0.1.0-r4` release with `gp` and verify the helper commits r4 cleanly.
+2. Run `gp --validation-failure`.
+3. Verify the intentionally missing validation source causes staging to fail before activation.
+4. Verify `data/deployment-state.txt` remains `v0.1.0-r4` and no validation target was created.
+5. Verify `data/git-pull-report.json` records a failed validation run with `options.validationFailure: true` and the fixed validation descriptor path.
+6. If all checks pass, mark bootstrap puller validation complete and proceed to design the persistent update watcher / approval dashboard.
 
 ## Locked M1 behavior
 - `deployment/version.json` is the small remote freshness descriptor.
@@ -54,6 +59,8 @@ Current files:
 - Local deployment revision is committed only after the helper successfully refreshes the puller.
 - Detailed deployment results are written to protected runtime JSON; the main terminal receives only a compact operator summary or alarm.
 - User-facing launch aliases must target canonical managed paths, not unmanaged bootstrap copies.
+- The failed-staging regression test uses only the fixed `--validation-failure` fixture; it is not an arbitrary remote descriptor override.
+- Validation mode is forbidden from activating files even if its deliberately broken fixture unexpectedly becomes stageable.
 
 ## Locked architectural constraints
 - Centralized canonical state.
@@ -65,7 +72,7 @@ Current files:
 - Repository is permanent project memory; avoid code dumps in chat.
 
 ## Known issues / validation gaps
-- Forced same-revision refresh has not yet been runtime-validated.
+- The r4 validation harness has not yet been runtime-tested in Bitburner.
 - Failed staging/download preservation has not yet been runtime-validated.
 - Full rollback for a partially activated non-persistent deployment is not yet implemented; later M1 staging/activation work must address deployment transaction semantics before persistent services depend on it.
 - Manifest content hashing/runtime-unit hashing is still pending.
