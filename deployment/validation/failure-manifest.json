@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "version": "v0.0.0",
+  "revision": 900000001,
+  "files": [
+    {"source": "src/bootstrap/git-pull.js", "target": "src/bootstrap/git-pull.js"},
+    {"source": "src/bootstrap/git-pull-self-update.js", "target": "src/bootstrap/git-pull-self-update.js"},
+    {"source": "deployment/validation/INTENTIONALLY-MISSING.js", "target": "src/bootstrap/__validation-should-never-deploy.js"}
+  ]
+}
