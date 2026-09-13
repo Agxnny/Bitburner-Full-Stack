@@ -31,15 +31,15 @@ export async function main(ns) {
     while (ns.isRunning(waitPid, "home")) await ns.sleep(100);
 
     const pending = readJson(ns, PENDING_STATE_PATH);
-    if (!pending || pending.revision !== revision || !pending.report) {
+    if (!pending || pending.revision !== revision) {
         return fail(ns, pending?.report ?? null, "Pending deployment state is missing or mismatched.");
     }
 
+    const report = pending.report ?? legacyReport(pending);
     const url = `${RAW_BASE}/${SELF_SOURCE}?cb=${encodeURIComponent(`r${revision}-${nonce}-${Date.now()}`)}`;
     const ok = await ns.wget(url, SELF_TARGET, "home");
-    if (!ok) return fail(ns, pending.report, "git-pull self-refresh failed; deployment state was not advanced.");
+    if (!ok) return fail(ns, report, "git-pull self-refresh failed; deployment state was not advanced.");
 
-    const report = pending.report;
     report.status = "committed";
     report.clean = true;
     report.success = true;
@@ -60,6 +60,31 @@ export async function main(ns) {
     if (ns.fileExists(PENDING_STATE_PATH, "home")) ns.rm(PENDING_STATE_PATH, "home");
 
     printSummary(ns, report);
+}
+
+function legacyReport(pending) {
+    return {
+        schemaVersion: 1,
+        startedAt: pending.stagedAt ?? null,
+        finishedAt: null,
+        status: "awaiting-self-refresh",
+        clean: null,
+        success: null,
+        alarm: { active: false, type: null, message: null },
+        local: {
+            version: pending.previousVersion ?? null,
+            revision: pending.previousRevision ?? null,
+        },
+        remote: {
+            version: pending.version ?? null,
+            revision: pending.revision ?? null,
+        },
+        options: { force: false, allowDowngrade: false, expectedRevision: -1, dryRun: false },
+        counts: { unchanged: 0, refreshed: 0, updated: 2, added: 0 },
+        files: [],
+        error: null,
+        legacyTransition: true,
+    };
 }
 
 function fail(ns, report, message) {
