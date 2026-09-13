@@ -46,3 +46,18 @@ Persistence is declared at runtime-unit level. Persistent units are restarted on
 **Status:** Locked
 
 Code, current state, decisions, fixes, rules, references, and handoff context live in GitHub. Chat should remain compact and should not carry source-code dumps by default.
+
+## D-010 — Deployment identity uses version plus revision
+**Status:** Locked
+
+Deployments expose a semantic version in `vX.Y.Z` form and a monotonically increasing integer revision. Semantic version communicates release meaning; revision is the freshness/update sequence. A revision is immutable once released and may not be reused for different deployable content.
+
+## D-011 — Update approval is always human initiated
+**Status:** Locked
+
+The update watcher may detect and present a newer revision but must never automatically pull it. The player explicitly approves or declines the specific revision presented. Approval for one revision does not authorize a newer revision that appears before deployment starts.
+
+## D-012 — Puller self-update uses a post-exit helper
+**Status:** Locked
+
+`git-pull.js` never replaces its own running file as part of normal activation. A minimal helper is updated first, launched by the puller, waits for the puller's PID to exit, then cache-busts and downloads the current `git-pull.js` before committing local deployment state. The helper invocation contract remains compatible for manifest schema version 1.
