@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "version": "v0.1.0",
+  "revision": 1,
+  "files": [
+    {"source": "src/bootstrap/git-pull.js", "target": "src/bootstrap/git-pull.js"},
+    {"source": "src/bootstrap/git-pull-self-update.js", "target": "src/bootstrap/git-pull-self-update.js"}
+  ]
+}
