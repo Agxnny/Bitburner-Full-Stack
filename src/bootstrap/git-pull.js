@@ -29,6 +29,7 @@ export async function main(ns) {
 
     const nonce = `${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
     const localState = readJsonFile(ns, STATE_PATH);
+    const stagedPaths = [];
 
     try {
         ns.tprint("git-pull: checking remote deployment state...");
@@ -50,9 +51,7 @@ export async function main(ns) {
 
         const localRevision = Number(localState?.revision ?? -1);
         if (descriptor.revision < localRevision && !flags["allow-downgrade"]) {
-            throw new Error(
-                `Refusing downgrade r${localRevision} -> r${descriptor.revision}.`,
-            );
+            throw new Error(`Refusing downgrade r${localRevision} -> r${descriptor.revision}.`);
         }
 
         if (descriptor.revision === localRevision && !flags.force) {
@@ -69,11 +68,17 @@ export async function main(ns) {
         validateManifest(manifest, descriptor);
 
         const stagedFiles = [];
+        const targets = new Set();
+
         for (let index = 0; index < manifest.files.length; index++) {
             const file = manifest.files[index];
             validateFileEntry(file);
+            if (targets.has(file.target)) throw new Error(`Duplicate manifest target: ${file.target}`);
+            targets.add(file.target);
 
-            const stagePath = `${STAGE_ROOT}/r${descriptor.revision}-${index}.txt`;
+            const stagePath = `${STAGE_ROOT}/r${descriptor.revision}-${index}-${nonce}.txt`;
+            stagedPaths.push(stagePath);
+
             const url = cacheBust(`${RAW_BASE}/${file.source}`, `r${descriptor.revision}-${nonce}`);
             const ok = await ns.wget(url, stagePath, "home");
             if (!ok) throw new Error(`Download failed: ${file.source}`);
@@ -83,7 +88,7 @@ export async function main(ns) {
                 throw new Error(`Downloaded file is empty: ${file.source}`);
             }
 
-            stagedFiles.push({ ...file, stagePath, content });
+            stagedFiles.push({ ...file, content });
         }
 
         ns.tprint(
@@ -92,7 +97,6 @@ export async function main(ns) {
 
         if (flags["dry-run"]) {
             ns.tprint("git-pull: dry run complete; no files activated.");
-            cleanup(ns, stagedFiles.map((file) => file.stagePath));
             return;
         }
 
@@ -101,8 +105,8 @@ export async function main(ns) {
         if (!selfEntry) throw new Error(`Manifest must include ${SELF_PATH}.`);
         if (!helperEntry) throw new Error(`Manifest must include ${SELF_HELPER_PATH}.`);
 
-        // Activate every file except this running puller. The helper is safe to
-        // replace now because it is not running yet.
+        // Activate everything except this currently running file. The helper is
+        // safe to replace because it has not been launched yet.
         for (const file of stagedFiles) {
             if (file.target === SELF_PATH) continue;
             ns.write(file.target, file.content, "w");
@@ -113,19 +117,15 @@ export async function main(ns) {
             version: descriptor.version,
             revision: descriptor.revision,
             manifest: descriptor.manifest,
-            source: selfEntry.source,
+            selfSource: selfEntry.source,
             previousVersion: localState?.version ?? null,
             previousRevision: localState?.revision ?? null,
             stagedAt: Date.now(),
         };
         ns.write(PENDING_STATE_PATH, JSON.stringify(pendingState, null, 2), "w");
 
-        cleanup(
-            ns,
-            stagedFiles
-                .filter((file) => file.target !== SELF_PATH)
-                .map((file) => file.stagePath),
-        );
+        cleanup(ns, stagedPaths);
+        stagedPaths.length = 0;
 
         const helperPid = ns.run(
             SELF_HELPER_PATH,
@@ -143,10 +143,12 @@ export async function main(ns) {
         }
 
         ns.tprint(
-            `git-pull: activated ${descriptor.version}-r${descriptor.revision}; self-update helper ${helperPid} will refresh git-pull after this process exits.`,
+            `git-pull: activated ${descriptor.version}-r${descriptor.revision}; helper ${helperPid} will refresh git-pull after this process exits.`,
         );
     } catch (error) {
         ns.tprint(`ERROR: git-pull failed: ${String(error?.message ?? error)}`);
+    } finally {
+        cleanup(ns, stagedPaths);
     }
 }
 
@@ -204,7 +206,7 @@ function validateFileEntry(file) {
     if (!file.source || !file.target || file.source.includes("..") || file.target.includes("..")) {
         throw new Error("Unsafe manifest path.");
     }
-    if (file.target.startsWith("data/")) {
+    if (file.target.startsWith("data/") || file.target.startsWith("/data/")) {
         throw new Error(`Manifest may not deploy protected runtime data: ${file.target}`);
     }
 }
