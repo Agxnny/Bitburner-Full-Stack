@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "version": "v0.0.0",
+  "revision": 900000001,
+  "manifest": "deployment/validation/failure-manifest.json",
+  "validationFixture": "staging-failure"
+}
