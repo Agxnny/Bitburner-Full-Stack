@@ -1,34 +1,36 @@
 # Deployment
 
-This directory contains version-controlled deployment metadata. Runtime deployment state belongs inside Bitburner's protected `data/` area and is never deployed from this directory.
+Deployment metadata and bootstrap update behavior live here. Runtime deployment state is protected under `data/` and is never sourced from the repository.
 
-## Current schema
+## Release identity
 
-`version.json` is the small remote freshness descriptor. It exposes:
-- deployment schema version
-- semantic version (`vX.Y.Z`)
+Each deployable release has:
+- semantic version: `vX.Y.Z`
 - monotonically increasing revision
-- path to the deployment manifest
+- manifest describing managed files
 
-`manifest.json` lists repository source paths and their Bitburner target paths for the current revision.
+A revision is immutable once published and must never be reused for different deployable content.
 
-## Version and revision rules
+## Pull reporting
 
-- Semantic version communicates release meaning.
-- Revision is the authoritative freshness/update sequence.
-- Revisions only increase.
-- Once a revision has been released/deployed, its deployable content is immutable.
-- Any later deployable change requires a new revision.
-- Automatic downgrade is prohibited.
+`src/bootstrap/git-pull.js` writes the detailed runtime report to:
 
-## Cache busting
+`data/git-pull-report.json`
 
-The bootstrap puller adds a unique cache-busting query to the remote version descriptor and revision-scoped cache-busting values to manifest/file downloads. The self-update helper also uses a unique cache-busted request when refreshing `git-pull.js` after the running puller exits.
+The report records local/remote release identity, pull options, per-file action, aggregate counts, timestamps, success/clean state, errors, and alarms.
 
-## Protected state
+File actions are:
+- `unchanged`: remote content matched local content and no write was required
+- `refreshed`: identical content was deliberately rewritten, such as a forced refresh or puller self-refresh
+- `updated`: an existing target changed
+- `added`: the target did not previously exist
 
-Manifest targets may not write into `data/`. Local deployment state and pending deployment state are runtime data and remain outside version control.
+Normal terminal output is intentionally concise and reports release identity, clean/failure status, and the four aggregate file counts.
 
-## Pending M1 extensions
+## Stale revision protection
 
-The manifest will later gain runtime-unit classification, content/runtime-unit hashes, persistence policy, and explicit retirement metadata before persistent services depend on the deployment system.
+If the remote revision is lower than the locally committed revision, the normal pull is blocked. The JSON report records a `STALE_REVISION` alarm and terminal output emits an explicit alarm. Downgrades require the existing explicit override flag.
+
+## Puller self-refresh
+
+The main puller never overwrites itself while running. It stages and activates the helper, exits, then `git-pull-self-update.js` cache-busts and downloads the puller after the original PID has stopped. Deployment state is committed only after that self-refresh succeeds.
