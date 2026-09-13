@@ -1,0 +1,11 @@
+# Runtime-generated state and local artifacts
+/data/
+/logs/
+*.log
+
+# Local/editor/build artifacts
+node_modules/
+dist/
+.tmp/
+.DS_Store
+Thumbs.db
