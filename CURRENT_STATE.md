@@ -4,7 +4,7 @@
 **M1 — Reliable Deployment**
 
 ## Status
-M1 implementation is in progress. The bootstrap puller, post-exit self-update helper, deployment version state, manifest, compact terminal reporting, detailed JSON pull reporting, stale-revision alarm behavior, forced-refresh behavior, and a safe failed-staging validation fixture now exist. The update watcher/dashboard and persistent runtime-unit restart policy are not implemented yet.
+M1 implementation is in progress. The bootstrap puller and its core safety behavior are now runtime-validated in Bitburner v3.0.1, including self-refresh, no-op pulls, stale-revision blocking, forced same-revision refresh, compact/detailed reporting, and failed-staging preservation. The next active work is the persistent update watcher / approval dashboard design. Persistent runtime-unit restart protection remains later M1 work.
 
 ## Completed
 - Repository initialized.
@@ -24,11 +24,14 @@ M1 implementation is in progress. The bootstrap puller, post-exit self-update he
 - Forced same-revision refresh validated at r3: both managed bootstrap files were reported as `refreshed`, helper completion committed cleanly, and local/remote revision remained r3.
 - Safe failed-staging regression fixture implemented under `deployment/validation/`.
 - Real deployment descriptor published as `v0.1.0-r4` to deliver the validation harness.
+- r4 validation harness runtime-tested successfully.
+- Failed staging/download preservation validated: the fixed validation fixture failed on its intentionally missing source before activation, `data/deployment-state.txt` remained `v0.1.0-r4`, no validation target was created, and the JSON report recorded the failed validation run with zero activated files.
+- Bootstrap puller core validation set completed.
 
 ## Active feature
-**M1 — Reliable Deployment / bootstrap puller validation**
+**M1 — Reliable Deployment / persistent update watcher and approval flow design**
 
-Current files:
+Relevant current files:
 - `src/bootstrap/git-pull.js`
 - `src/bootstrap/git-pull-self-update.js`
 - `deployment/version.json`
@@ -38,12 +41,11 @@ Current files:
 - `data/git-pull-report.json` (runtime-generated, protected)
 
 ## Exact next step
-1. Pull the normal `v0.1.0-r4` release with `gp` and verify the helper commits r4 cleanly.
-2. Run `gp --validation-failure`.
-3. Verify the intentionally missing validation source causes staging to fail before activation.
-4. Verify `data/deployment-state.txt` remains `v0.1.0-r4` and no validation target was created.
-5. Verify `data/git-pull-report.json` records a failed validation run with `options.validationFailure: true` and the fixed validation descriptor path.
-6. If all checks pass, mark bootstrap puller validation complete and proceed to design the persistent update watcher / approval dashboard.
+1. Design the persistent update watcher and approval flow before implementation.
+2. Define watcher ownership, lifecycle, polling/freshness behavior, telemetry, command/approval interface, and failure behavior.
+3. Define the minimal React approval surface and how it reads update telemetry without becoming an alternate source of truth.
+4. Preserve the rule that watcher/dashboard detection never auto-installs; approval applies only to the exact presented revision.
+5. After design approval, implement and validate the watcher/dashboard slice before moving to runtime-unit restart protection.
 
 ## Locked M1 behavior
 - `deployment/version.json` is the small remote freshness descriptor.
@@ -72,10 +74,10 @@ Current files:
 - Repository is permanent project memory; avoid code dumps in chat.
 
 ## Known issues / validation gaps
-- The r4 validation harness has not yet been runtime-tested in Bitburner.
-- Failed staging/download preservation has not yet been runtime-validated.
 - Full rollback for a partially activated non-persistent deployment is not yet implemented; later M1 staging/activation work must address deployment transaction semantics before persistent services depend on it.
 - Manifest content hashing/runtime-unit hashing is still pending.
+- Persistent update watcher and approval dashboard are not implemented yet.
+- Persistent runtime-unit change detection, staged validation, retirement, and restart authorization are not implemented yet.
 
 ## Do not work on yet
 Do not begin hacking, stocks, purchased servers, progression, or other domain automation until earlier roadmap foundations are completed and validated.
