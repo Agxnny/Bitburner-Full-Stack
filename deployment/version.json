@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "version": "v0.1.0",
-  "revision": 4,
+  "version": "v0.2.0",
+  "revision": 5,
   "manifest": "deployment/manifest.json",
   "releasedAt": "2026-09-14T00:00:00Z"
 }
