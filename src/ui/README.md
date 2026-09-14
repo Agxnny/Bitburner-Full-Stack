@@ -21,6 +21,10 @@ It writes only:
 
 The dashboard never calls `git-pull.js` directly. `src/bootstrap/update-watcher.js` owns command validation and delegates approved execution to the puller.
 
+### Netscript ownership rule
+
+React components, effects, timers, and button callbacks do not call Netscript APIs. The script `main()` loop is the sole Netscript owner. It reads telemetry and writes commands serially, while React exchanges snapshots and button intents with `main()` through an ordinary in-memory JavaScript bridge. This avoids Bitburner's concurrent Netscript-call restriction.
+
 Run on `home` after the watcher is started:
 
 `run src/ui/update-dashboard.jsx`
