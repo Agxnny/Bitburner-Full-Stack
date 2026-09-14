@@ -23,30 +23,37 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M1 deployment close-out review
-**Status:** Validation review
+### M1 explicit persistent-unit retirement design
+**Status:** Design
 
-**Goal:** Finish the remaining Reliable Deployment close-out decisions and final runtime confirmation before marking M1 complete.
+**Goal:** Complete the last deployment-lifecycle capability required before M1 can close: an explicit, fail-closed way for a release manifest to authorize retirement of a previously persistent runtime unit.
 
 **Files / areas touched:**
+- `src/bootstrap/git-pull.js`
+- `src/bootstrap/git-pull-self-update.js`
 - `deployment/README.md`
+- `DECISIONS.md` if the retirement contract introduces a durable schema/lifecycle decision
 - `CURRENT_STATE.md`
-- `FIXES.md`
-- `ROADMAP.md` only if milestone completion changes the active milestone
-- deployment runtime files only if review identifies a true M1 blocker
+- release manifest(s) used for validation
 
 **Decisions / constraints:**
-- Exact-revision stale approval is runtime validated.
-- Duplicate/concurrent deployment rejection is runtime validated.
-- Do not add rollback, per-file hashing, or persistent-unit retirement automatically; first decide whether each is an M1 blocker or future hardening.
-- r17 remains the current no-op release and can be used for the final normal deployment confirmation after the temporary validation helper is confirmed stopped.
-- Do not begin M2 until M1 close-out documentation and final validation are complete.
+- Final normal r17 deployment succeeded after the concurrent-validation helper was removed; local deployment advanced successfully and the updater returned healthy.
+- Exact-revision stale approval and duplicate/concurrent deployment rejection are both runtime validated.
+- Full rollback is deferred as future hardening: M1 already stages and validates before activation and specifically protects running persistent services from failed/partial updates; a broader transactional rollback layer can be designed later without weakening current M1 guarantees.
+- Per-file cryptographic hashes are deferred as defense in depth because production bytes are already pinned to an immutable Git commit SHA through `releaseRef`.
+- Explicit persistent-unit retirement remains an M1 blocker because project rules explicitly forbid treating disappearance from a manifest as authorization to terminate a persistent unit. Without a positive retirement contract, future releases cannot safely remove persistent services.
+- Retirement must remain explicit, staged/validated, attributable to the new manifest, and processed in controlled runtime order. Manifest absence alone must continue to do nothing.
 
-**Validation:** The controlled concurrent-deployment test was executed with the self-update helper held in its harmless wait loop against the live watcher PID. Approving r17 through the normal dashboard command path was rejected while the helper was active, demonstrating that the watcher blocks a second deployment attempt when deployment infrastructure is already running. No defect was reported.
+**Validation:** r17 installed normally after all approval/concurrency tests, confirming the production deployment path still works after the validation exercises. No runtime defect was reported.
 
-**Next step:** Confirm the temporary validation helper is no longer running, then review rollback, per-file hashing, and explicit persistent-unit retirement against the M1 completion criteria and perform the final normal r17 deployment if no blocker remains.
+**Next step:** Design the manifest retirement schema and helper reconciliation behavior, including validation and a controlled runtime test, before implementation.
 
 ## Recently completed
+
+### M1 deployment close-out validation through r17
+**Status:** Runtime validated
+
+The temporary concurrent-validation helper was confirmed gone and r17 was then installed through the normal dashboard approval path. The deployment completed correctly, providing final confirmation that the ordinary watcher → puller → helper → runtime-reconciliation path remained healthy after the stale-approval and concurrency rejection tests.
 
 ### M1 duplicate/concurrent deployment validation
 **Status:** Runtime validated
