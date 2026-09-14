@@ -59,6 +59,8 @@ For pinned releases the puller fetches:
 
 `git-pull-self-update.js` also refreshes `git-pull.js` from the same pinned release before committing deployment state. This prevents an older descriptor/manifest identity from being combined with newer branch content.
 
+Per-file cryptographic hashes are not currently required by the production contract. Commit-pinned `releaseRef` already supplies immutable Git content identity; separate file hashes are deferred as defense-in-depth hardening.
+
 ## Runtime-unit contract
 
 Manifest schema version 1 may include `runtimeUnits`. M1 supports persistent units on `home` with:
@@ -79,6 +81,12 @@ After puller self-refresh, `git-pull-self-update.js` reconciles persistent units
 - changed + missing → launch
 
 Updater/watch infrastructure uses the final restart order. A runtime launch failure leaves the file deployment committed and reports `committed-runtime-degraded`.
+
+A persistent unit disappearing from a later manifest is not authorization to terminate it. The final M1 lifecycle gap is therefore an explicit manifest-authorized retirement contract. Retirement must be positive authorization, validated before activation, and reconciled in controlled runtime order; absence alone must remain a no-op.
+
+## Activation and rollback scope
+
+Managed release files are downloaded and validated before activation, and persistent runtime processes receive additional protection so they are not stopped merely because an update exists or staging fails. M1 does not currently provide a general transactional rollback layer for every non-persistent file write after activation begins. Broader rollback is deferred as future hardening rather than being claimed as an existing guarantee.
 
 ## Pull reporting
 
@@ -134,6 +142,8 @@ Validation procedure:
 8. confirm local revision is still r15 and r17 remains available for a later real approval
 
 M1 runtime validation executed this procedure successfully. With the helper held in the harmless wait loop, an r17 approval through the normal dashboard path was rejected as a concurrent deployment attempt. No runtime defect was observed, so the watcher single-deployment authority boundary is runtime validated.
+
+After the temporary helper was removed, r17 was approved normally through the dashboard and installed successfully. This confirmed the ordinary watcher → puller → self-update helper → runtime reconciliation path remained healthy after the rejection tests.
 
 This procedure deliberately validates the watcher authority boundary rather than bypassing the watcher or modifying production runtime code for a test-only delay.
 
