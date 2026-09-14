@@ -133,6 +133,8 @@ Validation procedure:
 7. kill the validation helper immediately after observing the rejection, before its wait PID can exit
 8. confirm local revision is still r15 and r17 remains available for a later real approval
 
+M1 runtime validation executed this procedure successfully. With the helper held in the harmless wait loop, an r17 approval through the normal dashboard path was rejected as a concurrent deployment attempt. No runtime defect was observed, so the watcher single-deployment authority boundary is runtime validated.
+
 This procedure deliberately validates the watcher authority boundary rather than bypassing the watcher or modifying production runtime code for a test-only delay.
 
 ## Stale revision protection
