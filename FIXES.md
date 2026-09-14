@@ -75,7 +75,7 @@ React effects and button callbacks invoked Netscript APIs (`fileExists`, `read`,
 React now performs only ordinary JavaScript state work. `main()` is the sole owner of Netscript access: it reads telemetry snapshots and serially writes queued UI intents. A local in-memory bridge carries snapshots and button intents between the React tree and the main loop without calling Netscript from React callbacks.
 
 #### Verification
-Code-level fix published in `v0.2.0-r7`; runtime verification is pending.
+The fix was delivered through recovery release `v0.2.0-r8`. The dashboard rendered continuously, watcher telemetry updated, and a decline command was accepted without the prior concurrency termination.
 
 #### Prevention / notes
 React components, timers, effects, and event callbacks must not call Netscript APIs while an async Netscript call may be active. Route UI actions to the script main loop (or another serialized Netscript owner) through ordinary JavaScript state/queues.
@@ -104,7 +104,7 @@ The puller cache-busted both requests, but r6 and r7 descriptors both referenced
 Starting with r8, release descriptors point to immutable revision-specific manifest paths under `deployment/releases/`, beginning with `deployment/releases/r8-manifest.json`. The descriptor is published only after its immutable manifest exists. The puller's existing descriptor/manifest identity check remains the fail-closed guard.
 
 #### Verification
-Repository state for r8 contains a descriptor for `v0.2.0-r8` whose `manifest` field points to `deployment/releases/r8-manifest.json`, and that immutable manifest independently declares `v0.2.0-r8`. Runtime `gp` recovery validation is pending.
+Runtime `gp --dry-run` validated `v0.2.0-r8` and its immutable manifest cleanly, and a normal `gp` reconciled the local committed state to r8.
 
 #### Prevention / notes
 Never publish a new release descriptor that points to a mutable shared manifest pathname. New releases create their immutable manifest first, then update `deployment/version.json` last. Cache busting and immutable release metadata solve different problems and both remain required.
@@ -114,3 +114,31 @@ Never publish a new release descriptor that points to a mutable shared manifest 
 - D-014 — Release manifests use immutable revision-specific paths.
 
 ---
+
+### FIX-004 — Managed files were newer than committed deployment ledger
+**Date:** 2026-09-14  
+**Status:** Investigating  
+**Subsystem:** M1 Reliable Deployment / deployment state reconciliation  
+**Affected files:**
+- `data/deployment-state.txt`
+- `data/git-pull-report.json`
+- managed r8 bootstrap/UI files
+
+#### Symptoms
+The update dashboard and watcher were visibly running newer r8-era code while `data/deployment-state.txt` and `data/git-pull-report.json` still described the last committed r3 transition. No `data/deployment-pending.txt` file remained.
+
+#### Root cause
+The exact historical path that produced the drift is not proven. The evidence rules out a currently pending helper transaction. Do not infer a root cause without additional runtime evidence.
+
+#### Fix
+No manual ledger edit was used. `gp --dry-run` first proved that all four managed files already matched r8. A normal `gp` then executed the canonical transaction and advanced the durable deployment ledger to r8.
+
+#### Verification
+After the normal pull, `data/deployment-state.txt` reported revision 8.
+
+#### Prevention / notes
+When managed files and the deployment ledger disagree, validate the canonical puller and current immutable manifest first. Prefer a normal deployment transaction to manual state edits. The r9 runtime-unit work adds clearer helper/runtime phases but does not claim to retroactively explain this incident.
+
+#### Related
+- D-012 — Puller self-update uses post-exit helper.
+- D-015 — Post-update helper reconciles persistent runtime units.
