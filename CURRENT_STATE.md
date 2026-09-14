@@ -4,9 +4,11 @@
 **M1 — Reliable Deployment**
 
 ## Status
-M1 implementation and runtime validation remain in progress. Core bootstrap safety and persistent updater lifecycle behavior are runtime-validated in Bitburner v3.0.1. Transition release `v0.4.0-r12` installed successfully and its puller passed a same-revision dry run using the new release contract. Controlled r13 was detected within one normal watcher interval, and r14 installed successfully using normal canonical source paths behind an immutable `releaseRef`, validating the post-transition pinned-content flow. The approved ultra-compact updater dashboard is live, and r15 runtime validation confirmed shared dashboard window position/size memory restores correctly after watcher-driven relaunch.
+M1 implementation is functionally complete and close-out validation is nearly finished. Core bootstrap safety, persistent updater lifecycle behavior, redundant discovery, commit-pinned release content, exact-revision human approval, and single-deployment concurrency protection are runtime-validated in Bitburner v3.0.1. Transition release `v0.4.0-r12` installed successfully and its puller passed a same-revision dry run using the new release contract. Controlled r13 was detected within one normal watcher interval, r14 installed successfully using normal canonical source paths behind an immutable `releaseRef`, and r15 runtime validation confirmed shared dashboard window position/size memory restores correctly after watcher-driven relaunch.
 
-The repository now also uses `CHANGES.md` as the lightweight in-progress work record. It must be updated during meaningful implementation steps and before handoffs/context switches. Feature behavior changes must update that feature's own documentation in the same work item.
+Controlled no-op releases r16 and r17 then validated two remaining approval boundaries: a stale r16 approval was rejected after r17 became current without implicitly authorizing r17, and an r17 approval was rejected while deployment infrastructure was intentionally held active by the existing self-update helper in a harmless wait state.
+
+The repository uses `CHANGES.md` as the lightweight in-progress work record. It must be updated during meaningful implementation steps and before handoffs/context switches. Feature behavior changes must update that feature's own documentation in the same work item.
 
 ## Completed
 - Repository foundation, project rules, architecture, roadmap, decisions, fixes, references, and working-change documentation established.
@@ -26,11 +28,13 @@ The repository now also uses `CHANGES.md` as the lightweight in-progress work re
 - D-019 locks persistent dashboard tail position/size as shared presentation memory.
 - `src/ui/dashboard-window-memory.js` provides reusable geometry restore/observation for all dashboard tails.
 - r15 runtime validation confirmed move/resize persistence and geometry restoration after watcher-driven dashboard relaunch.
-- `CHANGES.md` is now required for preserving in-progress work between implementation steps, chats, and handoffs.
-- Project rules now require each feature/subsystem's own documentation to be updated whenever its behavior, interface, configuration, lifecycle, telemetry, validation procedure, or operator workflow changes.
+- Exact-revision stale approval protection is runtime validated using controlled no-op releases r16/r17.
+- Duplicate/concurrent deployment rejection is runtime validated using the production watcher command path while the helper was held in a non-mutating wait state.
+- `CHANGES.md` is required for preserving in-progress work between implementation steps, chats, and handoffs.
+- Project rules require each feature/subsystem's own documentation to be updated whenever its behavior, interface, configuration, lifecycle, telemetry, validation procedure, or operator workflow changes.
 
 ## Active feature
-**M1 — Reliable Deployment / remaining close-out validation**
+**M1 — Reliable Deployment / close-out review**
 
 Relevant current files:
 - `CHANGES.md`
@@ -42,7 +46,9 @@ Relevant current files:
 - `src/ui/update-dashboard.jsx`
 - `src/ui/dashboard-window-memory.js`
 - `src/ui/README.md`
+- `deployment/README.md`
 - `deployment/version.json`
+- `FIXES.md`
 - `data/deployment-state.txt`
 - `data/deployment-pending.txt`
 - `data/git-pull-report.json`
@@ -50,15 +56,15 @@ Relevant current files:
 - `data/update-command.json`
 
 ## Exact next step
-1. Complete the remaining stale/mismatched approval validation.
-2. Complete duplicate/concurrent deployment validation.
-3. Reconcile `FIXES.md` statuses with the successful r14/r15 runtime results where applicable.
-4. Update the relevant deployment feature documentation and `CHANGES.md` as each validation step is performed.
-5. Close M1 only after the remaining validation gaps are documented and current state is clean.
+1. Confirm the temporary concurrent-validation helper is no longer running.
+2. Review full rollback, cryptographic per-file hashes, and explicit persistent-unit retirement and decide whether each is required to close M1 or should be deferred as hardening/future lifecycle work.
+3. Perform the final normal r17 deployment and confirm the watcher/dashboard returns healthy on the committed release if no M1 blocker remains.
+4. Reconcile any remaining `FIXES.md`/feature-doc wording and mark M1 complete only when the close-out record is clean.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
 - Human approval is always required and bound to one exact revision.
+- Approval for one revision cannot silently authorize a later revision.
 - Watcher and puller independently verify release freshness.
 - Discovery uses redundant Raw + GitHub API sources; highest valid revision wins.
 - Equal discovery revisions must agree on version, manifest, and `releaseRef`.
@@ -70,6 +76,7 @@ Relevant current files:
 - Persistent runtime units are manifest-declared and reconciled after commit in explicit restart order.
 - Unchanged running persistent units remain untouched; missing units relaunch; changed units restart only after staged validation.
 - Update watcher remains persistent bootstrap infrastructure and never auto-installs.
+- Watcher rejects a new approval while puller/helper deployment infrastructure is already active.
 - Watcher owns exactly one managed update-dashboard child and closes the old tail before intentional replacement.
 - React callbacks never call Netscript APIs directly.
 - Dashboard visuals use the shared dark grey-blue language defined by D-018.
@@ -86,12 +93,11 @@ Relevant current files:
 - Persistent runtime units receive special update protection.
 - Repository is permanent project memory; avoid code dumps in chat.
 
-## Known issues / validation gaps
-- Remaining M1 stale/mismatched approval and duplicate/concurrent deployment paths still require explicit runtime validation.
-- FIX-004's historical ledger-drift root cause remains unproven.
-- Full rollback for partially activated non-persistent deployment remains unimplemented.
-- Cryptographic per-file manifest hashing remains pending; commit pinning supplies immutable Git content identity but hashes may still be added as defense in depth.
-- Explicit persistent-unit retirement remains conceptually designed but unimplemented.
+## Known issues / close-out decisions
+- FIX-004's historical ledger-drift root cause remains unproven; current deployment recovery behavior is validated, but the historical root cause must not be invented.
+- Full rollback for partially activated non-persistent deployment remains unimplemented and requires an explicit M1-vs-future-hardening decision.
+- Cryptographic per-file manifest hashing remains pending; commit pinning supplies immutable Git content identity, so hashes are defense in depth unless review identifies a stronger requirement.
+- Explicit persistent-unit retirement remains conceptually designed but unimplemented and requires an M1-vs-future-lifecycle decision.
 - Continuous general persistent-service supervision remains future Supervisor work.
 
 ## Do not work on yet
