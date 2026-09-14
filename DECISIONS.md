@@ -75,3 +75,17 @@ Dashboard actions write a bounded single-slot update command through the standar
 Every published deployment descriptor must point to a manifest path unique to that immutable revision, for example `deployment/releases/r8-manifest.json`. A mutable shared manifest path must not be used by new release descriptors.
 
 Cache busting prevents reuse of a cached URL response but does not make multiple GitHub Raw files publish atomically. Revision-specific manifest paths ensure that a descriptor observed from one repository propagation state cannot accidentally pair with a manifest from a later release. The puller's descriptor/manifest identity validation remains mandatory and must fail closed on any mismatch.
+
+## D-015 — Post-update helper reconciles persistent runtime units
+**Status:** Locked
+
+The deployment manifest declares persistent runtime units and the files that define each unit. `git-pull.js` derives a runtime plan from staged file actions. After the puller exits and self-refresh succeeds, `git-pull-self-update.js` commits the deployment and reconciles those persistent units in explicit restart order.
+
+For each persistent unit: unchanged and running is preserved; unchanged and missing is relaunched; changed and running is stopped then restarted; changed and missing is launched. Runtime reconciliation never substitutes for the future continuous Supervisor. A committed deployment with failed runtime reconciliation is reported as committed-but-degraded instead of pretending the file deployment rolled back.
+
+## D-016 — Update watcher owns the update dashboard lifecycle
+**Status:** Locked
+
+During M1, the persistent `src/bootstrap/update-watcher.js` owns exactly one managed `src/ui/update-dashboard.jsx` child. Watcher startup refreshes the dashboard process so deployed UI code is current, and watcher heartbeats relaunch the child if it stops. The dashboard is not independently declared as a persistent runtime unit.
+
+When the general Supervisor is implemented, persistent-service liveness ownership may move there, but the update watcher remains the semantic owner of update detection/approval and the dashboard remains a managed client rather than a deployment executor.
