@@ -82,7 +82,32 @@ After puller self-refresh, `git-pull-self-update.js` reconciles persistent units
 
 Updater/watch infrastructure uses the final restart order. A runtime launch failure leaves the file deployment committed and reports `committed-runtime-degraded`.
 
-A persistent unit disappearing from a later manifest is not authorization to terminate it. The final M1 lifecycle gap is therefore an explicit manifest-authorized retirement contract. Retirement must be positive authorization, validated before activation, and reconciled in controlled runtime order; absence alone must remain a no-op.
+### Explicit persistent-unit retirement
+
+A persistent unit disappearing from a later manifest is **not** authorization to terminate it. Manifest schema version 1 therefore supports the optional additive field `retireRuntimeUnits`, an array of persistent unit IDs that the release explicitly authorizes for retirement.
+
+For each retirement ID, the puller requires all of the following before activation:
+- the ID exists in the previously committed deployment state's `runtimeUnits`
+- the ID is not also declared as an active unit in the new manifest
+- the previous committed invocation metadata is structurally valid
+- all ordinary release files have staged and validated successfully
+
+The retirement plan copies the previous committed unit invocation metadata instead of requiring the retiring release to redeploy that script. During post-update reconciliation, the helper stops all matching processes for the retired unit, verifies they are gone, never relaunches them, and reports the outcome as `retired` or `already-stopped`. Retired units are omitted from the newly committed `runtimeUnits` ledger.
+
+This keeps the safety invariant explicit: omission alone is a no-op; only positive manifest authorization may stop a persistent unit.
+
+### Retirement runtime validation
+
+The M1 retirement test uses two controlled releases:
+1. r18 deploys the retirement-aware puller/helper plus `src/bootstrap/validation/retirement-fixture.js`
+2. r18 declares `retirement-validation-fixture` as a harmless persistent runtime unit with restart order below the update watcher
+3. after r18 installs, verify both the update watcher and retirement fixture are running
+4. r19 omits the fixture from active `runtimeUnits` and declares `retireRuntimeUnits: ["retirement-validation-fixture"]`
+5. install r19 normally through the dashboard
+6. verify the fixture process is gone, the update watcher remains healthy, and deployment telemetry reports the fixture retirement
+7. verify the committed r19 runtime-unit ledger no longer contains the fixture
+
+This test exercises the production manifest/puller/helper contract rather than a special test-only stop path.
 
 ## Activation and rollback scope
 
