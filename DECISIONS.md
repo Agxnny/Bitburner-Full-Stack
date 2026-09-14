@@ -68,3 +68,10 @@ The update watcher may detect and present a newer revision but must never automa
 `src/bootstrap/update-watcher.js` is the persistent owner of remote release detection and update approval command handling. It polls the cache-busted deployment descriptor, publishes structured status under protected runtime data, and never installs automatically.
 
 Dashboard actions write a bounded single-slot update command through the standard command path. On approval, the watcher re-verifies the remote descriptor and only then launches `git-pull.js --expect-revision N`. The puller remains the deployment executor and independently enforces the exact approved revision. Dashboard code may not invoke the puller directly.
+
+## D-014 — Release manifests use immutable revision-specific paths
+**Status:** Locked
+
+Every published deployment descriptor must point to a manifest path unique to that immutable revision, for example `deployment/releases/r8-manifest.json`. A mutable shared manifest path must not be used by new release descriptors.
+
+Cache busting prevents reuse of a cached URL response but does not make multiple GitHub Raw files publish atomically. Revision-specific manifest paths ensure that a descriptor observed from one repository propagation state cannot accidentally pair with a manifest from a later release. The puller's descriptor/manifest identity validation remains mandatory and must fail closed on any mismatch.
