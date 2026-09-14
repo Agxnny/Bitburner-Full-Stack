@@ -23,26 +23,31 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M1 deployment close-out validation
-**Status:** Validation
+### M1 stale/mismatched approval validation
+**Status:** Validation setup
 
-**Goal:** Finish the remaining Reliable Deployment validation paths before closing M1.
+**Goal:** Prove that human approval is bound to one exact revision and can never silently authorize a newer release.
 
 **Files / areas touched:**
-- `src/bootstrap/update-watcher.js`
-- `src/bootstrap/git-pull.js`
+- `deployment/releases/r16-manifest.json`
+- `deployment/releases/r17-manifest.json` when the second controlled release is published
+- `deployment/version.json`
 - `deployment/README.md`
-- `FIXES.md`
+- `src/bootstrap/update-watcher.js` only if validation exposes a defect
 - `CURRENT_STATE.md`
+- `FIXES.md` if a reusable defect is found
 
 **Decisions / constraints:**
-- Preserve exact-revision human approval semantics.
-- Do not begin later automation subsystems until M1 validation is complete.
-- Update deployment feature documentation in the same work item as any behavior or validation-procedure change.
+- r16 and r17 are controlled no-op releases; runtime source bytes remain unchanged.
+- Publish r16 first and wait until the dashboard presents r16.
+- Publish r17 before approving r16.
+- Submit the stale r16 approval only after r17 is the current remote release.
+- Expected behavior: watcher forces fresh verification, rejects approval for r16, and does not launch the puller for r16 or implicitly authorize r17.
+- Do not modify runtime code unless the test fails.
 
-**Validation:** Discovery freshness, commit-pinned canonical release content, persistent watcher lifecycle, compact updater UI, and shared dashboard window memory are runtime-validated. Stale/mismatched approval and duplicate/concurrent deployment paths remain to be explicitly tested.
+**Validation:** Test setup is being published. Existing watcher code already compares the approved revision with a freshly verified remote revision and fails closed on mismatch; runtime proof is still required.
 
-**Next step:** Design and execute the stale/mismatched approval validation case, recording results here and in the deployment feature documentation.
+**Next step:** Publish controlled no-op r16, let the dashboard present r16, then publish r17 before approving r16.
 
 ## Recently completed
 
