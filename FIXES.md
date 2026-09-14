@@ -169,3 +169,39 @@ When a managed UI process is intentionally replaced, its owned UI surface must b
 
 #### Related
 - D-016 — Update watcher owns update dashboard lifecycle.
+
+---
+
+### FIX-006 — Raw discovery lag and mutable branch sources could mix releases
+**Date:** 2026-09-15  
+**Status:** Investigating  
+**Subsystem:** M1 Reliable Deployment / release discovery and content integrity  
+**Affected files:**
+- `src/bootstrap/update-watcher.js`
+- `src/bootstrap/git-pull.js`
+- `src/bootstrap/git-pull-self-update.js`
+- `src/ui/update-dashboard.jsx`
+- `deployment/version.json`
+- release manifests under `deployment/releases/`
+
+#### Symptoms
+New revisions repeatedly remained invisible to the 30-second watcher for multiple polls. r11 took roughly 4–5 minutes to appear even though GitHub `main` already contained the new descriptor. Separately, a stale r9 descriptor could stage changed files because its revision-specific manifest still referenced source paths fetched from mutable `main`.
+
+#### Root cause
+Cache-busting did not make the GitHub Raw branch view immediately consistent, so repeated Raw checks could observe the same stale branch state. Revision-specific manifest filenames fixed metadata mixing but did not make file content immutable because manifest `source` paths were still downloaded from mutable `main`. The helper also refreshed `git-pull.js` from mutable `main` after the puller exited.
+
+#### Fix
+The transition release adds redundant descriptor discovery: cache-busted Raw remains the 30-second primary check while the watcher also checks the public GitHub Contents API every 75 seconds and on approval, choosing the highest valid revision. The puller independently checks both sources for each deployment. Telemetry records source health and which source supplied the selected revision.
+
+Production descriptors now carry an immutable Git commit SHA as `releaseRef`. The new puller fetches the manifest and every managed source from that exact commit, and the helper refreshes the puller from the same pinned release content before committing deployment state. r12 is a one-time compatibility bridge: because the r11 puller cannot understand `releaseRef`, the r12 manifest points at immutable-by-path source snapshots under `deployment/releases/r12-src/`; the r12 helper permits only that explicit transition fallback when the old puller did not persist a release ref.
+
+#### Verification
+Pending runtime validation. Confirm r12 is discovered through Raw or API within the designed bound, approval still verifies the exact revision, deployment succeeds from the transition snapshots, and the installed r12 puller reports pinned `releaseRef` behavior on a same-revision dry run. A later controlled release must prove canonical source paths are fetched from the exact commit rather than mutable `main`.
+
+#### Prevention / notes
+A mutable discovery pointer may be eventually consistent; it must not also define the bytes of an immutable release. Discovery and content identity are separate concerns. Highest-valid-revision source selection is allowed for discovery, but all manifest and source downloads after selection must use the selected descriptor's immutable release ref. Unpinned post-transition self-refresh fails closed.
+
+#### Related
+- D-010 — Deployment identity uses version plus revision.
+- D-014 — Release manifests use immutable revision-specific paths.
+- D-017 — Release discovery is redundant; release content is commit-pinned.
