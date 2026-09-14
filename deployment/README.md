@@ -117,7 +117,7 @@ The controlled stale-approval test uses two no-op releases so production behavio
 5. expect the watcher to force fresh verification, reject the command because N is no longer the current newer revision, and launch no deployment
 6. confirm N+1 was not implicitly authorized; it must still require its own explicit approval
 
-For the current M1 close-out validation, r16 is N and r17 is N+1.
+M1 runtime validation used r16 as N and r17 as N+1 while the local runtime remained on r15. After r17 was presented, a deliberately stale r16 approval was submitted through `data/update-command.json`. The watcher rejected it with `Approved revision is no longer the current newer release.` The dashboard continued presenting r17, so r16 was not installed and r17 was not implicitly authorized. Exact-revision approval semantics are therefore runtime validated.
 
 ## Stale revision protection
 
