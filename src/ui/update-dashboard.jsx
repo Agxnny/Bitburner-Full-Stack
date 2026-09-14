@@ -1,13 +1,26 @@
 /**
- * React update dashboard for M1 deployment validation.
+ * Ultra-compact React update dashboard for M1.
  * React never calls Netscript directly; main() owns all Netscript access.
  */
 
 const STATUS_PATH = "data/update-status.json";
 const COMMAND_PATH = "data/update-command.json";
-const REPORT_PATH = "data/git-pull-report.json";
 const SCRIPT_PATH = "src/ui/update-dashboard.jsx";
 const REFRESH_MS = 1_000;
+
+const COLORS = {
+    page: "#0b1119",
+    surface: "#111a26",
+    surfaceRaised: "#152131",
+    border: "#294766",
+    divider: "#25384d",
+    text: "#f3f6fb",
+    muted: "#91a9c7",
+    accent: "#2993ff",
+    success: "#29d8a3",
+    warning: "#ffb31a",
+    danger: "#ff5d68",
+};
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -25,7 +38,7 @@ export async function main(ns) {
     const bridge = { snapshot: readSnapshot(ns), pendingIntent: null, feedback: "" };
 
     ns.ui.openTail();
-    ns.ui.setTailTitle("Bitburner Full Stack — Updates");
+    ns.ui.setTailTitle("Full Stack — Update Watcher");
     ns.clearLog();
     ns.printRaw(<UpdateDashboard bridge={bridge} />);
 
@@ -40,7 +53,7 @@ export async function main(ns) {
 }
 
 function handleIntent(ns, intent) {
-    if (ns.fileExists(COMMAND_PATH, "home")) return "An update command is already waiting to be handled.";
+    if (ns.fileExists(COMMAND_PATH, "home")) return "Command already queued.";
     const command = {
         schemaVersion: 1,
         id: `ui-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`,
@@ -50,11 +63,11 @@ function handleIntent(ns, intent) {
         origin: "update-dashboard",
     };
     ns.write(COMMAND_PATH, JSON.stringify(command, null, 2), "w");
-    return `${intent.action === "approve" ? "Approved" : "Declined"} r${intent.revision}; waiting for watcher.`;
+    return `${intent.action === "approve" ? "Installing" : "Deferred"} r${intent.revision}.`;
 }
 
 function readSnapshot(ns) {
-    return { status: readJson(ns, STATUS_PATH), report: readJson(ns, REPORT_PATH), capturedAt: Date.now() };
+    return { status: readJson(ns, STATUS_PATH), capturedAt: Date.now() };
 }
 
 function UpdateDashboard({ bridge }) {
@@ -66,130 +79,210 @@ function UpdateDashboard({ bridge }) {
     }, [bridge]);
 
     const status = view.snapshot?.status;
-    const report = view.snapshot?.report;
+    if (!status) return <Shell><StateText>Waiting for update watcher telemetry…</StateText></Shell>;
+
+    const heartbeatAge = Number.isFinite(status.heartbeatAt) ? Math.max(0, Date.now() - status.heartbeatAt) : null;
+    const heartbeatFresh = heartbeatAge !== null && heartbeatAge < 15_000;
+    const updateRevision = status.presentedRevision;
+    const updateAvailable = status.phase === "update-available" && Number.isSafeInteger(updateRevision);
+    const version = release(status.local);
+    const interval = formatInterval(status.pollIntervalMs);
 
     function send(action) {
-        const revision = status?.presentedRevision;
-        if (status?.phase !== "update-available" || !Number.isSafeInteger(revision)) {
-            bridge.feedback = "No current update presentation to respond to.";
+        if (!updateAvailable) {
+            bridge.feedback = "No update is awaiting approval.";
             return;
         }
         if (bridge.pendingIntent) {
-            bridge.feedback = "An update command is already queued for the dashboard loop.";
+            bridge.feedback = "Command already queued.";
             return;
         }
-        bridge.pendingIntent = { action, revision };
-        bridge.feedback = `${action === "approve" ? "Approving" : "Declining"} r${revision}…`;
+        bridge.pendingIntent = { action, revision: updateRevision };
+        bridge.feedback = `${action === "approve" ? "Approving" : "Deferring"} r${updateRevision}…`;
     }
 
-    if (!status) return <Panel title="Update Status"><p>No watcher telemetry found. Start src/bootstrap/update-watcher.js.</p></Panel>;
-
-    const heartbeatAge = status.heartbeatAt ? Date.now() - status.heartbeatAt : null;
-    const heartbeatFresh = heartbeatAge !== null && heartbeatAge < 15_000;
-    const deploymentReport = status.deployment?.report ?? summarizeReport(report);
-    const runtimeUnits = deploymentReport?.runtime?.units ?? [];
-    const discovery = status.discovery;
-
     return (
-        <div style={{ fontFamily: "monospace", minWidth: "600px", padding: "8px" }}>
-            <Panel title="Update Service">
-                <Row label="Watcher" value={`${status.health ?? "unknown"} / ${status.phase ?? "unknown"}`} />
-                <Row label="Lifecycle" value={status.lifecycle ?? "—"} />
-                <Row label="Watcher PID" value={status.watcherPid ?? "—"} />
-                <Row label="Dashboard" value={dashboardStatus(status.dashboard)} />
-                <Row label="Heartbeat" value={heartbeatFresh ? `${formatAge(heartbeatAge)} ago` : `STALE (${formatAge(heartbeatAge)} ago)`} />
-                <Row label="Local" value={release(status.local)} />
-                <Row label="Remote" value={release(status.remote)} />
-                <Row label="Discovery" value={discovery?.selectedSource ?? "—"} />
-                <Row label="Raw source" value={sourceStatus(discovery?.raw)} />
-                <Row label="API source" value={sourceStatus(discovery?.api)} />
-                <Row label="Last check" value={formatTime(status.lastCheckAt)} />
-                <Row label="Next check" value={formatTime(status.nextCheckAt)} />
-                {discovery?.raw?.error ? <ErrorText>Raw: {discovery.raw.error}</ErrorText> : null}
-                {discovery?.api?.error ? <ErrorText>API: {discovery.api.error}</ErrorText> : null}
-                {status.dashboard?.error ? <ErrorText>{status.dashboard.error}</ErrorText> : null}
-                {status.error ? <ErrorText>{status.error}</ErrorText> : null}
-            </Panel>
+        <Shell>
+            <Header>
+                <CubeIcon />
+                <span>UPDATE WATCHER</span>
+            </Header>
 
-            <Panel title="Approval">
-                {status.phase === "update-available" ? (
+            <StatusRow>
+                <Version>{version}</Version>
+
+                {updateAvailable ? (
+                    <UpdateBadge>↑ r{updateRevision} available</UpdateBadge>
+                ) : (
+                    <Online fresh={heartbeatFresh} />
+                )}
+
+                <Divider />
+                <Metric icon="♡" value={heartbeatAge === null ? "—" : `${formatAge(heartbeatAge)} ago`} danger={!heartbeatFresh} />
+                <Divider />
+                <Metric icon="↻" value={interval} />
+
+                {updateAvailable ? (
                     <>
-                        <p>Revision r{status.presentedRevision} is available. Installation requires explicit approval.</p>
-                        <div style={{ display: "flex", gap: "8px" }}>
-                            <button onClick={() => send("approve")}>Yes — install r{status.presentedRevision}</button>
-                            <button onClick={() => send("decline")}>No</button>
-                        </div>
+                        <Divider />
+                        <ActionButton primary onClick={() => send("approve")}>Install</ActionButton>
+                        <ActionButton onClick={() => send("decline")}>Later</ActionButton>
                     </>
-                ) : <p>{approvalMessage(status)}</p>}
-                {view.feedback ? <p>{view.feedback}</p> : null}
-                {status.lastCommand ? <Row label="Last command" value={`${status.lastCommand.action ?? "?"} r${status.lastCommand.revision ?? "?"} → ${status.lastCommand.outcome ?? "?"}`} /> : null}
-                {status.lastCommand?.error ? <ErrorText>{status.lastCommand.error}</ErrorText> : null}
-            </Panel>
+                ) : null}
+            </StatusRow>
 
-            <Panel title="Deployment">
-                <Row label="Phase" value={status.deployment?.phase ?? "—"} />
-                <Row label="Running" value={status.deployment?.running ? "yes" : "no"} />
-                <Row label="Puller PID" value={status.deployment?.pullerPid ?? "—"} />
-                <Row label="Helper PID" value={status.deployment?.helperPid ?? "—"} />
-                <Row label="Requested" value={status.deployment?.requestedRevision != null ? `r${status.deployment.requestedRevision}` : "—"} />
-                <Row label="Result" value={deploymentReport?.status ?? "—"} />
-                <Row label="Release" value={release(deploymentReport?.remote)} />
-                <Row label="Pull discovery" value={deploymentReport?.discovery?.selectedSource ?? "—"} />
-                <Row label="Runtime" value={deploymentReport?.runtime?.status ?? "—"} />
-                {runtimeUnits.map((unit) => (
-                    <Row key={unit.id} label={`↳ ${unit.id}`} value={`${unit.outcome ?? "—"}${unit.pid ? ` (pid ${unit.pid})` : ""}`} />
-                ))}
-                {deploymentReport?.error ? <ErrorText>{deploymentReport.error}</ErrorText> : null}
-            </Panel>
+            {view.feedback ? <Feedback>{view.feedback}</Feedback> : null}
+            {status.error ? <ErrorLine>{status.error}</ErrorLine> : null}
+        </Shell>
+    );
+}
+
+function Shell({ children }) {
+    return (
+        <div style={{
+            fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+            minWidth: "620px",
+            padding: "10px",
+            background: COLORS.page,
+            color: COLORS.text,
+        }}>
+            <div style={{
+                overflow: "hidden",
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: "10px",
+                background: `linear-gradient(180deg, ${COLORS.surfaceRaised}, ${COLORS.surface})`,
+                boxShadow: "0 10px 30px rgba(0,0,0,0.28)",
+            }}>
+                {children}
+            </div>
         </div>
     );
 }
 
-function Panel({ title, children }) {
-    return <section style={{ border: "1px solid currentColor", borderRadius: "6px", padding: "10px", marginBottom: "10px" }}><h3 style={{ margin: "0 0 8px 0" }}>{title}</h3>{children}</section>;
+function Header({ children }) {
+    return (
+        <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            height: "38px",
+            padding: "0 14px",
+            color: "#b8d2f3",
+            fontSize: "12px",
+            fontWeight: 750,
+            letterSpacing: "0.09em",
+            borderBottom: `1px solid ${COLORS.divider}`,
+        }}>
+            {children}
+        </div>
+    );
 }
 
-function Row({ label, value }) {
-    return <div style={{ display: "grid", gridTemplateColumns: "150px 1fr", gap: "8px", marginBottom: "4px" }}><strong>{label}</strong><span>{value ?? "—"}</span></div>;
+function StatusRow({ children }) {
+    return (
+        <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            minHeight: "58px",
+            padding: "0 14px",
+            whiteSpace: "nowrap",
+        }}>
+            {children}
+        </div>
+    );
 }
 
-function ErrorText({ children }) { return <p style={{ fontWeight: "bold" }}>ERROR: {children}</p>; }
-
-function approvalMessage(status) {
-    if (status.phase === "current") return "Deployment is current.";
-    if (status.phase === "checking") return "Checking for updates…";
-    if (status.phase === "deploying") return "Approved deployment is running.";
-    if (status.phase === "dismissed") return `Revision r${status.dismissedRevision} was declined. It may be presented again after the next poll.`;
-    if (status.phase === "stale-remote") return "Remote revision is older than the committed local revision; no install is offered.";
-    if (status.phase === "error") return "Watcher could not verify the remote release.";
-    return "No update approval is currently available.";
+function Version({ children }) {
+    return <span style={{ fontSize: "24px", fontWeight: 760, letterSpacing: "-0.025em" }}>{children}</span>;
 }
 
-function dashboardStatus(value) {
-    if (!value) return "unknown";
-    if (value.running) return `running (pid ${value.pid}, starts ${value.restartCount ?? 0})`;
-    return `not running (starts ${value.restartCount ?? 0})`;
+function Online({ fresh }) {
+    return (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px", color: fresh ? COLORS.success : COLORS.danger, fontWeight: 700 }}>
+            <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "currentColor", boxShadow: "0 0 12px currentColor" }} />
+            {fresh ? "ONLINE" : "STALE"}
+        </span>
+    );
 }
 
-function sourceStatus(value) {
-    if (!value) return "—";
-    const revision = Number.isSafeInteger(value.revision) ? `r${value.revision}` : "no revision";
-    const checked = Number.isFinite(value.lastSuccessAt) ? `${formatAge(Date.now() - value.lastSuccessAt)} ago` : "never";
-    return `${revision} / ${checked}`;
+function UpdateBadge({ children }) {
+    return (
+        <span style={{
+            padding: "8px 12px",
+            border: `1px solid #9a6a0a`,
+            borderRadius: "7px",
+            background: "rgba(255,179,26,0.12)",
+            color: COLORS.warning,
+            fontWeight: 750,
+            boxShadow: "inset 0 0 16px rgba(255,179,26,0.06)",
+        }}>
+            {children}
+        </span>
+    );
 }
 
-function summarizeReport(report) {
-    if (!report) return null;
-    return {
-        status: report.status ?? null,
-        success: report.success ?? null,
-        clean: report.clean ?? null,
-        remote: report.remote ?? null,
-        discovery: report.discovery ?? null,
-        runtime: report.runtime ?? null,
-        error: report.error ?? null,
-        finishedAt: report.finishedAt ?? null,
-    };
+function Metric({ icon, value, danger = false }) {
+    return (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px", color: danger ? COLORS.danger : "#b6cae4" }}>
+            <span style={{ color: danger ? COLORS.danger : COLORS.accent, fontSize: "20px", lineHeight: 1 }}>{icon}</span>
+            <span style={{ fontSize: "14px", fontWeight: 600 }}>{value}</span>
+        </span>
+    );
+}
+
+function Divider() {
+    return <span style={{ width: "1px", height: "28px", background: COLORS.divider, flex: "0 0 1px" }} />;
+}
+
+function ActionButton({ primary = false, onClick, children }) {
+    return (
+        <button onClick={onClick} style={{
+            minWidth: "76px",
+            height: "36px",
+            padding: "0 16px",
+            borderRadius: "7px",
+            border: primary ? `1px solid #4aa8ff` : `1px solid ${COLORS.border}`,
+            background: primary ? "linear-gradient(180deg, #329eff, #177ee3)" : "#172334",
+            color: primary ? "white" : "#b8cce5",
+            fontSize: "14px",
+            fontWeight: 750,
+            cursor: "pointer",
+            boxShadow: primary ? "0 4px 12px rgba(41,147,255,0.24)" : "none",
+        }}>
+            {children}
+        </button>
+    );
+}
+
+function CubeIcon() {
+    return (
+        <span style={{
+            display: "grid",
+            placeItems: "center",
+            width: "22px",
+            height: "22px",
+            border: `2px solid ${COLORS.accent}`,
+            borderRadius: "5px",
+            color: COLORS.accent,
+            fontSize: "11px",
+            transform: "rotate(45deg)",
+        }}>
+            <span style={{ transform: "rotate(-45deg)", fontWeight: 900 }}>F</span>
+        </span>
+    );
+}
+
+function Feedback({ children }) {
+    return <div style={{ padding: "0 14px 8px", color: COLORS.muted, fontSize: "11px" }}>{children}</div>;
+}
+
+function ErrorLine({ children }) {
+    return <div style={{ padding: "0 14px 8px", color: COLORS.danger, fontSize: "11px" }}>ERROR: {children}</div>;
+}
+
+function StateText({ children }) {
+    return <div style={{ padding: "18px", color: COLORS.muted }}>{children}</div>;
 }
 
 function readJson(ns, path) {
@@ -201,10 +294,15 @@ function release(value) {
     return value?.version && Number.isSafeInteger(value?.revision) ? `${value.version}-r${value.revision}` : "—";
 }
 
-function formatTime(value) { return Number.isFinite(value) ? new Date(value).toLocaleTimeString() : "—"; }
+function formatInterval(value) {
+    if (!Number.isFinite(value)) return "—";
+    if (value < 1_000) return `${value}ms`;
+    return `${Math.round(value / 1_000)}s`;
+}
+
 function formatAge(value) {
     if (!Number.isFinite(value)) return "unknown";
-    if (value < 1_000) return `${value}ms`;
+    if (value < 1_000) return `${Math.max(0, Math.floor(value))}ms`;
     if (value < 60_000) return `${Math.floor(value / 1_000)}s`;
     return `${Math.floor(value / 60_000)}m`;
 }
