@@ -4,7 +4,7 @@
 **M1 — Reliable Deployment**
 
 ## Status
-M1 implementation is in progress. The bootstrap puller and core safety behavior are runtime-validated in Bitburner v3.0.1. Recovery release `v0.2.0-r8` validated the React dashboard concurrency fix and immutable revision-specific manifest design. The next updater slice adds manifest-driven persistent runtime reconciliation, makes the update watcher an explicit persistent runtime unit, and makes the watcher own its update dashboard child. Release `v0.3.0-r9` is published for runtime validation.
+M1 implementation and runtime validation remain in progress. The bootstrap puller and core safety behavior are runtime-validated in Bitburner v3.0.1. Recovery release `v0.2.0-r8` validated the React dashboard concurrency fix and immutable revision-specific manifest design. Releases r9/r10 validated the first persistent runtime unit, watcher-owned dashboard relaunch, missing persistent-unit recovery, unchanged-running preservation, and changed-running controlled restart. Release `v0.3.0-r11` adds explicit old-tail cleanup during watcher-owned dashboard replacement and is pending runtime verification.
 
 ## Completed
 - Repository initialized and project rules/architecture/roadmap established.
@@ -21,17 +21,21 @@ M1 implementation is in progress. The bootstrap puller and core safety behavior 
 - FIX-004 records the observed r8 managed-file/deployment-ledger drift without inventing an unproven root cause; safe recovery used the canonical transaction rather than manual state edits.
 - D-015 locked post-update helper reconciliation of persistent runtime units.
 - D-016 locked watcher ownership of the managed update-dashboard process.
-- `git-pull.js` now validates optional manifest `runtimeUnits` and derives change-aware runtime plans from staged file actions.
-- `git-pull-self-update.js` now commits deployment state after self-refresh, then preserves/restarts/relaunches declared persistent runtime units in explicit restart order.
-- Runtime reconciliation failures now surface as `committed-runtime-degraded` rather than pretending a committed file deployment rolled back.
-- `update-watcher.js` is now a singleton persistent service and is declared as the first persistent runtime unit.
-- Watcher startup refreshes the update dashboard process; heartbeat checks relaunch it after unexpected exit with a restart cooldown.
+- `git-pull.js` validates optional manifest `runtimeUnits` and derives change-aware runtime plans from staged file actions.
+- `git-pull-self-update.js` commits deployment state after self-refresh, then preserves/restarts/relaunches declared persistent runtime units in explicit restart order.
+- Runtime reconciliation failures surface as `committed-runtime-degraded` rather than pretending a committed file deployment rolled back.
+- `update-watcher.js` is a singleton persistent service and is declared as the first persistent runtime unit.
+- Watcher heartbeat relaunches its managed update dashboard after unexpected exit with a restart cooldown.
 - Watcher deployment telemetry distinguishes puller, self-refresh helper, runtime reconciliation, committed, degraded, and failed phases.
-- The update dashboard now displays watcher lifecycle, dashboard liveness, deployment phases, and runtime-unit reconciliation results.
-- Immutable `deployment/releases/r9-manifest.json` declares the `update-watcher` persistent runtime unit, with watcher/dashboard files defining the unit and restart order 1000.
+- The update dashboard displays watcher lifecycle, dashboard liveness, deployment phases, and runtime-unit reconciliation results.
+- r9 runtime validation proved missing persistent watcher recovery with `gp --force`.
+- r9 runtime validation proved an unchanged running persistent watcher is preserved during forced same-revision reconciliation.
+- r10 runtime validation proved a changed running persistent watcher is stopped and relaunched with a new PID, and the replacement watcher opens a new dashboard.
+- r10 exposed FIX-005: the replaced dashboard process was killed but its old tail window remained visible.
+- r11 changes watcher ownership takeover to close each old dashboard tail before killing its process and launching the replacement.
 
 ## Active feature
-**M1 — Reliable Deployment / persistent updater runtime validation**
+**M1 — Reliable Deployment / watcher-owned dashboard replacement cleanup**
 
 Relevant current files:
 - `src/bootstrap/git-pull.js`
@@ -39,7 +43,7 @@ Relevant current files:
 - `src/bootstrap/update-watcher.js`
 - `src/ui/update-dashboard.jsx`
 - `deployment/version.json`
-- `deployment/releases/r9-manifest.json`
+- `deployment/releases/r11-manifest.json`
 - `deployment/manifest.json` (legacy shared metadata; not used by new release descriptors)
 - `data/deployment-state.txt` (runtime-generated, protected)
 - `data/deployment-pending.txt` (runtime-generated transaction state)
@@ -48,16 +52,14 @@ Relevant current files:
 - `data/update-command.json` (runtime command slot, protected)
 
 ## Exact next step
-1. Let the r8 watcher detect `v0.3.0-r9` and confirm the existing dashboard presents the exact revision.
-2. Approve r9 from the dashboard.
-3. Verify `git-pull.js --expect-revision 9` stages/activates successfully and the helper refreshes the puller.
-4. Verify the helper detects the changed `update-watcher` runtime unit, stops the old watcher, launches the new watcher last, and finishes with runtime status `healthy`.
-5. Verify `data/deployment-state.txt` commits `v0.3.0-r9` and records the persistent runtime-unit contract.
-6. Verify the new watcher automatically refreshes/opens exactly one update dashboard.
-7. Kill only `src/ui/update-dashboard.jsx`; verify the watcher relaunches it after the cooldown without duplicating the watcher.
-8. Kill only `src/bootstrap/update-watcher.js`; run a normal same/newer deployment recovery path as appropriate and verify the helper's missing-persistent-unit path can relaunch it.
-9. Exercise a no-source-change future revision to confirm an unchanged running persistent watcher is preserved instead of restarted.
-10. Complete stale/mismatched approval and duplicate/concurrent deployment validation before closing this M1 slice.
+1. Let the current watcher detect `v0.3.0-r11`.
+2. Note the current watcher PID and currently open update-dashboard tail.
+3. Approve r11 from the dashboard.
+4. Verify the helper restarts the changed watcher and the watcher PID changes.
+5. Verify the old update-dashboard tail closes rather than remaining as a zombie/stale window.
+6. Verify exactly one replacement update-dashboard opens and remains live.
+7. If successful, mark FIX-005 Resolved and close this persistent updater runtime-validation slice.
+8. Before closing M1, address remaining deployment-integrity and validation gaps below.
 
 ## Locked M1 behavior
 - `deployment/version.json` is the small mutable remote freshness descriptor.
@@ -80,6 +82,7 @@ Relevant current files:
 - Runtime reconciliation failure does not silently roll back committed deployment identity; it records a degraded committed state in the report.
 - The update watcher is persistent bootstrap infrastructure, not an automatic updater.
 - During M1 the watcher owns exactly one managed update-dashboard child and relaunches it if missing.
+- When watcher ownership intentionally replaces a dashboard process, its tail UI is closed before the process is killed.
 - Dashboard actions use `data/update-command.json`; dashboard code never calls `git-pull.js` directly.
 - Approval is re-verified against the remote descriptor and then passed to the puller as `--expect-revision N`.
 - React UI callbacks must not call Netscript APIs; each UI script serializes Netscript access through its `main()` loop or another explicit Netscript owner.
@@ -94,11 +97,13 @@ Relevant current files:
 - Repository is permanent project memory; avoid code dumps in chat.
 
 ## Known issues / validation gaps
-- `v0.3.0-r9` persistent runtime reconciliation is not yet runtime-validated.
+- FIX-005 r11 dashboard-tail cleanup is implemented but not yet runtime-validated.
 - FIX-004's historical root cause remains unproven; only the safe reconciliation procedure is established.
+- Immutable revision-specific manifests still reference mutable branch source paths. A stale release descriptor can therefore stage newer `main` content under an older manifest identity. Release content needs immutable source pinning before M1 is complete.
+- GitHub Raw descriptor propagation can lag publication even with cache-busting; r10 detection eventually succeeded after an observable delay.
 - Full rollback for a partially activated non-persistent deployment is not yet implemented.
 - Cryptographic manifest content hashing is still pending.
-- Explicit persistent-unit retirement is designed conceptually but not implemented in the r9 manifest contract.
+- Explicit persistent-unit retirement is designed conceptually but not implemented in the current manifest contract.
 - Continuous general persistent-service supervision remains future Supervisor work; the helper only reconciles after deployment, while the watcher only supervises its own dashboard child.
 
 ## Do not work on yet
