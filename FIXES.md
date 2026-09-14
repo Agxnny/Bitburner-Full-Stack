@@ -84,3 +84,33 @@ React components, timers, effects, and event callbacks must not call Netscript A
 - D-013 — Update watcher owns detection and approval-command handling.
 
 ---
+
+### FIX-003 — Mutable manifest path allowed cross-release metadata mixing
+**Date:** 2026-09-14  
+**Status:** Resolved  
+**Subsystem:** M1 Reliable Deployment / release publication
+**Affected files:**
+- `deployment/version.json`
+- `deployment/manifest.json`
+- `deployment/releases/r8-manifest.json`
+
+#### Symptoms
+Running `gp` twice from local r5 failed safely with `FAIL | v0.2.0-r6 | Version descriptor and manifest disagree.`
+
+#### Root cause
+The puller cache-busted both requests, but r6 and r7 descriptors both referenced the same mutable `deployment/manifest.json`. GitHub Raw propagation exposed an older r6 descriptor during one request and the newer r7 contents of the shared manifest during the following request. Cache busting prevents cached URL reuse; it does not provide atomic multi-file publication.
+
+#### Fix
+Starting with r8, release descriptors point to immutable revision-specific manifest paths under `deployment/releases/`, beginning with `deployment/releases/r8-manifest.json`. The descriptor is published only after its immutable manifest exists. The puller's existing descriptor/manifest identity check remains the fail-closed guard.
+
+#### Verification
+Repository state for r8 contains a descriptor for `v0.2.0-r8` whose `manifest` field points to `deployment/releases/r8-manifest.json`, and that immutable manifest independently declares `v0.2.0-r8`. Runtime `gp` recovery validation is pending.
+
+#### Prevention / notes
+Never publish a new release descriptor that points to a mutable shared manifest pathname. New releases create their immutable manifest first, then update `deployment/version.json` last. Cache busting and immutable release metadata solve different problems and both remain required.
+
+#### Related
+- D-010 — Deployment identity uses version plus revision.
+- D-014 — Release manifests use immutable revision-specific paths.
+
+---
