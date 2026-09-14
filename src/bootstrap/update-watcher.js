@@ -39,7 +39,7 @@ export async function main(ns) {
 
         if (ns.fileExists(COMMAND_PATH, "home")) {
             status = await processCommand(ns, status);
-            nextCheckAt = Math.min(nextCheckAt, Date.now() + 1_000);
+            writeStatus(ns, status);
         }
 
         if (now >= nextCheckAt) {
