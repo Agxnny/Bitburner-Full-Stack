@@ -24,12 +24,13 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M1 duplicate/concurrent deployment validation
-**Status:** Validation design
+**Status:** Validation procedure ready
 
 **Goal:** Prove that a second approval/deployment attempt cannot start while deployment infrastructure is already running or finalizing.
 
 **Files / areas touched:**
 - `src/bootstrap/update-watcher.js` only if validation exposes a defect
+- `src/bootstrap/git-pull-self-update.js` as the existing deployment-infrastructure sentinel used by the controlled test
 - `deployment/README.md`
 - `CURRENT_STATE.md`
 - `FIXES.md` if a reusable defect is found
@@ -38,11 +39,14 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Preserve the existing single-deployment authority boundary.
 - Use the production watcher command path rather than bypassing it.
 - Do not modify runtime code unless the test fails.
-- r17 remains unapproved until the concurrent-deployment test procedure is ready.
+- r17 remains the pending approved target for this test.
+- The controlled test launches the existing self-update helper in a harmless wait state against the live watcher PID. While the watcher remains running, that helper only sleeps on `ns.isRunning(waitPid)` and therefore performs no deployment-state mutation.
+- While the helper is present, approving r17 through the dashboard must be rejected with `A deployment is already running or finalizing.` and must not launch `git-pull.js`.
+- Kill the validation helper immediately after observing the rejection so it can never progress past its wait loop.
 
-**Validation:** Exact-revision stale approval is now runtime validated. With local runtime on r15 and r17 presented, a deliberately stale approval for r16 was rejected with `Approved revision is no longer the current newer release.` The dashboard continued to present r17 and did not implicitly authorize it.
+**Validation:** Exact-revision stale approval is runtime validated. Duplicate/concurrent deployment rejection remains unproven.
 
-**Next step:** Design the controlled duplicate/concurrent deployment test so one deployment remains observably active long enough to submit a second approval attempt safely.
+**Next step:** Run `src/bootstrap/git-pull-self-update.js` with `--wait-pid` set to the live watcher PID and `--revision 17`, confirm the helper is running, click Install for r17, verify rejection/no puller launch, then kill the validation helper.
 
 ## Recently completed
 
