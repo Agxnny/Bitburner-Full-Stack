@@ -23,32 +23,35 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M1 duplicate/concurrent deployment validation
-**Status:** Validation procedure ready
+### M1 deployment close-out review
+**Status:** Validation review
 
-**Goal:** Prove that a second approval/deployment attempt cannot start while deployment infrastructure is already running or finalizing.
+**Goal:** Finish the remaining Reliable Deployment close-out decisions and final runtime confirmation before marking M1 complete.
 
 **Files / areas touched:**
-- `src/bootstrap/update-watcher.js` only if validation exposes a defect
-- `src/bootstrap/git-pull-self-update.js` as the existing deployment-infrastructure sentinel used by the controlled test
 - `deployment/README.md`
 - `CURRENT_STATE.md`
-- `FIXES.md` if a reusable defect is found
+- `FIXES.md`
+- `ROADMAP.md` only if milestone completion changes the active milestone
+- deployment runtime files only if review identifies a true M1 blocker
 
 **Decisions / constraints:**
-- Preserve the existing single-deployment authority boundary.
-- Use the production watcher command path rather than bypassing it.
-- Do not modify runtime code unless the test fails.
-- r17 remains the pending approved target for this test.
-- The controlled test launches the existing self-update helper in a harmless wait state against the live watcher PID. While the watcher remains running, that helper only sleeps on `ns.isRunning(waitPid)` and therefore performs no deployment-state mutation.
-- While the helper is present, approving r17 through the dashboard must be rejected with `A deployment is already running or finalizing.` and must not launch `git-pull.js`.
-- Kill the validation helper immediately after observing the rejection so it can never progress past its wait loop.
+- Exact-revision stale approval is runtime validated.
+- Duplicate/concurrent deployment rejection is runtime validated.
+- Do not add rollback, per-file hashing, or persistent-unit retirement automatically; first decide whether each is an M1 blocker or future hardening.
+- r17 remains the current no-op release and can be used for the final normal deployment confirmation after the temporary validation helper is confirmed stopped.
+- Do not begin M2 until M1 close-out documentation and final validation are complete.
 
-**Validation:** Exact-revision stale approval is runtime validated. Duplicate/concurrent deployment rejection remains unproven.
+**Validation:** The controlled concurrent-deployment test was executed with the self-update helper held in its harmless wait loop against the live watcher PID. Approving r17 through the normal dashboard command path was rejected while the helper was active, demonstrating that the watcher blocks a second deployment attempt when deployment infrastructure is already running. No defect was reported.
 
-**Next step:** Run `src/bootstrap/git-pull-self-update.js` with `--wait-pid` set to the live watcher PID and `--revision 17`, confirm the helper is running, click Install for r17, verify rejection/no puller launch, then kill the validation helper.
+**Next step:** Confirm the temporary validation helper is no longer running, then review rollback, per-file hashing, and explicit persistent-unit retirement against the M1 completion criteria and perform the final normal r17 deployment if no blocker remains.
 
 ## Recently completed
+
+### M1 duplicate/concurrent deployment validation
+**Status:** Runtime validated
+
+The existing self-update helper was launched in a harmless wait state against the live watcher PID so it counted as active deployment infrastructure without progressing into deployment mutation. An r17 approval through the normal dashboard path was rejected while that helper was active, confirming the single-deployment guard prevents concurrent deployment startup.
 
 ### M1 stale/mismatched approval validation
 **Status:** Runtime validated
