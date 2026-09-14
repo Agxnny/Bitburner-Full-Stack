@@ -4,7 +4,7 @@
 **M1 — Reliable Deployment**
 
 ## Status
-M1 implementation and runtime validation remain in progress. The bootstrap puller and core safety behavior are runtime-validated in Bitburner v3.0.1. Recovery release `v0.2.0-r8` validated the React dashboard concurrency fix and immutable revision-specific manifest design. Releases r9/r10 validated the first persistent runtime unit, watcher-owned dashboard relaunch, missing persistent-unit recovery, unchanged-running preservation, and changed-running controlled restart. Release `v0.3.0-r11` adds explicit old-tail cleanup during watcher-owned dashboard replacement and is pending runtime verification.
+M1 implementation and runtime validation remain in progress. The bootstrap puller and core safety behavior are runtime-validated in Bitburner v3.0.1. Recovery release `v0.2.0-r8` validated the React dashboard concurrency fix and immutable revision-specific manifest design. Releases r9/r10 validated the first persistent runtime unit, watcher-owned dashboard relaunch, missing persistent-unit recovery, unchanged-running preservation, and changed-running controlled restart. Release `v0.3.0-r11` validated explicit old-tail cleanup during watcher-owned dashboard replacement. The persistent updater runtime-validation slice is complete; release discovery freshness and release-content immutability remain active M1 gaps.
 
 ## Completed
 - Repository initialized and project rules/architecture/roadmap established.
@@ -32,10 +32,12 @@ M1 implementation and runtime validation remain in progress. The bootstrap pulle
 - r9 runtime validation proved an unchanged running persistent watcher is preserved during forced same-revision reconciliation.
 - r10 runtime validation proved a changed running persistent watcher is stopped and relaunched with a new PID, and the replacement watcher opens a new dashboard.
 - r10 exposed FIX-005: the replaced dashboard process was killed but its old tail window remained visible.
-- r11 changes watcher ownership takeover to close each old dashboard tail before killing its process and launching the replacement.
+- r11 runtime validation proved watcher ownership takeover closes the old dashboard tail, kills the old process, and opens exactly one fresh replacement dashboard.
+- FIX-005 is resolved.
+- Persistent updater runtime validation is complete for unchanged-running preservation, missing-unit relaunch, changed-running restart, watcher-owned dashboard recovery, and dashboard UI cleanup.
 
 ## Active feature
-**M1 — Reliable Deployment / watcher-owned dashboard replacement cleanup**
+**M1 — Reliable Deployment / release discovery freshness and immutable release content**
 
 Relevant current files:
 - `src/bootstrap/git-pull.js`
@@ -52,17 +54,16 @@ Relevant current files:
 - `data/update-command.json` (runtime command slot, protected)
 
 ## Exact next step
-1. Let the current watcher detect `v0.3.0-r11`.
-2. Note the current watcher PID and currently open update-dashboard tail.
-3. Approve r11 from the dashboard.
-4. Verify the helper restarts the changed watcher and the watcher PID changes.
-5. Verify the old update-dashboard tail closes rather than remaining as a zombie/stale window.
-6. Verify exactly one replacement update-dashboard opens and remains live.
-7. If successful, mark FIX-005 Resolved and close this persistent updater runtime-validation slice.
-8. Before closing M1, address remaining deployment-integrity and validation gaps below.
+1. Design the next M1 release-discovery mechanism so repeated 30-second checks cannot remain dependent on a stale GitHub Raw `main/deployment/version.json` view for several minutes.
+2. Preserve explicit user approval and exact-revision re-verification semantics.
+3. Add telemetry identifying which discovery source produced the current remote revision and its last successful check time.
+4. Make release file content immutable by pinning each release to an immutable commit/ref or equivalent immutable content identity rather than fetching manifest sources from mutable `main`.
+5. Ensure a stale descriptor can never combine an older release identity with newer source contents.
+6. Runtime-validate the new discovery path with a controlled revision and confirm detection occurs within the designed bound.
+7. Complete remaining stale/mismatched approval and duplicate/concurrent deployment validation before closing M1.
 
 ## Locked M1 behavior
-- `deployment/version.json` is the small mutable remote freshness descriptor.
+- `deployment/version.json` is the small mutable remote freshness descriptor until the release-discovery redesign replaces or supplements that role.
 - Versions use `vX.Y.Z`; revisions are monotonically increasing integers.
 - Remote requests are cache-busted.
 - Every new release descriptor points to an immutable revision-specific manifest under `deployment/releases/`.
@@ -97,10 +98,9 @@ Relevant current files:
 - Repository is permanent project memory; avoid code dumps in chat.
 
 ## Known issues / validation gaps
-- FIX-005 r11 dashboard-tail cleanup is implemented but not yet runtime-validated.
 - FIX-004's historical root cause remains unproven; only the safe reconciliation procedure is established.
 - Immutable revision-specific manifests still reference mutable branch source paths. A stale release descriptor can therefore stage newer `main` content under an older manifest identity. Release content needs immutable source pinning before M1 is complete.
-- GitHub Raw descriptor propagation can lag publication even with cache-busting; r10 detection eventually succeeded after an observable delay.
+- GitHub Raw descriptor propagation has repeatedly lagged publication across multiple 30-second watcher intervals; r11 took roughly 4–5 minutes to become visible in runtime despite continued checks. Release discovery needs a more reliable freshness path before M1 is complete.
 - Full rollback for a partially activated non-persistent deployment is not yet implemented.
 - Cryptographic manifest content hashing is still pending.
 - Explicit persistent-unit retirement is designed conceptually but not implemented in the current manifest contract.
