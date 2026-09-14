@@ -111,7 +111,7 @@ export async function main(ns) {
             stagedFiles.push({ ...file, content, action, deferredSelf });
         }
 
-        const runtimePlan = buildRuntimePlan(manifest, stagedFiles, targets);
+        const runtimePlan = buildRuntimePlan(manifest, stagedFiles, targets, localState);
         report.files = stagedFiles.map(({ source, target, action, deferredSelf }) => ({ source, target, action, deferred: deferredSelf }));
         report.counts = countActions(report.files);
         report.runtime = { planned: runtimePlan.map(runtimeSummary), status: "planned", units: [] };
@@ -246,17 +246,47 @@ function rawBaseForRef(ref) {
     return `https://raw.githubusercontent.com/${REPOSITORY}/${ref}`;
 }
 
-function buildRuntimePlan(manifest, stagedFiles, targets) {
-    if (manifest.runtimeUnits == null) return [];
-    if (!Array.isArray(manifest.runtimeUnits)) throw new Error("Manifest runtimeUnits must be an array.");
+function buildRuntimePlan(manifest, stagedFiles, targets, localState) {
+    const activeUnits = manifest.runtimeUnits == null ? [] : manifest.runtimeUnits;
+    const retiredIds = manifest.retireRuntimeUnits == null ? [] : manifest.retireRuntimeUnits;
+    if (!Array.isArray(activeUnits)) throw new Error("Manifest runtimeUnits must be an array.");
+    if (!Array.isArray(retiredIds)) throw new Error("Manifest retireRuntimeUnits must be an array.");
+
     const fileActions = new Map(stagedFiles.map((file) => [file.target, file.action]));
     const ids = new Set();
-    return manifest.runtimeUnits.map((unit) => {
+    const plan = activeUnits.map((unit) => {
         validateRuntimeUnit(unit, targets);
         if (ids.has(unit.id)) throw new Error(`Duplicate runtime unit id: ${unit.id}`);
         ids.add(unit.id);
-        return { ...unit, args: [...unit.args], files: [...unit.files], changed: unit.files.some((path) => ["updated", "added"].includes(fileActions.get(path))) };
+        return {
+            ...unit,
+            args: [...unit.args],
+            files: [...unit.files],
+            changed: unit.files.some((path) => ["updated", "added"].includes(fileActions.get(path))),
+            retired: false,
+        };
     });
+
+    const previousUnits = Array.isArray(localState?.runtimeUnits) ? localState.runtimeUnits : [];
+    const retirementIds = new Set();
+    for (const id of retiredIds) {
+        if (typeof id !== "string" || !id) throw new Error("Invalid persistent runtime retirement id.");
+        if (retirementIds.has(id)) throw new Error(`Duplicate persistent runtime retirement id: ${id}`);
+        retirementIds.add(id);
+        if (ids.has(id)) throw new Error(`Runtime unit ${id} cannot be active and retired in the same manifest.`);
+        const previous = previousUnits.find((unit) => unit?.id === id);
+        if (!previous) throw new Error(`Cannot retire unknown persistent runtime unit: ${id}`);
+        validateRetirementSource(previous);
+        plan.push({
+            ...previous,
+            args: [...previous.args],
+            files: [...previous.files],
+            changed: false,
+            retired: true,
+        });
+    }
+
+    return plan;
 }
 
 function validateRuntimeUnit(unit, targets) {
@@ -270,8 +300,24 @@ function validateRuntimeUnit(unit, targets) {
     if (!Number.isSafeInteger(unit.restartOrder) || unit.restartOrder < 0) throw new Error(`Invalid restartOrder for ${unit.id}.`);
 }
 
+function validateRetirementSource(unit) {
+    if (unit.lifecycle !== "persistent") throw new Error(`Retirement source ${unit.id} is not persistent.`);
+    if (unit.host !== "home") throw new Error(`Retirement source ${unit.id} is not on home.`);
+    if (typeof unit.script !== "string" || !unit.script) throw new Error(`Retirement source ${unit.id} has no script.`);
+    if (!Number.isSafeInteger(unit.threads) || unit.threads < 1) throw new Error(`Retirement source ${unit.id} has invalid threads.`);
+    if (!Array.isArray(unit.args) || !Array.isArray(unit.files)) throw new Error(`Retirement source ${unit.id} has invalid invocation metadata.`);
+    if (!Number.isSafeInteger(unit.restartOrder) || unit.restartOrder < 0) throw new Error(`Retirement source ${unit.id} has invalid restartOrder.`);
+}
+
 function runtimeSummary(unit) {
-    return { id: unit.id, lifecycle: unit.lifecycle, script: unit.script, changed: unit.changed, restartOrder: unit.restartOrder };
+    return {
+        id: unit.id,
+        lifecycle: unit.lifecycle,
+        script: unit.script,
+        changed: Boolean(unit.changed),
+        retired: Boolean(unit.retired),
+        restartOrder: unit.restartOrder,
+    };
 }
 
 function createReport(startedAt, localState, flags, descriptorPath) {
@@ -370,6 +416,7 @@ function validateManifest(manifest, descriptor) {
     if (!manifest || manifest.schemaVersion !== 1) throw new Error("Unsupported manifest schema.");
     if (manifest.version !== descriptor.version || manifest.revision !== descriptor.revision) throw new Error("Version descriptor and manifest disagree.");
     if (!Array.isArray(manifest.files) || manifest.files.length === 0) throw new Error("Manifest contains no files.");
+    if (manifest.retireRuntimeUnits != null && !Array.isArray(manifest.retireRuntimeUnits)) throw new Error("Manifest retireRuntimeUnits must be an array.");
 }
 
 function validateFileEntry(file) {
