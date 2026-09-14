@@ -47,6 +47,7 @@ export async function main(ns) {
 
     const committedAt = Date.now();
     const runtimePlan = Array.isArray(pending.runtimePlan) ? pending.runtimePlan : [];
+    const activeUnits = runtimePlan.filter((unit) => !unit.retired);
     const committed = {
         schemaVersion: 1,
         version: pending.version,
@@ -55,7 +56,7 @@ export async function main(ns) {
         releaseRef: pending.releaseRef ?? null,
         previousVersion: pending.previousVersion,
         previousRevision: pending.previousRevision,
-        runtimeUnits: runtimePlan.map(persistedUnit),
+        runtimeUnits: activeUnits.map(persistedUnit),
         deployedAt: committedAt,
     };
 
@@ -119,15 +120,32 @@ async function reconcileRuntime(ns, runtimePlan) {
 
     for (const unit of ordered) {
         const matches = matchingProcesses(ns, unit);
+
+        if (unit.retired) {
+            if (matches.length === 0) {
+                results.push(result(unit, "already-stopped", null, null));
+                continue;
+            }
+            if (!stopProcesses(ns, matches)) {
+                results.push(result(unit, "failed", null, "Could not stop the retired persistent process."));
+                continue;
+            }
+            await ns.sleep(100);
+            if (matchingProcesses(ns, unit).length > 0) {
+                results.push(result(unit, "failed", null, "Retired persistent process remained active after stop request."));
+                continue;
+            }
+            results.push(result(unit, "retired", null, null));
+            continue;
+        }
+
         if (!unit.changed && matches.length > 0) {
             results.push(result(unit, "kept-running", matches[0].pid, null));
             continue;
         }
 
         if (unit.changed && matches.length > 0) {
-            let killFailed = false;
-            for (const process of matches) if (!ns.kill(process.pid)) killFailed = true;
-            if (killFailed) {
+            if (!stopProcesses(ns, matches)) {
                 results.push(result(unit, "failed", null, "Could not stop the previous persistent process."));
                 continue;
             }
@@ -149,6 +167,12 @@ async function reconcileRuntime(ns, runtimePlan) {
     return results;
 }
 
+function stopProcesses(ns, processes) {
+    let success = true;
+    for (const process of processes) if (!ns.kill(process.pid)) success = false;
+    return success;
+}
+
 function matchingProcesses(ns, unit) {
     return ns.ps(unit.host).filter((process) => process.filename === unit.script && argsEqual(process.args ?? [], unit.args ?? []));
 }
@@ -162,6 +186,7 @@ function result(unit, outcome, pid, error) {
         id: unit.id,
         script: unit.script,
         changed: Boolean(unit.changed),
+        retired: Boolean(unit.retired),
         outcome,
         pid,
         error,
