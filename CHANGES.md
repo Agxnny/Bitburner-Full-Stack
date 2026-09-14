@@ -24,13 +24,13 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M1 stale/mismatched approval validation
-**Status:** Validation setup
+**Status:** Validation — r16 presented, r17 publication in progress
 
 **Goal:** Prove that human approval is bound to one exact revision and can never silently authorize a newer release.
 
 **Files / areas touched:**
 - `deployment/releases/r16-manifest.json`
-- `deployment/releases/r17-manifest.json` when the second controlled release is published
+- `deployment/releases/r17-manifest.json`
 - `deployment/version.json`
 - `deployment/README.md`
 - `src/bootstrap/update-watcher.js` only if validation exposes a defect
@@ -39,15 +39,15 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:**
 - r16 and r17 are controlled no-op releases; runtime source bytes remain unchanged.
-- Publish r16 first and wait until the dashboard presents r16.
+- r16 has been presented by the dashboard and has not been approved.
 - Publish r17 before approving r16.
 - Submit the stale r16 approval only after r17 is the current remote release.
 - Expected behavior: watcher forces fresh verification, rejects approval for r16, and does not launch the puller for r16 or implicitly authorize r17.
 - Do not modify runtime code unless the test fails.
 
-**Validation:** Test setup is being published. Existing watcher code already compares the approved revision with a freshly verified remote revision and fails closed on mismatch; runtime proof is still required.
+**Validation:** The dashboard successfully presented r16 while local runtime remained on r15. The stale-approval rejection itself is still unproven.
 
-**Next step:** Publish controlled no-op r16, let the dashboard present r16, then publish r17 before approving r16.
+**Next step:** Publish controlled no-op r17. Once the dashboard changes from `r16 available` to `r17 available`, submit a deliberately stale r16 approval through `data/update-command.json` and verify rejection with no deployment launch.
 
 ## Recently completed
 
