@@ -23,30 +23,33 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Documentation durability and feature-doc synchronization
-**Status:** Documentation / finalization
+### M1 deployment close-out validation
+**Status:** Validation
 
-**Goal:** Add a repository rule that preserves in-progress changes and requires feature documentation to stay synchronized with feature behavior.
+**Goal:** Finish the remaining Reliable Deployment validation paths before closing M1.
 
 **Files / areas touched:**
-- `CHANGES.md`
-- `PROJECT_RULES.md`
-- `README.md`
+- `src/bootstrap/update-watcher.js`
+- `src/bootstrap/git-pull.js`
+- `deployment/README.md`
+- `FIXES.md`
 - `CURRENT_STATE.md`
-- `src/ui/README.md`
-- relevant future feature documentation
 
 **Decisions / constraints:**
-- `CHANGES.md` is a lightweight working scratchpad, not another full lifecycle system.
-- The active entry must be updated before context switches or handoffs.
-- Any feature behavior/interface change must update that feature's documentation in the same work item.
-- If a feature has no documentation yet, create a suitable README or feature document before considering the change complete.
+- Preserve exact-revision human approval semantics.
+- Do not begin later automation subsystems until M1 validation is complete.
+- Update deployment feature documentation in the same work item as any behavior or validation-procedure change.
 
-**Validation:** `PROJECT_RULES.md` now requires `CHANGES.md` continuity and same-work-item feature documentation updates. The repository startup flow now includes `CHANGES.md`, and the UI feature documentation has been synchronized with the runtime-validated r15 window-memory behavior.
+**Validation:** Discovery freshness, commit-pinned canonical release content, persistent watcher lifecycle, compact updater UI, and shared dashboard window memory are runtime-validated. Stale/mismatched approval and duplicate/concurrent deployment paths remain to be explicitly tested.
 
-**Next step:** Update `CURRENT_STATE.md` with the new documentation workflow and r15 validation, then mark this working change complete.
+**Next step:** Design and execute the stale/mismatched approval validation case, recording results here and in the deployment feature documentation.
 
 ## Recently completed
+
+### Documentation durability and feature-doc synchronization
+**Status:** Complete
+
+Added `CHANGES.md` as the required lightweight in-progress work record. `PROJECT_RULES.md` now requires it to be updated during meaningful implementation work and before handoffs/context switches. Feature/subsystem documentation must now be updated in the same work item whenever feature behavior, interfaces, configuration, lifecycle, telemetry, validation procedure, or operator workflow changes. Startup and current-state documentation were updated to include the new workflow.
 
 ### r15 dashboard window geometry memory
 **Status:** Runtime validated
