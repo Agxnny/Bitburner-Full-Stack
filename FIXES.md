@@ -147,7 +147,7 @@ When managed files and the deployment ledger disagree, validate the canonical pu
 
 ### FIX-005 — Replaced dashboard process left its old tail window open
 **Date:** 2026-09-15  
-**Status:** Investigating  
+**Status:** Resolved  
 **Subsystem:** M1 Reliable Deployment / watcher-owned update dashboard  
 **Affected files:**
 - `src/bootstrap/update-watcher.js`
@@ -162,7 +162,7 @@ Watcher ownership takeover killed the old dashboard process before launching the
 Before killing each watcher-owned dashboard process, the watcher now calls `ns.ui.closeTail(process.pid)`, then kills that process, then launches exactly one replacement dashboard.
 
 #### Verification
-Implementation is published in r11 and still requires runtime confirmation that the previous dashboard tail closes while one replacement dashboard opens.
+Runtime deployment of `v0.3.0-r11` confirmed the old dashboard tail closed and exactly one fresh dashboard opened under the replacement watcher.
 
 #### Prevention / notes
 When a managed UI process is intentionally replaced, its owned UI surface must be explicitly closed before process termination. Bitburner v3.0.1 exposes `ns.ui.closeTail(pid)` for this purpose.
