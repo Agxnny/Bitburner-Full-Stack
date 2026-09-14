@@ -5,12 +5,13 @@
 
 const REPOSITORY = "Agxnny/Bitburner-Full-Stack";
 const BRANCH = "main";
-const RAW_BASE = `https://raw.githubusercontent.com/${REPOSITORY}/${BRANCH}`;
-const SELF_SOURCE = "src/bootstrap/git-pull.js";
+const RAW_BRANCH_BASE = `https://raw.githubusercontent.com/${REPOSITORY}/${BRANCH}`;
 const SELF_TARGET = "src/bootstrap/git-pull.js";
 const STATE_PATH = "data/deployment-state.txt";
 const PENDING_STATE_PATH = "data/deployment-pending.txt";
 const REPORT_PATH = "data/git-pull-report.json";
+const TRANSITION_REVISION = 12;
+const TRANSITION_SOURCE_PREFIX = "deployment/releases/r12-src/";
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -36,7 +37,11 @@ export async function main(ns) {
     }
 
     const report = pending.report ?? legacyReport(pending);
-    const url = `${RAW_BASE}/${SELF_SOURCE}?cb=${encodeURIComponent(`r${revision}-${nonce}-${Date.now()}`)}`;
+    let selfLocation;
+    try { selfLocation = resolveSelfLocation(pending); }
+    catch (error) { return fail(ns, report, String(error?.message ?? error)); }
+
+    const url = `${selfLocation.base}/${selfLocation.source}?cb=${encodeURIComponent(`r${revision}-${nonce}-${Date.now()}`)}`;
     const ok = await ns.wget(url, SELF_TARGET, "home");
     if (!ok) return fail(ns, report, "git-pull self-refresh failed; deployment state was not advanced.");
 
@@ -47,6 +52,7 @@ export async function main(ns) {
         version: pending.version,
         revision: pending.revision,
         manifest: pending.manifest,
+        releaseRef: pending.releaseRef ?? null,
         previousVersion: pending.previousVersion,
         previousRevision: pending.previousRevision,
         runtimeUnits: runtimePlan.map(persistedUnit),
@@ -85,6 +91,26 @@ export async function main(ns) {
     printSummary(ns, report);
 }
 
+function resolveSelfLocation(pending) {
+    const releaseRef = pending.releaseRef;
+    const source = typeof pending.selfSource === "string" && pending.selfSource ? pending.selfSource : selfSourceFromReport(pending.report);
+
+    if (/^[0-9a-f]{40}$/i.test(releaseRef ?? "")) {
+        if (!source) throw new Error("Pinned deployment is missing the puller source path.");
+        return { base: `https://raw.githubusercontent.com/${REPOSITORY}/${releaseRef}`, source };
+    }
+
+    if (pending.revision === TRANSITION_REVISION && source?.startsWith(TRANSITION_SOURCE_PREFIX)) {
+        return { base: RAW_BRANCH_BASE, source };
+    }
+
+    throw new Error("Deployment is missing an immutable releaseRef; refusing unpinned puller self-refresh.");
+}
+
+function selfSourceFromReport(report) {
+    return report?.files?.find((file) => file.target === SELF_TARGET)?.source ?? null;
+}
+
 async function reconcileRuntime(ns, runtimePlan) {
     const ordered = [...runtimePlan]
         .filter((unit) => unit.lifecycle === "persistent")
@@ -100,9 +126,7 @@ async function reconcileRuntime(ns, runtimePlan) {
 
         if (unit.changed && matches.length > 0) {
             let killFailed = false;
-            for (const process of matches) {
-                if (!ns.kill(process.pid)) killFailed = true;
-            }
+            for (const process of matches) if (!ns.kill(process.pid)) killFailed = true;
             if (killFailed) {
                 results.push(result(unit, "failed", null, "Could not stop the previous persistent process."));
                 continue;
@@ -126,9 +150,7 @@ async function reconcileRuntime(ns, runtimePlan) {
 }
 
 function matchingProcesses(ns, unit) {
-    return ns.ps(unit.host).filter((process) =>
-        process.filename === unit.script && argsEqual(process.args ?? [], unit.args ?? []),
-    );
+    return ns.ps(unit.host).filter((process) => process.filename === unit.script && argsEqual(process.args ?? [], unit.args ?? []));
 }
 
 function argsEqual(left, right) {
@@ -196,7 +218,6 @@ function fail(ns, report, message) {
         runtime: { planned: [], status: "none", units: [] },
         error: null,
     };
-
     finalReport.status = "failed";
     finalReport.clean = false;
     finalReport.success = false;
@@ -212,9 +233,7 @@ function printSummary(ns, report) {
 }
 
 function release(value) {
-    return value?.version && Number.isSafeInteger(Number(value?.revision))
-        ? `${value.version}-r${value.revision}`
-        : "unknown release";
+    return value?.version && Number.isSafeInteger(Number(value?.revision)) ? `${value.version}-r${value.revision}` : "unknown release";
 }
 
 function readJson(ns, path) {
