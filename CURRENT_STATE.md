@@ -4,10 +4,12 @@
 **M1 — Reliable Deployment**
 
 ## Status
-M1 implementation and runtime validation remain in progress. Core bootstrap safety and persistent updater lifecycle behavior are runtime-validated in Bitburner v3.0.1. Transition release `v0.4.0-r12` installed successfully and its puller passed a same-revision dry run using the new release contract. Controlled r13 was detected within one normal watcher interval, and r14 installed successfully using normal canonical source paths behind an immutable `releaseRef`, validating the post-transition pinned-content flow. The approved ultra-compact updater dashboard is now live. The active UI slice adds reusable window position/size memory for this dashboard and all future dashboard tails.
+M1 implementation and runtime validation remain in progress. Core bootstrap safety and persistent updater lifecycle behavior are runtime-validated in Bitburner v3.0.1. Transition release `v0.4.0-r12` installed successfully and its puller passed a same-revision dry run using the new release contract. Controlled r13 was detected within one normal watcher interval, and r14 installed successfully using normal canonical source paths behind an immutable `releaseRef`, validating the post-transition pinned-content flow. The approved ultra-compact updater dashboard is live, and r15 runtime validation confirmed shared dashboard window position/size memory restores correctly after watcher-driven relaunch.
+
+The repository now also uses `CHANGES.md` as the lightweight in-progress work record. It must be updated during meaningful implementation steps and before handoffs/context switches. Feature behavior changes must update that feature's own documentation in the same work item.
 
 ## Completed
-- Repository foundation, project rules, architecture, roadmap, decisions, fixes, and references established.
+- Repository foundation, project rules, architecture, roadmap, decisions, fixes, references, and working-change documentation established.
 - Deployment identity uses semantic version plus monotonic revision.
 - Bootstrap puller, self-refresh helper, deployment report, failure-preservation fixture, stale-revision protection, and canonical `gp` path validated.
 - Update watcher owns release detection/approval; dashboard uses bounded command-file interaction and never runs the puller directly.
@@ -23,11 +25,17 @@ M1 implementation and runtime validation remain in progress. Core bootstrap safe
 - The M1 update dashboard is the approved ultra-compact operator widget: current release, heartbeat, polling interval, and exact-revision approval only.
 - D-019 locks persistent dashboard tail position/size as shared presentation memory.
 - `src/ui/dashboard-window-memory.js` provides reusable geometry restore/observation for all dashboard tails.
+- r15 runtime validation confirmed move/resize persistence and geometry restoration after watcher-driven dashboard relaunch.
+- `CHANGES.md` is now required for preserving in-progress work between implementation steps, chats, and handoffs.
+- Project rules now require each feature/subsystem's own documentation to be updated whenever its behavior, interface, configuration, lifecycle, telemetry, validation procedure, or operator workflow changes.
 
 ## Active feature
-**M1 — Reliable Deployment / r15 dashboard window-memory validation**
+**M1 — Reliable Deployment / remaining close-out validation**
 
 Relevant current files:
+- `CHANGES.md`
+- `PROJECT_RULES.md`
+- `CURRENT_STATE.md`
 - `src/bootstrap/git-pull.js`
 - `src/bootstrap/git-pull-self-update.js`
 - `src/bootstrap/update-watcher.js`
@@ -35,7 +43,6 @@ Relevant current files:
 - `src/ui/dashboard-window-memory.js`
 - `src/ui/README.md`
 - `deployment/version.json`
-- `deployment/releases/r15-manifest.json` once published
 - `data/deployment-state.txt`
 - `data/deployment-pending.txt`
 - `data/git-pull-report.json`
@@ -43,12 +50,11 @@ Relevant current files:
 - `data/update-command.json`
 
 ## Exact next step
-1. Publish r15 containing shared dashboard window-memory support.
-2. Approve r15 normally and allow watcher ownership to replace the update dashboard.
-3. Position and resize the r15 dashboard once.
-4. Restart/relaunch the managed dashboard and confirm its position and size are restored.
-5. Confirm window memory failure remains non-fatal and no React callback invokes Netscript.
-6. Complete remaining stale/mismatched approval and duplicate/concurrent deployment validation before closing M1.
+1. Complete the remaining stale/mismatched approval validation.
+2. Complete duplicate/concurrent deployment validation.
+3. Reconcile `FIXES.md` statuses with the successful r14/r15 runtime results where applicable.
+4. Update the relevant deployment feature documentation and `CHANGES.md` as each validation step is performed.
+5. Close M1 only after the remaining validation gaps are documented and current state is clean.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
@@ -68,6 +74,8 @@ Relevant current files:
 - React callbacks never call Netscript APIs directly.
 - Dashboard visuals use the shared dark grey-blue language defined by D-018.
 - Every dashboard tail uses shared persistent geometry memory with a stable dashboard key; geometry is presentation state and fails open.
+- Active implementation work is preserved in `CHANGES.md` before context switches or handoffs.
+- Feature/subsystem documentation is updated in the same work item as feature behavior changes.
 
 ## Locked architectural constraints
 - Centralized canonical state.
@@ -79,7 +87,7 @@ Relevant current files:
 - Repository is permanent project memory; avoid code dumps in chat.
 
 ## Known issues / validation gaps
-- Dashboard window-memory code is published next and requires runtime validation of drag/resize persistence across a dashboard relaunch.
+- Remaining M1 stale/mismatched approval and duplicate/concurrent deployment paths still require explicit runtime validation.
 - FIX-004's historical ledger-drift root cause remains unproven.
 - Full rollback for partially activated non-persistent deployment remains unimplemented.
 - Cryptographic per-file manifest hashing remains pending; commit pinning supplies immutable Git content identity but hashes may still be added as defense in depth.
@@ -90,4 +98,4 @@ Relevant current files:
 Do not begin hacking, stocks, purchased servers, progression, or other domain automation until earlier roadmap foundations are completed and validated.
 
 ## Handoff instructions
-A fresh development chat should read `PROJECT_RULES.md`, this file, `ARCHITECTURE.md`, `DECISIONS.md`, `ROADMAP.md`, and relevant `FIXES.md` entries before making code changes. Verify Bitburner API assumptions against `REFERENCES.md` and current official documentation/source.
+A fresh development chat should read `PROJECT_RULES.md`, `CHANGES.md`, this file, `ARCHITECTURE.md`, `DECISIONS.md`, `ROADMAP.md`, and relevant `FIXES.md` entries before making code changes. Verify Bitburner API assumptions against `REFERENCES.md` and current official documentation/source.
