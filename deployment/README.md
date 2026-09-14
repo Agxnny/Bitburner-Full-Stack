@@ -27,6 +27,25 @@ File actions are:
 
 Normal terminal output is intentionally concise and reports release identity, clean/failure status, and the four aggregate file counts.
 
+## Update watcher and approval flow
+
+`src/bootstrap/update-watcher.js` is the persistent release detector and update-command handler.
+
+It:
+- polls `deployment/version.json` every 30 seconds with cache busting
+- compares the remote revision with `data/deployment-state.txt`
+- publishes structured health/update telemetry to `data/update-status.json`
+- consumes a bounded single-slot command from `data/update-command.json`
+- never installs automatically
+- re-fetches the descriptor before accepting an approval
+- delegates an accepted approval to `git-pull.js --expect-revision N`
+- rejects approval if the requested revision is no longer the current newer remote revision
+- rejects approval while another puller process is already active
+
+A decline dismisses the currently presented revision until the next ordinary poll. Runtime network/descriptor failures mark watcher health degraded instead of terminating the persistent watcher.
+
+The minimal React surface is `src/ui/update-dashboard.jsx`. It reads watcher/deployment telemetry and writes commands; it never launches the puller directly.
+
 ## Stale revision protection
 
 If the remote revision is lower than the locally committed revision, the normal pull is blocked. The JSON report records a `STALE_REVISION` alarm and terminal output emits an explicit alarm. Downgrades require the existing explicit override flag.
