@@ -4,7 +4,7 @@
 **M1 — Reliable Deployment**
 
 ## Status
-M1 implementation is in progress. The bootstrap puller and its core safety behavior are runtime-validated in Bitburner v3.0.1. The persistent update watcher baseline is runtime-validated at `v0.2.0-r5`. The first React update dashboard exposed a Netscript concurrency defect during runtime validation; FIX-002 corrects the UI architecture so only `main()` calls Netscript. The fix is published as `v0.2.0-r7` and awaits runtime verification before approval-flow testing resumes.
+M1 implementation is in progress. The bootstrap puller and its core safety behavior are runtime-validated in Bitburner v3.0.1. The persistent update watcher baseline is runtime-validated at `v0.2.0-r5`. The first React update dashboard exposed a Netscript concurrency defect; FIX-002 corrected the UI architecture so only `main()` calls Netscript. During delivery of that fix, a second runtime incident exposed a mutable-manifest publication race; FIX-003 and D-014 now require immutable revision-specific release manifests. Recovery release `v0.2.0-r8` is published and awaits runtime verification.
 
 ## Completed
 - Repository initialized.
@@ -31,7 +31,10 @@ M1 implementation is in progress. The bootstrap puller and its core safety behav
 - Controlled r6 approval-flow validation release published without source-code changes.
 - FIX-002 recorded after dashboard runtime failure caused by React callbacks invoking Netscript concurrently with `ns.sleep()`.
 - `src/ui/update-dashboard.jsx` corrected so React only exchanges plain-JavaScript snapshots/intents with a local bridge and `main()` serializes all Netscript access.
-- `v0.2.0-r7` published with the dashboard concurrency fix.
+- r6/r7 deployment attempt failed safely because the descriptor and mutable shared manifest disagreed; no mixed release was activated.
+- FIX-003 recorded for the cross-release metadata publication race.
+- D-014 locked: all new release descriptors use immutable revision-specific manifest paths under `deployment/releases/`.
+- `v0.2.0-r8` published with descriptor path `deployment/releases/r8-manifest.json`; immutable manifest is created before descriptor publication.
 
 ## Active feature
 **M1 — Reliable Deployment / watcher and approval dashboard runtime validation**
@@ -42,25 +45,29 @@ Relevant current files:
 - `src/bootstrap/update-watcher.js`
 - `src/ui/update-dashboard.jsx`
 - `deployment/version.json`
-- `deployment/manifest.json`
+- `deployment/releases/r8-manifest.json`
+- `deployment/manifest.json` (legacy shared metadata; not used by new release descriptors)
 - `data/deployment-state.txt` (runtime-generated, protected)
 - `data/git-pull-report.json` (runtime-generated, protected)
 - `data/update-status.json` (runtime-generated, protected)
 - `data/update-command.json` (runtime command slot, protected)
 
 ## Exact next step
-1. Manually pull `v0.2.0-r7` with `gp` to deliver FIX-002; this manual pull is required because the dashboard being tested is the component that failed.
+1. Run `gp` from local r5 and verify recovery release `v0.2.0-r8` stages and commits cleanly using the immutable manifest path.
 2. Restart `src/ui/update-dashboard.jsx` and confirm the React window remains alive without Netscript concurrency errors.
-3. Confirm watcher telemetry still renders and remains healthy.
-4. After FIX-002 runtime verification, publish a new no-source-change validation revision and test decline behavior: no deployment launches and the revision is re-presented only after a later normal poll.
+3. Confirm watcher telemetry renders and remains healthy/current at r8.
+4. After FIX-002 and FIX-003 runtime verification, publish a fresh no-source-change validation revision using its own immutable manifest and test decline behavior.
 5. Test approval behavior: watcher re-verifies the exact presented revision, launches exactly one `git-pull.js --expect-revision N`, and successful deployment is reflected in state/report/status.
 6. Test stale/mismatched approval rejection and duplicate/concurrent pull protection.
 7. Mark this watcher/dashboard slice validated before beginning runtime-unit restart protection.
 
 ## Locked M1 behavior
-- `deployment/version.json` is the small remote freshness descriptor.
+- `deployment/version.json` is the small mutable remote freshness descriptor.
 - Versions use `vX.Y.Z`; revisions are monotonically increasing integers.
 - Remote requests are cache-busted.
+- Every new release descriptor points to an immutable revision-specific manifest under `deployment/releases/`.
+- Immutable manifest is published first; `deployment/version.json` is updated last.
+- Descriptor and manifest version/revision must match or deployment fails closed.
 - Normal pulls refuse stale/same-revision deployment unless explicitly forced.
 - Downgrades require an explicit override.
 - Stale revision attempts are blocked and surfaced as an explicit alarm.
@@ -89,8 +96,9 @@ Relevant current files:
 - Repository is permanent project memory; avoid code dumps in chat.
 
 ## Known issues / validation gaps
-- `v0.2.0-r7` dashboard concurrency fix has not yet been runtime-verified.
-- The r6 approval-flow validation was interrupted by FIX-002 and should not be treated as a completed decline/approval test.
+- `v0.2.0-r8` recovery deployment has not yet been runtime-verified.
+- FIX-002 dashboard concurrency fix has not yet been runtime-verified after successful deployment.
+- The r6 approval-flow validation was interrupted and should not be treated as a completed decline/approval test.
 - The watcher must currently be started manually; the future supervisor will own persistent service startup/liveness policy.
 - Full rollback for a partially activated non-persistent deployment is not yet implemented.
 - Manifest content hashing/runtime-unit hashing is still pending.
