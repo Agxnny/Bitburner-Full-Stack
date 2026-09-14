@@ -24,6 +24,14 @@ The M1 update dashboard uses the ultra-compact variant of this language. The lat
 
 Implementation should use ordinary React elements and inline/shared styles without external UI dependencies so components remain compatible with Bitburner's built-in React environment.
 
+## Shared window memory
+
+All dashboard tail windows must use `dashboard-window-memory.js` with a stable dashboard-specific key. The helper remembers the native tail window's position and size in browser local storage, restores that geometry after the dashboard opens, and keeps it updated when the player drags or resizes the tail.
+
+Window memory is presentation state only. It is not canonical game/runtime state and must never block a dashboard from opening. Invalid or unavailable memory fails open to Bitburner's normal window geometry. Saved geometry is clamped to the current viewport so a resolution change cannot permanently strand a dashboard off-screen.
+
+React only observes DOM geometry and writes browser-local presentation memory. Netscript UI calls used to restore the window remain owned by the script `main()` path, preserving the no-concurrent-Netscript rule.
+
 ## M1 update dashboard slice
 
 `update-dashboard.jsx` is the first narrow dashboard slice. Its production-facing view is intentionally minimal rather than diagnostic.
@@ -57,4 +65,4 @@ The watcher opens the dashboard automatically. Manual dashboard launch is only f
 
 ### Netscript ownership rule
 
-React components, effects, timers, and button callbacks do not call Netscript APIs. The script `main()` loop is the sole Netscript owner. It reads telemetry and writes commands serially, while React exchanges snapshots and button intents with `main()` through an ordinary in-memory JavaScript bridge. This avoids Bitburner's concurrent Netscript-call restriction.
+React components, effects, timers, and button callbacks do not call Netscript APIs. The script `main()` loop is the sole Netscript owner. It reads telemetry, restores window geometry, and writes commands serially. React uses ordinary browser/JavaScript APIs for rendering and window-geometry observation. This avoids Bitburner's concurrent Netscript-call restriction.
