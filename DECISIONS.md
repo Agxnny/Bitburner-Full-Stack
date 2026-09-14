@@ -89,3 +89,14 @@ For each persistent unit: unchanged and running is preserved; unchanged and miss
 During M1, the persistent `src/bootstrap/update-watcher.js` owns exactly one managed `src/ui/update-dashboard.jsx` child. Watcher startup refreshes the dashboard process so deployed UI code is current, and watcher heartbeats relaunch the child if it stops. The dashboard is not independently declared as a persistent runtime unit.
 
 When the general Supervisor is implemented, persistent-service liveness ownership may move there, but the update watcher remains the semantic owner of update detection/approval and the dashboard remains a managed client rather than a deployment executor.
+
+## D-017 — Release discovery is redundant; release content is commit-pinned
+**Status:** Locked
+
+`deployment/version.json` remains the small mutable discovery pointer, but no single GitHub Raw branch view is trusted as the only freshness source. The watcher compares a 30-second cache-busted Raw view with a lower-frequency unauthenticated GitHub Contents API view and selects the highest valid revision. Approval forces a fresh API check. The puller independently performs both discovery checks before enforcing `--expect-revision`.
+
+GitHub API polling is deliberately slower than Raw polling to stay below the unauthenticated public API limit and leave headroom for approval/deployment checks. Discovery-source health and the selected source are visible in update telemetry.
+
+Every production descriptor from the transition release onward includes an immutable 40-character Git commit SHA in `releaseRef`. After the descriptor is discovered, the manifest and all manifest sources are fetched from that exact commit rather than mutable `main`. The self-update helper also refreshes `git-pull.js` from the same immutable release content before committing deployment state.
+
+Release r12 is the one-time compatibility bridge because the r11 puller cannot interpret `releaseRef`. Its manifest points to revision-unique source snapshots under `deployment/releases/r12-src/`, allowing the old puller to stage immutable-by-path transition content. The r12 helper permits that narrowly scoped fallback only for revision 12. Later releases must use `releaseRef`; unpinned self-refresh fails closed.
