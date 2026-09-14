@@ -6,7 +6,7 @@
 2. Do not paste implementation code into chat unless explicitly requested. Full source files belong in GitHub.
 3. When modifying code, prefer full-file edits from the current repository version. Keep files small enough for safe full-file replacement; target roughly 150–300 lines, with ~400 as a soft ceiling unless there is a strong reason not to split.
 4. Use one clear responsibility per file/module.
-5. Before changing code in a future chat, read `PROJECT_RULES.md`, `CURRENT_STATE.md`, `ARCHITECTURE.md`, `DECISIONS.md`, `ROADMAP.md`, and relevant `FIXES.md` entries.
+5. Before changing code in a future chat, read `PROJECT_RULES.md`, `CHANGES.md`, `CURRENT_STATE.md`, `ARCHITECTURE.md`, `DECISIONS.md`, `ROADMAP.md`, and relevant `FIXES.md` entries.
 
 ## Workflow discipline
 
@@ -64,3 +64,11 @@
 45. Maintain a Production Dashboard (“what is the system doing?”) and a Validation Dashboard (“is the system correct, and why?”).
 46. Every major subsystem must expose operational and validation telemetry.
 47. A core subsystem is not complete until its health/invariants are observable through the Validation Dashboard or its established validation interface.
+
+## Change continuity and feature documentation
+
+48. `CHANGES.md` is the required lightweight working record for the currently active repository change. Before the first repository mutation for a new feature, fix, or meaningful change, create or refresh its active-change entry.
+49. Update the active `CHANGES.md` entry after meaningful implementation steps, before switching tasks, before ending a development session, and before handing runtime validation to the operator. At minimum preserve goal, current status, important files/areas touched, relevant decisions/constraints, validation state, exact next step, and blockers/risks when applicable.
+50. `CHANGES.md` is not a second lifecycle or permanent architecture log. Completed work is summarized briefly there; durable milestone state belongs in `CURRENT_STATE.md`, architectural decisions in `DECISIONS.md`, reusable incidents in `FIXES.md`, and subsystem behavior in its feature documentation.
+51. Every feature or subsystem must have an identifiable documentation owner, normally the nearest feature/module `README.md` or an explicitly named feature document. When feature behavior, interfaces, commands, configuration, lifecycle, telemetry, validation procedure, or operator workflow changes, update that feature documentation in the same work item.
+52. A feature change is not complete if its feature documentation is stale. If no appropriate feature document exists yet, create one before marking the change complete.
