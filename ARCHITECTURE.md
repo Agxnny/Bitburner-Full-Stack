@@ -8,8 +8,9 @@ The stack is a modular control system built around centralized state, authority,
 
 **Bootstrap**
 - Git pull / deployment utility
-- Update watcher
+- Persistent update watcher
 - Manifest and staged update handling
+- Post-update persistent-runtime reconciliation
 - Recovery tooling
 
 **Core control plane**
@@ -64,6 +65,8 @@ Performs approved side effects and validates required authority before acting. D
 ### Supervisor
 Thin lifecycle supervisor for persistent services. It owns startup/shutdown ordering, service health, controlled restart, and safe-mode coordination; it does not own domain strategy.
 
+During M1, bootstrap infrastructure performs only the minimum lifecycle work required to keep the updater itself recoverable. This does not replace the later Supervisor.
+
 ## Controller/executor separation
 
 Controllers determine desired outcomes or intents. Executors perform actual side effects. Delegating execution does not surrender decision authority.
@@ -73,8 +76,10 @@ Example: a stock-manipulation controller may gain authority for a symbol and iss
 ## Runtime classes
 
 - **persistent** — expected to remain running; protected by update lifecycle rules.
-- **managed** — lifecycle controlled by the supervisor/scheduler.
+- **managed** — lifecycle controlled by an owning persistent service, supervisor, or scheduler.
 - **ephemeral** — short-lived jobs/workers expected to terminate naturally.
+
+The M1 update watcher is persistent. The update dashboard is a managed child of the watcher rather than an independently persistent unit.
 
 ## State and communication
 
@@ -94,17 +99,21 @@ Both dashboards consume structured telemetry from core/domain systems. They do n
 
 Dashboard commands use standard command/authority pathways rather than privileged bypasses.
 
-The first M1 dashboard slice is `src/ui/update-dashboard.jsx`. It reads protected update/deployment telemetry and emits update approval/decline commands. It never launches deployment code directly.
+The first M1 dashboard slice is `src/ui/update-dashboard.jsx`. It reads protected update/deployment telemetry and emits update approval/decline commands. It never launches deployment code directly. `src/bootstrap/update-watcher.js` owns its process lifecycle during M1: watcher startup refreshes the dashboard process and heartbeat checks relaunch it if missing.
 
 ## Update architecture
 
-The deployment manifest is a deployment contract. It describes managed files, runtime units, lifecycle classification, hashes/versions, and explicit retirement when needed.
+The deployment manifest is a deployment contract. It describes managed files and may also declare persistent runtime units. Each persistent unit identifies its entry script, host, thread/argument invocation, defining managed files, and restart order.
 
 `src/bootstrap/update-watcher.js` is the persistent detection and approval-command owner. It polls the cache-busted remote descriptor every 30 seconds, publishes health/update status to `data/update-status.json`, consumes the bounded single-slot command at `data/update-command.json`, and never auto-installs.
 
 Approval is revision-bound. Before execution, the watcher re-fetches the remote descriptor and verifies that the approved revision is still the current newer revision. It then delegates execution to `git-pull.js --expect-revision N`; the puller independently verifies the same revision. Declines remain dismissed until a later normal poll.
 
-Updates are staged and validated before activation. Persistent units remain untouched on failed/partial updates. Changed persistent units become restart-eligible only after successful validation; the updater/watcher is restarted last. Runtime-unit hashing/restart authorization is later M1 work and is not implied by the initial watcher implementation.
+Updates are staged and validated before activation. The puller derives a runtime reconciliation plan from the manifest and staged file actions. A persistent unit is restart-eligible only when one of its defining files actually changed; a missing persistent unit is always eligible to be relaunched.
+
+After activation, `git-pull-self-update.js` waits for the puller to exit, refreshes the puller itself, commits deployment state, then reconciles persistent units in manifest-defined restart order. Unchanged running units are untouched. Changed running units are restarted. Missing units are relaunched. A runtime launch failure leaves the file deployment committed but records a degraded runtime result for explicit recovery.
+
+Updater/watch infrastructure is assigned the final restart order so the system doing update coordination is replaced last. The update watcher then takes responsibility for opening and maintaining its managed dashboard child.
 
 ## Anti-duplication principle
 
