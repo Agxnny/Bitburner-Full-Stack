@@ -1,3 +1,5 @@
+import { restoreDashboardWindow, useDashboardWindowMemory } from "./dashboard-window-memory.js";
+
 /**
  * Ultra-compact React update dashboard for M1.
  * React never calls Netscript directly; main() owns all Netscript access.
@@ -6,6 +8,7 @@
 const STATUS_PATH = "data/update-status.json";
 const COMMAND_PATH = "data/update-command.json";
 const SCRIPT_PATH = "src/ui/update-dashboard.jsx";
+const WINDOW_MEMORY_KEY = "update-watcher";
 const REFRESH_MS = 1_000;
 
 const COLORS = {
@@ -41,6 +44,8 @@ export async function main(ns) {
     ns.ui.setTailTitle("Full Stack — Update Watcher");
     ns.clearLog();
     ns.printRaw(<UpdateDashboard bridge={bridge} />);
+    await ns.sleep(75);
+    await restoreDashboardWindow(ns, WINDOW_MEMORY_KEY);
 
     while (true) {
         if (bridge.pendingIntent) {
@@ -71,6 +76,7 @@ function readSnapshot(ns) {
 }
 
 function UpdateDashboard({ bridge }) {
+    const windowRef = useDashboardWindowMemory(WINDOW_MEMORY_KEY);
     const [view, setView] = React.useState(() => ({ snapshot: bridge.snapshot, feedback: bridge.feedback }));
 
     React.useEffect(() => {
@@ -79,7 +85,7 @@ function UpdateDashboard({ bridge }) {
     }, [bridge]);
 
     const status = view.snapshot?.status;
-    if (!status) return <Shell><StateText>Waiting for update watcher telemetry…</StateText></Shell>;
+    if (!status) return <Shell rootRef={windowRef}><StateText>Waiting for update watcher telemetry…</StateText></Shell>;
 
     const heartbeatAge = Number.isFinite(status.heartbeatAt) ? Math.max(0, Date.now() - status.heartbeatAt) : null;
     const heartbeatFresh = heartbeatAge !== null && heartbeatAge < 15_000;
@@ -102,7 +108,7 @@ function UpdateDashboard({ bridge }) {
     }
 
     return (
-        <Shell>
+        <Shell rootRef={windowRef}>
             <Header>
                 <CubeIcon />
                 <span>UPDATE WATCHER</span>
@@ -137,9 +143,9 @@ function UpdateDashboard({ bridge }) {
     );
 }
 
-function Shell({ children }) {
+function Shell({ rootRef, children }) {
     return (
-        <div style={{
+        <div ref={rootRef} style={{
             fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
             minWidth: "620px",
             padding: "10px",
