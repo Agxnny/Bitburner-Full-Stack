@@ -4,7 +4,7 @@
 **M1 — Reliable Deployment**
 
 ## Status
-M1 implementation is in progress. The bootstrap puller and its core safety behavior are runtime-validated in Bitburner v3.0.1. The persistent update watcher, exact-revision approval command path, structured update telemetry, and first React update dashboard slice are implemented and published as `v0.2.0-r5`; this new slice is awaiting runtime validation. Persistent runtime-unit restart protection remains later M1 work.
+M1 implementation is in progress. The bootstrap puller and its core safety behavior are runtime-validated in Bitburner v3.0.1. The persistent update watcher baseline is runtime-validated at `v0.2.0-r5`. The first React update dashboard exposed a Netscript concurrency defect during runtime validation; FIX-002 corrects the UI architecture so only `main()` calls Netscript. The fix is published as `v0.2.0-r7` and awaits runtime verification before approval-flow testing resumes.
 
 ## Completed
 - Repository initialized.
@@ -19,16 +19,19 @@ M1 implementation is in progress. The bootstrap puller and its core safety behav
 - Clean initial bootstrap flow validated in Bitburner v3.0.1.
 - r1 to r3 update/self-refresh path validated in Bitburner.
 - Same-revision no-op path validated.
-- Stale-revision protection validated: local r4 versus remote r3 was blocked and raised the dedicated stale alarm.
-- Canonical `gp` shell alias corrected to `src/bootstrap/git-pull.js`; incident recorded as FIX-001.
-- Forced same-revision refresh validated at r3.
+- Stale-revision protection validated.
+- Canonical `gp` shell alias corrected; incident recorded as FIX-001.
+- Forced same-revision refresh validated.
 - Safe failed-staging regression fixture implemented and runtime-validated at r4.
-- Failed staging/download preservation validated: state remained r4, no validation target was created, and the report recorded zero activated files.
+- Failed staging/download preservation validated.
 - Bootstrap puller core validation set completed.
 - D-013 locked: update watcher owns detection and approval-command handling; dashboard may not directly invoke deployment.
 - `src/bootstrap/update-watcher.js` implemented with 30-second cache-busted polling, 5-second heartbeat telemetry, degraded network/error state, exact-revision approval re-verification, decline handling, duplicate command protection, and active-puller concurrency rejection.
-- `src/ui/update-dashboard.jsx` implemented as the first React dashboard slice using structured status/report telemetry and the standard command path.
-- `v0.2.0-r5` published with watcher and dashboard managed by the deployment manifest.
+- `v0.2.0-r5` watcher baseline runtime-validated: watcher reported healthy/current, local and remote r5, fresh heartbeat, no update available, and committed deployment telemetry.
+- Controlled r6 approval-flow validation release published without source-code changes.
+- FIX-002 recorded after dashboard runtime failure caused by React callbacks invoking Netscript concurrently with `ns.sleep()`.
+- `src/ui/update-dashboard.jsx` corrected so React only exchanges plain-JavaScript snapshots/intents with a local bridge and `main()` serializes all Netscript access.
+- `v0.2.0-r7` published with the dashboard concurrency fix.
 
 ## Active feature
 **M1 — Reliable Deployment / watcher and approval dashboard runtime validation**
@@ -46,13 +49,13 @@ Relevant current files:
 - `data/update-command.json` (runtime command slot, protected)
 
 ## Exact next step
-1. Pull `v0.2.0-r5` with `gp` and verify the deployment commits cleanly.
-2. Start `src/bootstrap/update-watcher.js` on `home` and confirm `data/update-status.json` reaches healthy/current with a fresh heartbeat.
-3. Start `src/ui/update-dashboard.jsx` and confirm the React update card renders watcher/local/remote/deployment state.
-4. Runtime-test decline behavior against a later test revision: exact presented revision is declined, no deployment launches, and the revision is re-presented only after a later normal poll.
-5. Runtime-test approval behavior against a later test revision: watcher re-verifies the descriptor, launches exactly one `git-pull.js --expect-revision N`, and successful deployment is reflected in state/report/status.
-6. Runtime-test stale/mismatched approval rejection and duplicate/concurrent pull protection.
-7. Record/fix any runtime API issues, then mark this watcher/dashboard slice validated before beginning runtime-unit restart protection.
+1. Manually pull `v0.2.0-r7` with `gp` to deliver FIX-002; this manual pull is required because the dashboard being tested is the component that failed.
+2. Restart `src/ui/update-dashboard.jsx` and confirm the React window remains alive without Netscript concurrency errors.
+3. Confirm watcher telemetry still renders and remains healthy.
+4. After FIX-002 runtime verification, publish a new no-source-change validation revision and test decline behavior: no deployment launches and the revision is re-presented only after a later normal poll.
+5. Test approval behavior: watcher re-verifies the exact presented revision, launches exactly one `git-pull.js --expect-revision N`, and successful deployment is reflected in state/report/status.
+6. Test stale/mismatched approval rejection and duplicate/concurrent pull protection.
+7. Mark this watcher/dashboard slice validated before beginning runtime-unit restart protection.
 
 ## Locked M1 behavior
 - `deployment/version.json` is the small remote freshness descriptor.
@@ -74,6 +77,7 @@ Relevant current files:
 - Dashboard actions use `data/update-command.json`; dashboard code never calls `git-pull.js` directly.
 - Approval is re-verified against the remote descriptor and then passed to the puller as `--expect-revision N`, giving two exact-revision checks.
 - Update command transport is currently a bounded single-slot runtime file; broader control-plane messaging is deferred to its roadmap milestone.
+- React UI callbacks must not call Netscript APIs; each UI script serializes Netscript access through its `main()` loop or another explicit Netscript owner.
 
 ## Locked architectural constraints
 - Centralized canonical state.
@@ -85,9 +89,10 @@ Relevant current files:
 - Repository is permanent project memory; avoid code dumps in chat.
 
 ## Known issues / validation gaps
-- `v0.2.0-r5` watcher/dashboard slice has not yet been runtime-validated in Bitburner.
+- `v0.2.0-r7` dashboard concurrency fix has not yet been runtime-verified.
+- The r6 approval-flow validation was interrupted by FIX-002 and should not be treated as a completed decline/approval test.
 - The watcher must currently be started manually; the future supervisor will own persistent service startup/liveness policy.
-- Full rollback for a partially activated non-persistent deployment is not yet implemented; later M1 staging/activation work must address deployment transaction semantics before persistent services depend on it.
+- Full rollback for a partially activated non-persistent deployment is not yet implemented.
 - Manifest content hashing/runtime-unit hashing is still pending.
 - Persistent runtime-unit change detection, staged validation, retirement, and restart authorization are not implemented yet.
 
