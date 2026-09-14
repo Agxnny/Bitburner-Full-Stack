@@ -107,6 +107,22 @@ Normal terminal output remains concise.
 
 The dashboard reads watcher/deployment telemetry and writes commands. It never launches the puller and never calls Netscript from React callbacks.
 
+## Approval safety validation
+
+M1 explicitly validates that approval is bound to exactly one revision rather than to the abstract idea of "the newest update".
+
+Controlled stale-approval procedure:
+1. publish a no-op revision N and wait until the watcher presents N
+2. publish no-op revision N+1 before approving N
+3. submit approval for the still-presented revision N
+4. watcher must force a fresh remote verification
+5. approval for N must be rejected because the verified current remote revision is now N+1
+6. `git-pull.js` must not launch for N
+7. approval for N must not implicitly authorize N+1
+8. the watcher may subsequently present N+1 for a new explicit human decision
+
+This test uses ordinary production release metadata and the normal bounded command path. Runtime code is changed only if the safety contract fails.
+
 ## Stale revision protection
 
 If the selected remote revision is lower than the locally committed revision, a normal pull is blocked with a `STALE_REVISION` alarm. Downgrades require the explicit override.
