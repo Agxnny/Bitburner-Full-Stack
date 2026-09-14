@@ -1,6 +1,6 @@
 /**
  * Persistent update watcher for Bitburner Full Stack.
- * Detects releases and owns approval command handling, but never auto-installs.
+ * Detects releases, owns approval handling, and owns the update dashboard child.
  */
 
 const REPOSITORY = "Agxnny/Bitburner-Full-Stack";
@@ -13,9 +13,12 @@ const COMMAND_PATH = "data/update-command.json";
 const REPORT_PATH = "data/git-pull-report.json";
 const TEMP_PATH = "data/update-watch-version.txt";
 const PULLER_PATH = "src/bootstrap/git-pull.js";
+const HELPER_PATH = "src/bootstrap/git-pull-self-update.js";
+const DASHBOARD_PATH = "src/ui/update-dashboard.jsx";
 const POLL_MS = 30_000;
 const HEARTBEAT_MS = 5_000;
 const LOOP_MS = 1_000;
+const DASHBOARD_RESTART_COOLDOWN_MS = 5_000;
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -24,13 +27,25 @@ export async function main(ns) {
         return;
     }
 
+    const watcherProcesses = ns.ps("home")
+        .filter((process) => process.filename === "src/bootstrap/update-watcher.js")
+        .sort((a, b) => a.pid - b.pid);
+    if (watcherProcesses.length > 0 && watcherProcesses[0].pid !== ns.pid) {
+        ns.tprint(`ERROR | update-watcher already running as pid ${watcherProcesses[0].pid}`);
+        return;
+    }
+
     ns.disableLog("sleep");
     ns.disableLog("wget");
     ns.disableLog("rm");
     ns.disableLog("run");
     ns.disableLog("ps");
+    ns.disableLog("kill");
 
     let status = initialStatus(ns);
+    status.dashboard = restartDashboardForOwnership(ns, status.dashboard);
+    writeStatus(ns, status);
+
     let nextCheckAt = 0;
     let nextHeartbeatAt = 0;
 
@@ -52,6 +67,8 @@ export async function main(ns) {
         if (now >= nextHeartbeatAt) {
             status.heartbeatAt = Date.now();
             status.watcherPid = ns.pid;
+            status.local = releaseOf(readJson(ns, LOCAL_STATE_PATH));
+            status.dashboard = ensureDashboard(ns, status.dashboard);
             status.deployment = readDeploymentObservation(ns, status.deployment);
             writeStatus(ns, status);
             nextHeartbeatAt = Date.now() + HEARTBEAT_MS;
@@ -66,6 +83,7 @@ function initialStatus(ns) {
     return {
         schemaVersion: 1,
         service: "update-watcher",
+        lifecycle: "persistent",
         watcherPid: ns.pid,
         health: "starting",
         phase: "checking",
@@ -79,6 +97,14 @@ function initialStatus(ns) {
         presentedRevision: null,
         dismissedRevision: null,
         lastCommand: null,
+        dashboard: {
+            pid: null,
+            running: false,
+            restartCount: 0,
+            lastStartedAt: null,
+            lastCheckedAt: null,
+            error: null,
+        },
         deployment: readDeploymentObservation(ns, null),
         error: null,
     };
@@ -131,7 +157,6 @@ async function processCommand(ns, status) {
     if (!validCommand(command)) {
         return recordCommand(status, command, "rejected", "Invalid update command schema.");
     }
-
     if (status.lastCommand?.id === command.id) {
         return recordCommand(status, command, "ignored", "Duplicate command id.");
     }
@@ -156,8 +181,8 @@ async function processCommand(ns, status) {
     if (command.revision !== remoteRevision || remoteRevision <= localRevision) {
         return recordCommand(status, command, "rejected", "Approved revision is no longer the current newer release.");
     }
-    if (pullerRunning(ns)) {
-        return recordCommand(status, command, "rejected", "A deployment is already running.");
+    if (deploymentInfrastructureRunning(ns)) {
+        return recordCommand(status, command, "rejected", "A deployment is already running or finalizing.");
     }
 
     const pid = ns.run(PULLER_PATH, 1, "--expect-revision", command.revision);
@@ -167,13 +192,62 @@ async function processCommand(ns, status) {
 
     status.phase = "deploying";
     status.deployment = {
-        pid,
+        phase: "puller",
+        pullerPid: pid,
+        helperPid: null,
         requestedRevision: command.revision,
         startedAt: Date.now(),
         running: true,
         report: summarizeReport(readJson(ns, REPORT_PATH)),
     };
     return recordCommand(status, command, "accepted", null);
+}
+
+function restartDashboardForOwnership(ns, previous) {
+    for (const process of dashboardProcesses(ns)) ns.kill(process.pid);
+    const pid = ns.run(DASHBOARD_PATH, 1);
+    return {
+        pid: pid || null,
+        running: pid > 0,
+        restartCount: (previous?.restartCount ?? 0) + (pid > 0 ? 1 : 0),
+        lastStartedAt: pid > 0 ? Date.now() : previous?.lastStartedAt ?? null,
+        lastCheckedAt: Date.now(),
+        error: pid > 0 ? null : "Could not launch update dashboard.",
+    };
+}
+
+function ensureDashboard(ns, previous) {
+    const processes = dashboardProcesses(ns);
+    if (processes.length > 0) {
+        const process = processes.sort((a, b) => a.pid - b.pid)[0];
+        return {
+            ...previous,
+            pid: process.pid,
+            running: true,
+            lastCheckedAt: Date.now(),
+            error: null,
+        };
+    }
+
+    const now = Date.now();
+    if (previous?.lastStartedAt && now - previous.lastStartedAt < DASHBOARD_RESTART_COOLDOWN_MS) {
+        return { ...previous, pid: null, running: false, lastCheckedAt: now };
+    }
+
+    const pid = ns.run(DASHBOARD_PATH, 1);
+    return {
+        ...previous,
+        pid: pid || null,
+        running: pid > 0,
+        restartCount: (previous?.restartCount ?? 0) + (pid > 0 ? 1 : 0),
+        lastStartedAt: pid > 0 ? now : previous?.lastStartedAt ?? null,
+        lastCheckedAt: now,
+        error: pid > 0 ? null : "Could not relaunch update dashboard.",
+    };
+}
+
+function dashboardProcesses(ns) {
+    return ns.ps("home").filter((process) => process.filename === DASHBOARD_PATH);
 }
 
 function recordCommand(status, command, outcome, error) {
@@ -191,15 +265,31 @@ function recordCommand(status, command, outcome, error) {
 }
 
 function readDeploymentObservation(ns, previous) {
+    const processes = ns.ps("home");
+    const puller = processes.find((process) => process.filename === PULLER_PATH) ?? null;
+    const helper = processes.find((process) => process.filename === HELPER_PATH) ?? null;
     const report = summarizeReport(readJson(ns, REPORT_PATH));
-    if (!previous?.pid) return { pid: null, requestedRevision: null, startedAt: null, running: false, report };
+    let phase = "idle";
+    if (puller) phase = "puller";
+    else if (helper) phase = "self-refresh";
+    else if (report?.status === "reconciling-runtime") phase = "runtime-reconcile";
+    else if (report?.status === "committed-runtime-degraded") phase = "degraded";
+    else if (report?.status === "committed") phase = "committed";
+    else if (report?.status === "failed") phase = "failed";
 
-    const running = ns.isRunning(previous.pid, "home");
-    return { ...previous, running, report };
+    return {
+        phase,
+        pullerPid: puller?.pid ?? null,
+        helperPid: helper?.pid ?? null,
+        requestedRevision: previous?.requestedRevision ?? null,
+        startedAt: previous?.startedAt ?? null,
+        running: Boolean(puller || helper || report?.status === "reconciling-runtime"),
+        report,
+    };
 }
 
-function pullerRunning(ns) {
-    return ns.ps("home").some((process) => process.filename === PULLER_PATH);
+function deploymentInfrastructureRunning(ns) {
+    return ns.ps("home").some((process) => process.filename === PULLER_PATH || process.filename === HELPER_PATH);
 }
 
 function summarizeReport(report) {
@@ -209,6 +299,7 @@ function summarizeReport(report) {
         success: report.success ?? null,
         clean: report.clean ?? null,
         remote: report.remote ?? null,
+        runtime: report.runtime ?? null,
         error: report.error ?? null,
         finishedAt: report.finishedAt ?? null,
     };
