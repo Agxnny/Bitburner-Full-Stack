@@ -57,3 +57,30 @@ User-facing aliases and launch commands must point at canonical managed paths. N
 - D-012 — Puller self-update uses post-exit helper.
 
 ---
+
+### FIX-002 — React callback made concurrent Netscript calls
+**Date:** 2026-09-14  
+**Status:** Resolved  
+**Subsystem:** M1 Reliable Deployment / update dashboard  
+**Affected files:**
+- `src/ui/update-dashboard.jsx`
+
+#### Symptoms
+Launching the dashboard terminated `main()` with `fileExists: Failed to run due to failed concurrency check` and `Concurrent calls to Netscript functions are not allowed`, while `sleep` was the currently running Netscript call.
+
+#### Root cause
+React effects and button callbacks invoked Netscript APIs (`fileExists`, `read`, and `write`) while the script's main async loop was sleeping. Bitburner permits only one active Netscript call for a script at a time, so UI callbacks raced the main loop.
+
+#### Fix
+React now performs only ordinary JavaScript state work. `main()` is the sole owner of Netscript access: it reads telemetry snapshots and serially writes queued UI intents. A local in-memory bridge carries snapshots and button intents between the React tree and the main loop without calling Netscript from React callbacks.
+
+#### Verification
+Code-level fix published in `v0.2.0-r7`; runtime verification is pending.
+
+#### Prevention / notes
+React components, timers, effects, and event callbacks must not call Netscript APIs while an async Netscript call may be active. Route UI actions to the script main loop (or another serialized Netscript owner) through ordinary JavaScript state/queues.
+
+#### Related
+- D-013 — Update watcher owns detection and approval-command handling.
+
+---
