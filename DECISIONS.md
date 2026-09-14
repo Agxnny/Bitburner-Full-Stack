@@ -109,3 +109,12 @@ All React dashboard surfaces use a common dark grey-blue presentation system so 
 The M1 update watcher uses the approved ultra-compact single-row presentation: current release, heartbeat, polling interval, and update approval only. Detailed engineering telemetry remains available to validation surfaces rather than crowding this operator widget.
 
 The later Production Dashboard should use the same palette but may use larger status-card compositions similar to the approved compact status-card concept. Visual consistency is shared; layout density is allowed to vary by dashboard purpose.
+
+## D-019 — Dashboard tail geometry is persistent presentation memory
+**Status:** Locked
+
+Every dashboard tail uses the shared `src/ui/dashboard-window-memory.js` helper with a stable dashboard-specific key. The helper remembers the player's last window position and size, restores that geometry when the dashboard is reopened or relaunched, and continuously updates memory when the native Bitburner tail is dragged or resized.
+
+Geometry is browser-local presentation state, not canonical runtime state. Failure to read, write, or apply saved geometry must never prevent a dashboard from opening. Restored values are clamped to the current viewport to prevent resolution changes from leaving a dashboard unreachable.
+
+React may observe DOM geometry and write browser-local presentation memory because those are ordinary browser APIs. Netscript UI calls such as `ns.ui.moveTail()` and `ns.ui.resizeTail()` remain owned by the script `main()` path, preserving the no-concurrent-Netscript invariant from FIX-002.
