@@ -7,110 +7,118 @@ Deployment metadata and bootstrap update behavior live here. Runtime deployment 
 Each deployable release has:
 - semantic version: `vX.Y.Z`
 - monotonically increasing revision
-- immutable revision-specific manifest describing managed files and runtime units
+- immutable revision-specific manifest
+- immutable Git commit SHA `releaseRef` for production release content
 
 A revision is immutable once published and must never be reused for different deployable content.
 
-`deployment/version.json` is the mutable freshness pointer. Starting with r8, it must point to a manifest unique to that revision, for example:
+`deployment/version.json` is the mutable discovery pointer. It names the current version/revision, revision-specific manifest path, and the immutable `releaseRef` containing that manifest and all release sources.
 
-`deployment/releases/r8-manifest.json`
+Starting with r8, every descriptor points to a manifest unique to its revision, for example `deployment/releases/r8-manifest.json`. Starting with r12, production descriptors also carry a 40-character Git commit SHA in `releaseRef`.
 
-Release publication order is:
-1. publish source files
+Normal release publication order is:
+1. publish source changes
 2. create the immutable revision manifest
-3. verify its version/revision identity
-4. update `deployment/version.json` last to point at that manifest
+3. verify manifest version/revision identity
+4. record the commit SHA that contains the finished source + manifest as `releaseRef`
+5. update `deployment/version.json` last
 
-Do not use `deployment/manifest.json` as the manifest target for new release descriptors. That shared file is legacy metadata only and cannot provide cross-request atomicity.
+Do not use `deployment/manifest.json` for new releases. It is legacy metadata only.
 
-Cache-busting and immutable paths solve different problems. Cache-busting prevents reuse of an old response for the same URL; immutable revision paths prevent a descriptor from one repository propagation state being paired with a later release manifest.
+## r12 transition release
+
+r12 is the one-time bridge from the old mutable-branch source model to commit-pinned releases. The r11 puller does not understand `releaseRef`, so `deployment/releases/r12-manifest.json` points to revision-unique source snapshots under `deployment/releases/r12-src/`.
+
+The old puller can safely stage those immutable-by-path transition files. The new r12 helper permits the same snapshot path only when completing revision 12. Later production releases must supply `releaseRef`; unpinned puller self-refresh fails closed.
+
+From r13 onward, manifests may point to normal canonical repository source paths because the puller resolves every path against the descriptor's immutable `releaseRef`, not mutable `main`.
+
+## Release discovery
+
+Raw branch propagation proved too slow to be the only freshness signal: observed revisions remained stale across multiple 30-second polls for several minutes.
+
+The watcher therefore uses redundant discovery:
+- cache-busted GitHub Raw `deployment/version.json` every 30 seconds
+- public GitHub Contents API every 75 seconds
+- an API check is forced again when the player approves a revision
+- the highest valid revision wins
+- equal revisions must agree on version, manifest, and `releaseRef` or discovery fails closed
+
+The 75-second API cadence intentionally stays below GitHub's unauthenticated public REST rate limit while leaving headroom for approval/deployment checks. If one source fails, the other valid source may continue to provide discovery. Status telemetry records each source's last attempt, last success, revision, error, and the selected source.
+
+`git-pull.js` independently checks both discovery sources for every normal deployment before enforcing `--expect-revision`. This prevents the watcher from presenting a revision that the puller cannot independently verify because Raw is still stale.
+
+## Immutable release content
+
+After discovery, release identity and release bytes are separate concerns. The mutable pointer selects a release; it does not define the bytes installed for that release.
+
+For pinned releases the puller fetches:
+- the manifest from `raw.githubusercontent.com/<repo>/<releaseRef>/<manifest>`
+- every manifest `source` from that same `releaseRef`
+- never from mutable `main`
+
+`git-pull-self-update.js` also refreshes `git-pull.js` from the same pinned release before committing deployment state. This prevents an older descriptor/manifest identity from being combined with newer branch content.
 
 ## Runtime-unit contract
 
-Manifest schema version 1 may include `runtimeUnits`. M1 supports persistent units on `home` with these fields:
-- `id` — stable runtime-unit identity
-- `lifecycle` — currently `persistent`
-- `script` — deployed entry script
-- `host` — currently `home`
-- `threads` and `args` — canonical invocation
-- `files` — managed targets whose changes make the unit restart-eligible
-- `restartOrder` — ascending post-update restart order
+Manifest schema version 1 may include `runtimeUnits`. M1 supports persistent units on `home` with:
+- `id`
+- `lifecycle` = `persistent`
+- `script`
+- `host` = `home`
+- `threads` and `args`
+- `files` defining restart eligibility
+- `restartOrder`
 
-`git-pull.js` validates the runtime-unit contract and derives whether each unit changed from staged file actions. `updated` and `added` defining files make a unit changed; an identical forced refresh does not by itself force a service restart.
+`git-pull.js` derives whether each unit changed from staged file actions. `updated` and `added` defining files make a unit changed; an identical forced refresh does not.
 
 After puller self-refresh, `git-pull-self-update.js` reconciles persistent units:
-- unchanged + running → preserve process
+- unchanged + running → preserve
 - unchanged + missing → relaunch
 - changed + running → stop and restart
 - changed + missing → launch
 
-The updater/watch unit should use the final restart order. Runtime reconciliation is post-commit recovery behavior, not a replacement for the future continuous Supervisor. If a persistent unit cannot be relaunched, the deployment remains committed and the report becomes `committed-runtime-degraded`.
+Updater/watch infrastructure uses the final restart order. A runtime launch failure leaves the file deployment committed and reports `committed-runtime-degraded`.
 
 ## Pull reporting
 
-`src/bootstrap/git-pull.js` writes the detailed runtime report to:
-
-`data/git-pull-report.json`
-
-The report records local/remote release identity, pull options, descriptor path, per-file action, aggregate counts, timestamps, runtime reconciliation state, success/clean state, errors, and alarms.
+`src/bootstrap/git-pull.js` writes `data/git-pull-report.json` with local/remote release identity, discovery source telemetry, pull options, per-file actions, aggregate counts, runtime reconciliation state, timestamps, success state, errors, and alarms.
 
 File actions are:
-- `unchanged`: remote content matched local content and no write was required
-- `refreshed`: identical content was deliberately rewritten, such as a forced refresh or puller self-refresh
-- `updated`: an existing target changed
-- `added`: the target did not previously exist
+- `unchanged`
+- `refreshed`
+- `updated`
+- `added`
 
-Normal terminal output is intentionally concise and reports release identity, clean/failure status, and the four aggregate file counts.
+Normal terminal output remains concise.
 
 ## Update watcher and approval flow
 
-`src/bootstrap/update-watcher.js` is the persistent release detector and update-command handler.
-
-It:
-- runs as a singleton persistent service on `home`
-- polls `deployment/version.json` every 30 seconds with cache busting
-- compares the remote revision with `data/deployment-state.txt`
-- publishes structured health/update telemetry to `data/update-status.json`
-- owns exactly one managed `src/ui/update-dashboard.jsx` child and relaunches it if missing
-- consumes a bounded single-slot command from `data/update-command.json`
+`src/bootstrap/update-watcher.js` is the persistent detector and update-command owner. It:
+- runs as a singleton on `home`
+- performs redundant release discovery
+- publishes `data/update-status.json`
+- owns exactly one managed `src/ui/update-dashboard.jsx` child
+- consumes the bounded command slot `data/update-command.json`
 - never installs automatically
-- re-fetches the descriptor before accepting an approval
-- delegates an accepted approval to `git-pull.js --expect-revision N`
-- rejects approval if the requested revision is no longer the current newer remote revision
-- rejects approval while the puller or self-update helper is already active
+- re-verifies the exact approved revision
+- delegates installation to `git-pull.js --expect-revision N`
+- rejects approval while puller/helper infrastructure is already active
 
-Watcher startup intentionally refreshes the dashboard process so deployed UI code is current. A decline dismisses the currently presented revision until the next ordinary poll. Runtime network/descriptor failures mark watcher health degraded instead of terminating the persistent watcher.
-
-The React surface is `src/ui/update-dashboard.jsx`. It reads watcher/deployment telemetry and writes commands; it never launches the puller directly and never calls Netscript from React callbacks.
+The dashboard reads watcher/deployment telemetry and writes commands. It never launches the puller and never calls Netscript from React callbacks.
 
 ## Stale revision protection
 
-If the remote revision is lower than the locally committed revision, the normal pull is blocked. The JSON report records a `STALE_REVISION` alarm and terminal output emits an explicit alarm. Downgrades require the existing explicit override flag.
+If the selected remote revision is lower than the locally committed revision, a normal pull is blocked with a `STALE_REVISION` alarm. Downgrades require the explicit override.
 
 ## Descriptor/manifest consistency
 
-The puller validates that the fetched manifest declares the same semantic version and revision as the descriptor. Any mismatch fails closed before activation.
-
-This check caught the r6/r7 mutable-manifest publication race and prevented mixed release contents from being installed. Starting at r8, immutable manifest paths remove that race at the metadata-layout level while the consistency check remains mandatory defense in depth.
+The puller validates descriptor and manifest version/revision equality before activation. From r12 onward it additionally requires a valid immutable `releaseRef` for production descriptors.
 
 ## Puller self-refresh
 
-The main puller never overwrites itself while running. It stages and activates the helper, exits, then `git-pull-self-update.js` cache-busts and downloads the puller after the original PID has stopped. Deployment state is committed only after that self-refresh succeeds. Persistent runtime reconciliation occurs after commit.
+The main puller never overwrites itself while running. It activates the helper, exits, then the helper refreshes `git-pull.js` from the selected release content and commits local deployment state only after that refresh succeeds.
 
 ## Validation fixture
 
-`--validation-failure` is a fixed regression-test mode for failed staging/download preservation. It reads only `deployment/validation/failure-version.json`; it is not a general descriptor override.
-
-The fixture manifest stages the two real bootstrap files and then requests `deployment/validation/INTENTIONALLY-MISSING.js`. That file must not exist, so staging should fail before activation.
-
-Safety rules for this mode:
-- it may not be combined with `--force`, `--allow-downgrade`, `--expect-revision`, or `--dry-run`
-- the descriptor must contain the `staging-failure` fixture marker
-- even if every fixture file unexpectedly stages successfully, the puller throws before activation
-- validation mode must never advance `data/deployment-state.txt`
-
-Expected test command:
-
-`gp --validation-failure`
-
-Expected result is a `FAIL` line identifying the intentionally missing source. The committed deployment revision and managed bootstrap files must remain unchanged.
+`--validation-failure` remains the fixed failed-staging regression mode using `deployment/validation/failure-version.json`. Validation fixtures are branch-based test metadata and are exempt from production `releaseRef` requirements. They may not advance deployment state.
