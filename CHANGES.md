@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Documentation durability and feature-doc synchronization
-**Status:** Implementation
+**Status:** Documentation / finalization
 
 **Goal:** Add a repository rule that preserves in-progress changes and requires feature documentation to stay synchronized with feature behavior.
 
@@ -33,7 +33,8 @@ When the change is complete, move a concise summary to **Recently completed** an
 - `PROJECT_RULES.md`
 - `README.md`
 - `CURRENT_STATE.md`
-- relevant feature documentation
+- `src/ui/README.md`
+- relevant future feature documentation
 
 **Decisions / constraints:**
 - `CHANGES.md` is a lightweight working scratchpad, not another full lifecycle system.
@@ -41,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Any feature behavior/interface change must update that feature's documentation in the same work item.
 - If a feature has no documentation yet, create a suitable README or feature document before considering the change complete.
 
-**Validation:** Repository rules and startup documentation still need to be updated to reference this file.
+**Validation:** `PROJECT_RULES.md` now requires `CHANGES.md` continuity and same-work-item feature documentation updates. The repository startup flow now includes `CHANGES.md`, and the UI feature documentation has been synchronized with the runtime-validated r15 window-memory behavior.
 
-**Next step:** Update project rules, startup documentation, and the currently affected feature docs, then mark this entry complete.
+**Next step:** Update `CURRENT_STATE.md` with the new documentation workflow and r15 validation, then mark this working change complete.
 
 ## Recently completed
 
