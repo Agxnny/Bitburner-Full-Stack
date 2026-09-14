@@ -1,6 +1,7 @@
 /**
  * Persistent update watcher for Bitburner Full Stack.
  * Detects releases, owns approval handling, and owns the update dashboard child.
+ * r10 validation marker: exercises changed persistent-unit restart handling.
  */
 
 const REPOSITORY = "Agxnny/Bitburner-Full-Stack";
