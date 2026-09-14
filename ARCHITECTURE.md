@@ -94,11 +94,17 @@ Both dashboards consume structured telemetry from core/domain systems. They do n
 
 Dashboard commands use standard command/authority pathways rather than privileged bypasses.
 
+The first M1 dashboard slice is `src/ui/update-dashboard.jsx`. It reads protected update/deployment telemetry and emits update approval/decline commands. It never launches deployment code directly.
+
 ## Update architecture
 
 The deployment manifest is a deployment contract. It describes managed files, runtime units, lifecycle classification, hashes/versions, and explicit retirement when needed.
 
-Updates are staged and validated before activation. Persistent units remain untouched on failed/partial updates. Changed persistent units become restart-eligible only after successful validation; the updater/watcher is restarted last.
+`src/bootstrap/update-watcher.js` is the persistent detection and approval-command owner. It polls the cache-busted remote descriptor every 30 seconds, publishes health/update status to `data/update-status.json`, consumes the bounded single-slot command at `data/update-command.json`, and never auto-installs.
+
+Approval is revision-bound. Before execution, the watcher re-fetches the remote descriptor and verifies that the approved revision is still the current newer revision. It then delegates execution to `git-pull.js --expect-revision N`; the puller independently verifies the same revision. Declines remain dismissed until a later normal poll.
+
+Updates are staged and validated before activation. Persistent units remain untouched on failed/partial updates. Changed persistent units become restart-eligible only after successful validation; the updater/watcher is restarted last. Runtime-unit hashing/restart authorization is later M1 work and is not implied by the initial watcher implementation.
 
 ## Anti-duplication principle
 
