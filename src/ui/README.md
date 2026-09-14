@@ -32,6 +32,8 @@ Window memory is presentation state only. It is not canonical game/runtime state
 
 React only observes DOM geometry and writes browser-local presentation memory. Netscript UI calls used to restore the window remain owned by the script `main()` path, preserving the no-concurrent-Netscript rule.
 
+Runtime validation on `v0.4.0-r15` confirmed that manually moving/resizing the update dashboard, allowing the state to persist, then letting the watcher relaunch the dashboard restores the saved size and position correctly. This behavior is now the standard for future Production and Validation dashboards.
+
 ## M1 update dashboard slice
 
 `update-dashboard.jsx` is the first narrow dashboard slice. Its production-facing view is intentionally minimal rather than diagnostic.
