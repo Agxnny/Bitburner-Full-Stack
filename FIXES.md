@@ -174,7 +174,7 @@ When a managed UI process is intentionally replaced, its owned UI surface must b
 
 ### FIX-006 — Raw discovery lag and mutable branch sources could mix releases
 **Date:** 2026-09-15  
-**Status:** Investigating  
+**Status:** Resolved  
 **Subsystem:** M1 Reliable Deployment / release discovery and content integrity  
 **Affected files:**
 - `src/bootstrap/update-watcher.js`
@@ -185,21 +185,21 @@ When a managed UI process is intentionally replaced, its owned UI surface must b
 - release manifests under `deployment/releases/`
 
 #### Symptoms
-New revisions repeatedly remained invisible to the 30-second watcher for multiple polls. r11 took roughly 4–5 minutes to appear even though GitHub `main` already contained the new descriptor. Separately, a stale r9 descriptor could stage changed files because its revision-specific manifest still referenced source paths fetched from mutable `main`.
+New revisions repeatedly remained invisible to the 30-second watcher for multiple polls. r11 took roughly 4–5 minutes to appear even though GitHub `main` already contained the new descriptor. Separately, a stale release descriptor could stage changed files because its revision-specific manifest still referenced source paths fetched from mutable `main`.
 
 #### Root cause
 Cache-busting did not make the GitHub Raw branch view immediately consistent, so repeated Raw checks could observe the same stale branch state. Revision-specific manifest filenames fixed metadata mixing but did not make file content immutable because manifest `source` paths were still downloaded from mutable `main`. The helper also refreshed `git-pull.js` from mutable `main` after the puller exited.
 
 #### Fix
-The transition release adds redundant descriptor discovery: cache-busted Raw remains the 30-second primary check while the watcher also checks the public GitHub Contents API every 75 seconds and on approval, choosing the highest valid revision. The puller independently checks both sources for each deployment. Telemetry records source health and which source supplied the selected revision.
+Release discovery now combines cache-busted Raw checks with a lower-frequency public GitHub Contents API check and selects the highest valid revision. Approval forces another API verification, while the puller independently performs both discovery checks.
 
-Production descriptors now carry an immutable Git commit SHA as `releaseRef`. The new puller fetches the manifest and every managed source from that exact commit, and the helper refreshes the puller from the same pinned release content before committing deployment state. r12 is a one-time compatibility bridge: because the r11 puller cannot understand `releaseRef`, the r12 manifest points at immutable-by-path source snapshots under `deployment/releases/r12-src/`; the r12 helper permits only that explicit transition fallback when the old puller did not persist a release ref.
+Production descriptors carry immutable Git commit SHA `releaseRef`. The puller fetches the manifest and all managed sources from that exact commit, and the helper refreshes `git-pull.js` from the same pinned release content before committing deployment state. r12 was the one-time compatibility bridge for the old r11 puller.
 
 #### Verification
-Pending runtime validation. Confirm r12 is discovered through Raw or API within the designed bound, approval still verifies the exact revision, deployment succeeds from the transition snapshots, and the installed r12 puller reports pinned `releaseRef` behavior on a same-revision dry run. A later controlled release must prove canonical source paths are fetched from the exact commit rather than mutable `main`.
+The r12 transition installed successfully and its new puller returned `CLEAN | v0.4.0-r12 | unchanged 3 | refreshed 1 | updated 0 | added 0` on a same-revision dry run. Controlled r13 was detected within one normal watcher interval instead of the earlier 4–5 minute lag. r14 then installed successfully using normal canonical manifest source paths resolved through its immutable `releaseRef`, proving the normal post-transition pinned-content path.
 
 #### Prevention / notes
-A mutable discovery pointer may be eventually consistent; it must not also define the bytes of an immutable release. Discovery and content identity are separate concerns. Highest-valid-revision source selection is allowed for discovery, but all manifest and source downloads after selection must use the selected descriptor's immutable release ref. Unpinned post-transition self-refresh fails closed.
+A mutable discovery pointer may be eventually consistent; it must never also define immutable release bytes. Discovery and content identity remain separate concerns. Highest-valid-revision source selection is allowed for discovery, but all manifest and source downloads after selection must use the selected descriptor's immutable release ref. Unpinned post-transition self-refresh fails closed.
 
 #### Related
 - D-010 — Deployment identity uses version plus revision.
