@@ -23,37 +23,43 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M1 explicit persistent-unit retirement design
-**Status:** Design
+### M1 explicit persistent-unit retirement
+**Status:** Implementation
 
-**Goal:** Complete the last deployment-lifecycle capability required before M1 can close: an explicit, fail-closed way for a release manifest to authorize retirement of a previously persistent runtime unit.
+**Goal:** Add and runtime-validate an explicit retirement contract for persistent runtime units so a service is stopped only when a newer validated manifest positively authorizes retirement.
 
 **Files / areas touched:**
 - `src/bootstrap/git-pull.js`
 - `src/bootstrap/git-pull-self-update.js`
 - `deployment/README.md`
-- `DECISIONS.md` if the retirement contract introduces a durable schema/lifecycle decision
+- `deployment/releases/r18-manifest.json`
+- `deployment/releases/r19-manifest.json` after r18 validation
+- `deployment/version.json`
+- a small retirement validation fixture under `src/bootstrap/validation/`
 - `CURRENT_STATE.md`
-- release manifest(s) used for validation
+- `DECISIONS.md` if the manifest contract needs a durable decision amendment
 
 **Decisions / constraints:**
-- Final normal r17 deployment succeeded after the concurrent-validation helper was removed; local deployment advanced successfully and the updater returned healthy.
-- Exact-revision stale approval and duplicate/concurrent deployment rejection are both runtime validated.
-- Full rollback is deferred as future hardening: M1 already stages and validates before activation and specifically protects running persistent services from failed/partial updates; a broader transactional rollback layer can be designed later without weakening current M1 guarantees.
-- Per-file cryptographic hashes are deferred as defense in depth because production bytes are already pinned to an immutable Git commit SHA through `releaseRef`.
-- Explicit persistent-unit retirement remains an M1 blocker because project rules explicitly forbid treating disappearance from a manifest as authorization to terminate a persistent unit. Without a positive retirement contract, future releases cannot safely remove persistent services.
-- Retirement must remain explicit, staged/validated, attributable to the new manifest, and processed in controlled runtime order. Manifest absence alone must continue to do nothing.
+- Manifest schema remains version 1; retirement is an additive optional field `retireRuntimeUnits` containing persistent unit IDs.
+- A retirement ID must exist in the previously committed deployment state's `runtimeUnits` and must not also appear in the new manifest's active `runtimeUnits`.
+- Retirement reuses the previously committed unit invocation metadata; the new manifest does not need to redeploy the retired script merely to stop it.
+- The puller validates and carries retirement entries into the pending runtime plan only after all replacement files have staged successfully.
+- The helper stops matching retired processes during reconciliation and never relaunches them.
+- Retired units are omitted from the newly committed `runtimeUnits` ledger.
+- Disappearance from `runtimeUnits` without explicit `retireRuntimeUnits` remains non-authoritative and must not stop a process.
+- Runtime validation uses two controlled releases: r18 deploys a harmless persistent validation fixture; r19 explicitly retires that fixture. The real update watcher remains active throughout.
+- No unrelated deployment refactor or schema redesign.
 
-**Validation:** r17 installed normally after all approval/concurrency tests, confirming the production deployment path still works after the validation exercises. No runtime defect was reported.
+**Validation:** Exact-revision approval, concurrent-deployment rejection, and final normal r17 installation are already runtime validated. Explicit retirement is not yet runtime validated.
 
-**Next step:** Design the manifest retirement schema and helper reconciliation behavior, including validation and a controlled runtime test, before implementation.
+**Next step:** Implement the additive retirement contract and publish r18, which installs the retirement-aware deployment code and launches the harmless persistent retirement fixture. After r18 is confirmed healthy and the fixture is running, publish r19 with explicit retirement and verify the helper stops it without affecting the update watcher.
 
 ## Recently completed
 
-### M1 deployment close-out validation through r17
+### M1 deployment reliability validation through r17
 **Status:** Runtime validated
 
-The temporary concurrent-validation helper was confirmed gone and r17 was then installed through the normal dashboard approval path. The deployment completed correctly, providing final confirmation that the ordinary watcher → puller → helper → runtime-reconciliation path remained healthy after the stale-approval and concurrency rejection tests.
+Controlled r16/r17 testing proved stale approval rejection and single-deployment concurrency protection. After the temporary validation helper was stopped, the normal r17 installation also completed successfully, confirming the ordinary deployment path remained healthy after both rejection tests.
 
 ### M1 duplicate/concurrent deployment validation
 **Status:** Runtime validated
