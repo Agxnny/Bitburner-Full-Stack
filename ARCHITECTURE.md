@@ -103,15 +103,21 @@ The first M1 dashboard slice is `src/ui/update-dashboard.jsx`. It reads protecte
 
 ## Update architecture
 
-The deployment manifest is a deployment contract. It describes managed files and may also declare persistent runtime units. Each persistent unit identifies its entry script, host, thread/argument invocation, defining managed files, and restart order.
+The deployment descriptor is a small mutable discovery pointer. Production descriptors identify semantic version, monotonic revision, revision-specific manifest path, and an immutable Git commit SHA `releaseRef`.
 
-`src/bootstrap/update-watcher.js` is the persistent detection and approval-command owner. It polls the cache-busted remote descriptor every 30 seconds, publishes health/update status to `data/update-status.json`, consumes the bounded single-slot command at `data/update-command.json`, and never auto-installs.
+Discovery is deliberately redundant. `src/bootstrap/update-watcher.js` checks cache-busted GitHub Raw every 30 seconds and the public GitHub Contents API every 75 seconds, choosing the highest valid revision. Equal revisions must agree on version, manifest, and `releaseRef`. Approval forces a fresh API check before the watcher delegates to the puller. Discovery-source health and selected-source telemetry are published for validation.
 
-Approval is revision-bound. Before execution, the watcher re-fetches the remote descriptor and verifies that the approved revision is still the current newer revision. It then delegates execution to `git-pull.js --expect-revision N`; the puller independently verifies the same revision. Declines remain dismissed until a later normal poll.
+The puller independently performs both descriptor checks before enforcing `--expect-revision N`. This keeps human approval revision-bound even when one branch-view source is stale.
+
+After a production descriptor is selected, mutable `main` is no longer used to define release bytes. The puller resolves the manifest and every managed `source` against the descriptor's immutable `releaseRef`. This separates eventual-consistency discovery from immutable release content.
+
+r12 is a one-time compatibility bridge because the r11 puller cannot interpret `releaseRef`. Its manifest uses revision-unique source snapshots under `deployment/releases/r12-src/`. Once r12 is installed, later releases use commit-pinned canonical repository paths.
+
+The deployment manifest is a deployment contract. It describes managed files and may declare persistent runtime units. Each persistent unit identifies its entry script, host, thread/argument invocation, defining managed files, and restart order.
 
 Updates are staged and validated before activation. The puller derives a runtime reconciliation plan from the manifest and staged file actions. A persistent unit is restart-eligible only when one of its defining files actually changed; a missing persistent unit is always eligible to be relaunched.
 
-After activation, `git-pull-self-update.js` waits for the puller to exit, refreshes the puller itself, commits deployment state, then reconciles persistent units in manifest-defined restart order. Unchanged running units are untouched. Changed running units are restarted. Missing units are relaunched. A runtime launch failure leaves the file deployment committed but records a degraded runtime result for explicit recovery.
+After activation, `git-pull-self-update.js` waits for the puller to exit, refreshes the puller itself from the same immutable release content, commits deployment state, then reconciles persistent units in manifest-defined restart order. Unchanged running units are untouched. Changed running units are restarted. Missing units are relaunched. A runtime launch failure leaves the file deployment committed but records a degraded runtime result for explicit recovery.
 
 Updater/watch infrastructure is assigned the final restart order so the system doing update coordination is replaced last. The update watcher then takes responsibility for opening and maintaining its managed dashboard child.
 
