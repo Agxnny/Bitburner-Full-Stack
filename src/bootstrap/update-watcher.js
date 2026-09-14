@@ -1,7 +1,6 @@
 /**
  * Persistent update watcher for Bitburner Full Stack.
  * Detects releases, owns approval handling, and owns the update dashboard child.
- * r10 validation marker: exercises changed persistent-unit restart handling.
  */
 
 const REPOSITORY = "Agxnny/Bitburner-Full-Stack";
@@ -205,7 +204,10 @@ async function processCommand(ns, status) {
 }
 
 function restartDashboardForOwnership(ns, previous) {
-    for (const process of dashboardProcesses(ns)) ns.kill(process.pid);
+    for (const process of dashboardProcesses(ns)) {
+        ns.ui.closeTail(process.pid);
+        ns.kill(process.pid);
+    }
     const pid = ns.run(DASHBOARD_PATH, 1);
     return {
         pid: pid || null,
