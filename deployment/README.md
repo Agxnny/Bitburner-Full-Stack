@@ -119,6 +119,22 @@ The controlled stale-approval test uses two no-op releases so production behavio
 
 M1 runtime validation used r16 as N and r17 as N+1 while the local runtime remained on r15. After r17 was presented, a deliberately stale r16 approval was submitted through `data/update-command.json`. The watcher rejected it with `Approved revision is no longer the current newer release.` The dashboard continued presenting r17, so r16 was not installed and r17 was not implicitly authorized. Exact-revision approval semantics are therefore runtime validated.
 
+### Duplicate/concurrent deployment validation
+
+The watcher treats either `src/bootstrap/git-pull.js` or `src/bootstrap/git-pull-self-update.js` running on `home` as active deployment infrastructure. A controlled test can exercise this guard without mutating deployment state by launching the existing self-update helper with `--wait-pid` set to the live watcher PID and a valid revision. While that PID remains alive, the helper stays inside its initial `ns.isRunning(waitPid)` sleep loop and does not read pending deployment state, refresh the puller, or commit deployment state.
+
+Validation procedure:
+1. confirm r17 is still presented while local runtime remains on r15
+2. identify the live `src/bootstrap/update-watcher.js` PID
+3. launch `src/bootstrap/git-pull-self-update.js --wait-pid <watcher-pid> --revision 17 --nonce concurrent-validation`
+4. verify the helper process is running
+5. click Install for r17 through the normal dashboard command path
+6. expect rejection with `A deployment is already running or finalizing.` and no `git-pull.js` launch
+7. kill the validation helper immediately after observing the rejection, before its wait PID can exit
+8. confirm local revision is still r15 and r17 remains available for a later real approval
+
+This procedure deliberately validates the watcher authority boundary rather than bypassing the watcher or modifying production runtime code for a test-only delay.
+
 ## Stale revision protection
 
 If the selected remote revision is lower than the locally committed revision, a normal pull is blocked with a `STALE_REVISION` alarm. Downgrades require the explicit override.
