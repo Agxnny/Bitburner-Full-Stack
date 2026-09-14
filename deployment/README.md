@@ -7,9 +7,22 @@ Deployment metadata and bootstrap update behavior live here. Runtime deployment 
 Each deployable release has:
 - semantic version: `vX.Y.Z`
 - monotonically increasing revision
-- manifest describing managed files
+- immutable revision-specific manifest describing managed files
 
 A revision is immutable once published and must never be reused for different deployable content.
+
+`deployment/version.json` is the mutable freshness pointer. Starting with r8, it must point to a manifest unique to that revision, for example:
+
+`deployment/releases/r8-manifest.json`
+
+Release publication order is:
+1. create the immutable revision manifest first
+2. verify its version/revision identity
+3. update `deployment/version.json` last to point at that manifest
+
+Do not use `deployment/manifest.json` as the manifest target for new release descriptors. That shared file is legacy metadata only and cannot provide cross-request atomicity.
+
+Cache-busting and immutable paths solve different problems. Cache-busting prevents reuse of an old response for the same URL; immutable revision paths prevent a descriptor from one repository propagation state being paired with a later release manifest.
 
 ## Pull reporting
 
@@ -49,6 +62,12 @@ The minimal React surface is `src/ui/update-dashboard.jsx`. It reads watcher/dep
 ## Stale revision protection
 
 If the remote revision is lower than the locally committed revision, the normal pull is blocked. The JSON report records a `STALE_REVISION` alarm and terminal output emits an explicit alarm. Downgrades require the existing explicit override flag.
+
+## Descriptor/manifest consistency
+
+The puller validates that the fetched manifest declares the same semantic version and revision as the descriptor. Any mismatch fails closed before activation.
+
+This check caught the r6/r7 mutable-manifest publication race and prevented mixed release contents from being installed. Starting at r8, immutable manifest paths remove that race at the metadata-layout level while the consistency check remains mandatory defense in depth.
 
 ## Puller self-refresh
 
