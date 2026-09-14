@@ -22,11 +22,7 @@ export async function main(ns) {
     if (dashboards.length > 0 && dashboards[0].pid !== ns.pid) return;
 
     ns.disableLog("sleep");
-    const bridge = {
-        snapshot: readSnapshot(ns),
-        pendingIntent: null,
-        feedback: "",
-    };
+    const bridge = { snapshot: readSnapshot(ns), pendingIntent: null, feedback: "" };
 
     ns.ui.openTail();
     ns.ui.setTailTitle("Bitburner Full Stack — Updates");
@@ -38,17 +34,13 @@ export async function main(ns) {
             bridge.feedback = handleIntent(ns, bridge.pendingIntent);
             bridge.pendingIntent = null;
         }
-
         bridge.snapshot = readSnapshot(ns);
         await ns.sleep(REFRESH_MS);
     }
 }
 
 function handleIntent(ns, intent) {
-    if (ns.fileExists(COMMAND_PATH, "home")) {
-        return "An update command is already waiting to be handled.";
-    }
-
+    if (ns.fileExists(COMMAND_PATH, "home")) return "An update command is already waiting to be handled.";
     const command = {
         schemaVersion: 1,
         id: `ui-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`,
@@ -62,23 +54,14 @@ function handleIntent(ns, intent) {
 }
 
 function readSnapshot(ns) {
-    return {
-        status: readJson(ns, STATUS_PATH),
-        report: readJson(ns, REPORT_PATH),
-        capturedAt: Date.now(),
-    };
+    return { status: readJson(ns, STATUS_PATH), report: readJson(ns, REPORT_PATH), capturedAt: Date.now() };
 }
 
 function UpdateDashboard({ bridge }) {
-    const [view, setView] = React.useState(() => ({
-        snapshot: bridge.snapshot,
-        feedback: bridge.feedback,
-    }));
+    const [view, setView] = React.useState(() => ({ snapshot: bridge.snapshot, feedback: bridge.feedback }));
 
     React.useEffect(() => {
-        const timer = setInterval(() => {
-            setView({ snapshot: bridge.snapshot, feedback: bridge.feedback });
-        }, REFRESH_MS);
+        const timer = setInterval(() => setView({ snapshot: bridge.snapshot, feedback: bridge.feedback }), REFRESH_MS);
         return () => clearInterval(timer);
     }, [bridge]);
 
@@ -99,17 +82,16 @@ function UpdateDashboard({ bridge }) {
         bridge.feedback = `${action === "approve" ? "Approving" : "Declining"} r${revision}…`;
     }
 
-    if (!status) {
-        return <Panel title="Update Status"><p>No watcher telemetry found. Start src/bootstrap/update-watcher.js.</p></Panel>;
-    }
+    if (!status) return <Panel title="Update Status"><p>No watcher telemetry found. Start src/bootstrap/update-watcher.js.</p></Panel>;
 
     const heartbeatAge = status.heartbeatAt ? Date.now() - status.heartbeatAt : null;
     const heartbeatFresh = heartbeatAge !== null && heartbeatAge < 15_000;
     const deploymentReport = status.deployment?.report ?? summarizeReport(report);
     const runtimeUnits = deploymentReport?.runtime?.units ?? [];
+    const discovery = status.discovery;
 
     return (
-        <div style={{ fontFamily: "monospace", minWidth: "560px", padding: "8px" }}>
+        <div style={{ fontFamily: "monospace", minWidth: "600px", padding: "8px" }}>
             <Panel title="Update Service">
                 <Row label="Watcher" value={`${status.health ?? "unknown"} / ${status.phase ?? "unknown"}`} />
                 <Row label="Lifecycle" value={status.lifecycle ?? "—"} />
@@ -118,8 +100,13 @@ function UpdateDashboard({ bridge }) {
                 <Row label="Heartbeat" value={heartbeatFresh ? `${formatAge(heartbeatAge)} ago` : `STALE (${formatAge(heartbeatAge)} ago)`} />
                 <Row label="Local" value={release(status.local)} />
                 <Row label="Remote" value={release(status.remote)} />
+                <Row label="Discovery" value={discovery?.selectedSource ?? "—"} />
+                <Row label="Raw source" value={sourceStatus(discovery?.raw)} />
+                <Row label="API source" value={sourceStatus(discovery?.api)} />
                 <Row label="Last check" value={formatTime(status.lastCheckAt)} />
                 <Row label="Next check" value={formatTime(status.nextCheckAt)} />
+                {discovery?.raw?.error ? <ErrorText>Raw: {discovery.raw.error}</ErrorText> : null}
+                {discovery?.api?.error ? <ErrorText>API: {discovery.api.error}</ErrorText> : null}
                 {status.dashboard?.error ? <ErrorText>{status.dashboard.error}</ErrorText> : null}
                 {status.error ? <ErrorText>{status.error}</ErrorText> : null}
             </Panel>
@@ -147,6 +134,7 @@ function UpdateDashboard({ bridge }) {
                 <Row label="Requested" value={status.deployment?.requestedRevision != null ? `r${status.deployment.requestedRevision}` : "—"} />
                 <Row label="Result" value={deploymentReport?.status ?? "—"} />
                 <Row label="Release" value={release(deploymentReport?.remote)} />
+                <Row label="Pull discovery" value={deploymentReport?.discovery?.selectedSource ?? "—"} />
                 <Row label="Runtime" value={deploymentReport?.runtime?.status ?? "—"} />
                 {runtimeUnits.map((unit) => (
                     <Row key={unit.id} label={`↳ ${unit.id}`} value={`${unit.outcome ?? "—"}${unit.pid ? ` (pid ${unit.pid})` : ""}`} />
@@ -162,7 +150,7 @@ function Panel({ title, children }) {
 }
 
 function Row({ label, value }) {
-    return <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: "8px", marginBottom: "4px" }}><strong>{label}</strong><span>{value ?? "—"}</span></div>;
+    return <div style={{ display: "grid", gridTemplateColumns: "150px 1fr", gap: "8px", marginBottom: "4px" }}><strong>{label}</strong><span>{value ?? "—"}</span></div>;
 }
 
 function ErrorText({ children }) { return <p style={{ fontWeight: "bold" }}>ERROR: {children}</p>; }
@@ -183,6 +171,13 @@ function dashboardStatus(value) {
     return `not running (starts ${value.restartCount ?? 0})`;
 }
 
+function sourceStatus(value) {
+    if (!value) return "—";
+    const revision = Number.isSafeInteger(value.revision) ? `r${value.revision}` : "no revision";
+    const checked = Number.isFinite(value.lastSuccessAt) ? `${formatAge(Date.now() - value.lastSuccessAt)} ago` : "never";
+    return `${revision} / ${checked}`;
+}
+
 function summarizeReport(report) {
     if (!report) return null;
     return {
@@ -190,6 +185,7 @@ function summarizeReport(report) {
         success: report.success ?? null,
         clean: report.clean ?? null,
         remote: report.remote ?? null,
+        discovery: report.discovery ?? null,
         runtime: report.runtime ?? null,
         error: report.error ?? null,
         finishedAt: report.finishedAt ?? null,
