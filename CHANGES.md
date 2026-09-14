@@ -23,33 +23,33 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M1 stale/mismatched approval validation
-**Status:** Validation — r16 presented, r17 publication in progress
+### M1 duplicate/concurrent deployment validation
+**Status:** Validation design
 
-**Goal:** Prove that human approval is bound to one exact revision and can never silently authorize a newer release.
+**Goal:** Prove that a second approval/deployment attempt cannot start while deployment infrastructure is already running or finalizing.
 
 **Files / areas touched:**
-- `deployment/releases/r16-manifest.json`
-- `deployment/releases/r17-manifest.json`
-- `deployment/version.json`
-- `deployment/README.md`
 - `src/bootstrap/update-watcher.js` only if validation exposes a defect
+- `deployment/README.md`
 - `CURRENT_STATE.md`
 - `FIXES.md` if a reusable defect is found
 
 **Decisions / constraints:**
-- r16 and r17 are controlled no-op releases; runtime source bytes remain unchanged.
-- r16 has been presented by the dashboard and has not been approved.
-- Publish r17 before approving r16.
-- Submit the stale r16 approval only after r17 is the current remote release.
-- Expected behavior: watcher forces fresh verification, rejects approval for r16, and does not launch the puller for r16 or implicitly authorize r17.
+- Preserve the existing single-deployment authority boundary.
+- Use the production watcher command path rather than bypassing it.
 - Do not modify runtime code unless the test fails.
+- r17 remains unapproved until the concurrent-deployment test procedure is ready.
 
-**Validation:** The dashboard successfully presented r16 while local runtime remained on r15. The stale-approval rejection itself is still unproven.
+**Validation:** Exact-revision stale approval is now runtime validated. With local runtime on r15 and r17 presented, a deliberately stale approval for r16 was rejected with `Approved revision is no longer the current newer release.` The dashboard continued to present r17 and did not implicitly authorize it.
 
-**Next step:** Publish controlled no-op r17. Once the dashboard changes from `r16 available` to `r17 available`, submit a deliberately stale r16 approval through `data/update-command.json` and verify rejection with no deployment launch.
+**Next step:** Design the controlled duplicate/concurrent deployment test so one deployment remains observably active long enough to submit a second approval attempt safely.
 
 ## Recently completed
+
+### M1 stale/mismatched approval validation
+**Status:** Runtime validated
+
+Controlled no-op releases r16 and r17 proved exact-revision approval semantics. r16 was first presented while local runtime remained on r15; r17 was then published and presented. A manually submitted approval explicitly bound to stale r16 was rejected after fresh verification with `Approved revision is no longer the current newer release.` r17 remained awaiting its own approval, proving that approval of one revision cannot silently authorize a newer revision.
 
 ### Documentation durability and feature-doc synchronization
 **Status:** Complete
