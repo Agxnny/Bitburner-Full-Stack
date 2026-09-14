@@ -1,6 +1,6 @@
 /**
- * Refreshes git-pull.js only after the currently running puller exits.
- * This script is intentionally standalone and minimal.
+ * Refreshes git-pull.js only after the running puller exits, commits deployment
+ * state, then reconciles persistent runtime units declared by the manifest.
  */
 
 const REPOSITORY = "Agxnny/Bitburner-Full-Stack";
@@ -40,11 +40,8 @@ export async function main(ns) {
     const ok = await ns.wget(url, SELF_TARGET, "home");
     if (!ok) return fail(ns, report, "git-pull self-refresh failed; deployment state was not advanced.");
 
-    report.status = "committed";
-    report.clean = true;
-    report.success = true;
-    report.finishedAt = Date.now();
-
+    const committedAt = Date.now();
+    const runtimePlan = Array.isArray(pending.runtimePlan) ? pending.runtimePlan : [];
     const committed = {
         schemaVersion: 1,
         version: pending.version,
@@ -52,14 +49,115 @@ export async function main(ns) {
         manifest: pending.manifest,
         previousVersion: pending.previousVersion,
         previousRevision: pending.previousRevision,
-        deployedAt: report.finishedAt,
+        runtimeUnits: runtimePlan.map(persistedUnit),
+        deployedAt: committedAt,
     };
 
     ns.write(STATE_PATH, JSON.stringify(committed, null, 2), "w");
-    ns.write(REPORT_PATH, JSON.stringify(report, null, 2), "w");
     if (ns.fileExists(PENDING_STATE_PATH, "home")) ns.rm(PENDING_STATE_PATH, "home");
 
+    report.status = runtimePlan.length > 0 ? "reconciling-runtime" : "committed";
+    report.runtime = report.runtime ?? { planned: [], status: "none", units: [] };
+    report.runtime.status = runtimePlan.length > 0 ? "reconciling" : "not-required";
+    report.runtime.units = [];
+    report.clean = runtimePlan.length > 0 ? null : true;
+    report.success = runtimePlan.length > 0 ? null : true;
+    report.finishedAt = runtimePlan.length > 0 ? null : committedAt;
+    ns.write(REPORT_PATH, JSON.stringify(report, null, 2), "w");
+
+    const runtimeResults = await reconcileRuntime(ns, runtimePlan);
+    report.runtime.units = runtimeResults;
+    const runtimeFailed = runtimeResults.some((item) => item.outcome === "failed");
+    report.runtime.status = runtimeFailed ? "degraded" : "healthy";
+    report.status = runtimeFailed ? "committed-runtime-degraded" : "committed";
+    report.clean = !runtimeFailed;
+    report.success = !runtimeFailed;
+    report.error = runtimeFailed
+        ? runtimeResults.filter((item) => item.outcome === "failed").map((item) => `${item.id}: ${item.error}`).join("; ")
+        : null;
+    report.finishedAt = Date.now();
+    ns.write(REPORT_PATH, JSON.stringify(report, null, 2), "w");
+
+    if (runtimeFailed) {
+        ns.tprint(`FAIL | ${release(report.remote)} | deployment committed but persistent runtime reconciliation degraded`);
+        return;
+    }
     printSummary(ns, report);
+}
+
+async function reconcileRuntime(ns, runtimePlan) {
+    const ordered = [...runtimePlan]
+        .filter((unit) => unit.lifecycle === "persistent")
+        .sort((a, b) => a.restartOrder - b.restartOrder || a.id.localeCompare(b.id));
+    const results = [];
+
+    for (const unit of ordered) {
+        const matches = matchingProcesses(ns, unit);
+        if (!unit.changed && matches.length > 0) {
+            results.push(result(unit, "kept-running", matches[0].pid, null));
+            continue;
+        }
+
+        if (unit.changed && matches.length > 0) {
+            let killFailed = false;
+            for (const process of matches) {
+                if (!ns.kill(process.pid)) killFailed = true;
+            }
+            if (killFailed) {
+                results.push(result(unit, "failed", null, "Could not stop the previous persistent process."));
+                continue;
+            }
+            await ns.sleep(100);
+            if (matchingProcesses(ns, unit).length > 0) {
+                results.push(result(unit, "failed", null, "Previous persistent process remained active after stop request."));
+                continue;
+            }
+        }
+
+        const pid = ns.run(unit.script, unit.threads, ...unit.args);
+        if (pid === 0) {
+            results.push(result(unit, "failed", null, "Could not launch persistent runtime unit."));
+            continue;
+        }
+        results.push(result(unit, unit.changed ? "restarted" : "relaunched", pid, null));
+    }
+
+    return results;
+}
+
+function matchingProcesses(ns, unit) {
+    return ns.ps(unit.host).filter((process) =>
+        process.filename === unit.script && argsEqual(process.args ?? [], unit.args ?? []),
+    );
+}
+
+function argsEqual(left, right) {
+    return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function result(unit, outcome, pid, error) {
+    return {
+        id: unit.id,
+        script: unit.script,
+        changed: Boolean(unit.changed),
+        outcome,
+        pid,
+        error,
+        handledAt: Date.now(),
+    };
+}
+
+function persistedUnit(unit) {
+    return {
+        id: unit.id,
+        lifecycle: unit.lifecycle,
+        script: unit.script,
+        host: unit.host,
+        threads: unit.threads,
+        args: [...unit.args],
+        files: [...unit.files],
+        restartOrder: unit.restartOrder,
+    };
 }
 
 function legacyReport(pending) {
@@ -71,17 +169,12 @@ function legacyReport(pending) {
         clean: null,
         success: null,
         alarm: { active: false, type: null, message: null },
-        local: {
-            version: pending.previousVersion ?? null,
-            revision: pending.previousRevision ?? null,
-        },
-        remote: {
-            version: pending.version ?? null,
-            revision: pending.revision ?? null,
-        },
+        local: { version: pending.previousVersion ?? null, revision: pending.previousRevision ?? null },
+        remote: { version: pending.version ?? null, revision: pending.revision ?? null },
         options: { force: false, allowDowngrade: false, expectedRevision: -1, dryRun: false },
         counts: { unchanged: 0, refreshed: 0, updated: 2, added: 0 },
         files: [],
+        runtime: { planned: [], status: "none", units: [] },
         error: null,
         legacyTransition: true,
     };
@@ -100,6 +193,7 @@ function fail(ns, report, message) {
         remote: { version: null, revision: null },
         counts: { unchanged: 0, refreshed: 0, updated: 0, added: 0 },
         files: [],
+        runtime: { planned: [], status: "none", units: [] },
         error: null,
     };
 
