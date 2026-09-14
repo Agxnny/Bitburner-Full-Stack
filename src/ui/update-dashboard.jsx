@@ -1,6 +1,6 @@
 /**
  * Minimal React update dashboard for M1 deployment validation.
- * Reads watcher/deployment telemetry and emits standard update commands.
+ * React never calls Netscript directly; main() owns all Netscript access.
  */
 
 const STATUS_PATH = "data/update-status.json";
@@ -16,50 +16,81 @@ export async function main(ns) {
     }
 
     ns.disableLog("sleep");
+    const bridge = {
+        snapshot: readSnapshot(ns),
+        pendingIntent: null,
+        feedback: "",
+    };
+
     ns.ui.openTail();
     ns.ui.setTailTitle("Bitburner Full Stack — Updates");
     ns.clearLog();
-    ns.printRaw(<UpdateDashboard ns={ns} />);
+    ns.printRaw(<UpdateDashboard bridge={bridge} />);
 
-    while (true) await ns.sleep(60_000);
+    while (true) {
+        if (bridge.pendingIntent) {
+            bridge.feedback = handleIntent(ns, bridge.pendingIntent);
+            bridge.pendingIntent = null;
+        }
+
+        bridge.snapshot = readSnapshot(ns);
+        await ns.sleep(REFRESH_MS);
+    }
 }
 
-function UpdateDashboard({ ns }) {
-    const [status, setStatus] = React.useState(() => readJson(ns, STATUS_PATH));
-    const [report, setReport] = React.useState(() => readJson(ns, REPORT_PATH));
-    const [feedback, setFeedback] = React.useState("");
+function handleIntent(ns, intent) {
+    if (ns.fileExists(COMMAND_PATH, "home")) {
+        return "An update command is already waiting to be handled.";
+    }
+
+    const command = {
+        schemaVersion: 1,
+        id: `ui-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`,
+        action: intent.action,
+        revision: intent.revision,
+        createdAt: Date.now(),
+        origin: "update-dashboard",
+    };
+    ns.write(COMMAND_PATH, JSON.stringify(command, null, 2), "w");
+    return `${intent.action === "approve" ? "Approved" : "Declined"} r${intent.revision}; waiting for watcher.`;
+}
+
+function readSnapshot(ns) {
+    return {
+        status: readJson(ns, STATUS_PATH),
+        report: readJson(ns, REPORT_PATH),
+        capturedAt: Date.now(),
+    };
+}
+
+function UpdateDashboard({ bridge }) {
+    const [view, setView] = React.useState(() => ({
+        snapshot: bridge.snapshot,
+        feedback: bridge.feedback,
+    }));
 
     React.useEffect(() => {
         const timer = setInterval(() => {
-            setStatus(readJson(ns, STATUS_PATH));
-            setReport(readJson(ns, REPORT_PATH));
+            setView({ snapshot: bridge.snapshot, feedback: bridge.feedback });
         }, REFRESH_MS);
         return () => clearInterval(timer);
-    }, [ns]);
+    }, [bridge]);
 
-    const remoteRevision = status?.remote?.revision;
-    const canRespond = status?.phase === "update-available" && Number.isSafeInteger(remoteRevision);
+    const status = view.snapshot?.status;
+    const report = view.snapshot?.report;
 
     function send(action) {
-        if (!canRespond) {
-            setFeedback("No current update presentation to respond to.");
+        const revision = status?.presentedRevision;
+        if (status?.phase !== "update-available" || !Number.isSafeInteger(revision)) {
+            bridge.feedback = "No current update presentation to respond to.";
             return;
         }
-        if (ns.fileExists(COMMAND_PATH, "home")) {
-            setFeedback("An update command is already waiting to be handled.");
+        if (bridge.pendingIntent) {
+            bridge.feedback = "An update command is already queued for the dashboard loop.";
             return;
         }
-
-        const command = {
-            schemaVersion: 1,
-            id: `ui-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`,
-            action,
-            revision: remoteRevision,
-            createdAt: Date.now(),
-            origin: "update-dashboard",
-        };
-        ns.write(COMMAND_PATH, JSON.stringify(command, null, 2), "w");
-        setFeedback(`${action === "approve" ? "Approved" : "Declined"} r${remoteRevision}; waiting for watcher.`);
+        bridge.pendingIntent = { action, revision };
+        bridge.feedback = `${action === "approve" ? "Approving" : "Declining"} r${revision}…`;
     }
 
     if (!status) {
@@ -91,16 +122,9 @@ function UpdateDashboard({ ns }) {
                             <button onClick={() => send("decline")}>No</button>
                         </div>
                     </>
-                ) : (
-                    <p>{approvalMessage(status)}</p>
-                )}
-                {feedback ? <p>{feedback}</p> : null}
-                {status.lastCommand ? (
-                    <Row
-                        label="Last command"
-                        value={`${status.lastCommand.action ?? "?"} r${status.lastCommand.revision ?? "?"} → ${status.lastCommand.outcome ?? "?"}`}
-                    />
-                ) : null}
+                ) : <p>{approvalMessage(status)}</p>}
+                {view.feedback ? <p>{view.feedback}</p> : null}
+                {status.lastCommand ? <Row label="Last command" value={`${status.lastCommand.action ?? "?"} r${status.lastCommand.revision ?? "?"} → ${status.lastCommand.outcome ?? "?"}`} /> : null}
                 {status.lastCommand?.error ? <ErrorText>{status.lastCommand.error}</ErrorText> : null}
             </Panel>
 
@@ -116,25 +140,14 @@ function UpdateDashboard({ ns }) {
 }
 
 function Panel({ title, children }) {
-    return (
-        <section style={{ border: "1px solid currentColor", borderRadius: "6px", padding: "10px", marginBottom: "10px" }}>
-            <h3 style={{ margin: "0 0 8px 0" }}>{title}</h3>
-            {children}
-        </section>
-    );
+    return <section style={{ border: "1px solid currentColor", borderRadius: "6px", padding: "10px", marginBottom: "10px" }}><h3 style={{ margin: "0 0 8px 0" }}>{title}</h3>{children}</section>;
 }
 
 function Row({ label, value }) {
-    return (
-        <div style={{ display: "grid", gridTemplateColumns: "130px 1fr", gap: "8px", marginBottom: "4px" }}>
-            <strong>{label}</strong><span>{value ?? "—"}</span>
-        </div>
-    );
+    return <div style={{ display: "grid", gridTemplateColumns: "130px 1fr", gap: "8px", marginBottom: "4px" }}><strong>{label}</strong><span>{value ?? "—"}</span></div>;
 }
 
-function ErrorText({ children }) {
-    return <p style={{ fontWeight: "bold" }}>ERROR: {children}</p>;
-}
+function ErrorText({ children }) { return <p style={{ fontWeight: "bold" }}>ERROR: {children}</p>; }
 
 function approvalMessage(status) {
     if (status.phase === "current") return "Deployment is current.";
@@ -148,14 +161,7 @@ function approvalMessage(status) {
 
 function summarizeReport(report) {
     if (!report) return null;
-    return {
-        status: report.status ?? null,
-        success: report.success ?? null,
-        clean: report.clean ?? null,
-        remote: report.remote ?? null,
-        error: report.error ?? null,
-        finishedAt: report.finishedAt ?? null,
-    };
+    return { status: report.status ?? null, success: report.success ?? null, clean: report.clean ?? null, remote: report.remote ?? null, error: report.error ?? null, finishedAt: report.finishedAt ?? null };
 }
 
 function readJson(ns, path) {
@@ -164,16 +170,10 @@ function readJson(ns, path) {
 }
 
 function release(value) {
-    return value?.version && Number.isSafeInteger(value?.revision)
-        ? `${value.version}-r${value.revision}`
-        : "—";
+    return value?.version && Number.isSafeInteger(value?.revision) ? `${value.version}-r${value.revision}` : "—";
 }
 
-function formatTime(value) {
-    if (!Number.isFinite(value)) return "—";
-    return new Date(value).toLocaleTimeString();
-}
-
+function formatTime(value) { return Number.isFinite(value) ? new Date(value).toLocaleTimeString() : "—"; }
 function formatAge(value) {
     if (!Number.isFinite(value)) return "unknown";
     if (value < 1_000) return `${value}ms`;
