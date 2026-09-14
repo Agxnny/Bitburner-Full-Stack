@@ -4,40 +4,28 @@
 **M1 — Reliable Deployment**
 
 ## Status
-M1 implementation and runtime validation remain in progress. The bootstrap puller and core safety behavior are runtime-validated in Bitburner v3.0.1. Recovery release `v0.2.0-r8` validated the React dashboard concurrency fix and immutable revision-specific manifest design. Releases r9/r10 validated the first persistent runtime unit, watcher-owned dashboard relaunch, missing persistent-unit recovery, unchanged-running preservation, and changed-running controlled restart. Release `v0.3.0-r11` validated explicit old-tail cleanup during watcher-owned dashboard replacement. The persistent updater runtime-validation slice is complete; release discovery freshness and release-content immutability remain active M1 gaps.
+M1 implementation and runtime validation remain in progress. Core bootstrap safety and persistent updater lifecycle behavior are runtime-validated in Bitburner v3.0.1 through `v0.3.0-r11`. The active slice fixes two blocking deployment-integrity gaps: multi-minute GitHub Raw discovery lag and manifest sources that still resolved against mutable `main`. Transition release `v0.4.0-r12` introduces redundant discovery and immutable `releaseRef` content pinning and is published for runtime validation.
 
 ## Completed
-- Repository initialized and project rules/architecture/roadmap established.
-- Deployment identity defined as semantic version plus monotonic revision.
-- Cache-busted bootstrap puller and post-exit self-refresh helper implemented.
-- Deployment reporting added at `data/git-pull-report.json`.
-- Initial bootstrap, r1→r3 self-refresh, same-revision no-op, stale-revision protection, forced refresh, and failed-staging preservation validated in Bitburner v3.0.1.
-- FIX-001 resolved canonical `gp` alias drift.
-- D-013 locked watcher ownership of detection/approval handling.
-- `src/bootstrap/update-watcher.js` implemented with cache-busted polling, heartbeat telemetry, exact-revision approval re-verification, decline handling, duplicate command protection, and deployment concurrency rejection.
-- FIX-002 resolved React/Netscript concurrency by routing all Netscript access through dashboard `main()`.
-- FIX-003/D-014 resolved mutable-manifest publication races by requiring immutable revision-specific manifests.
-- `v0.2.0-r8` runtime-validated: dashboard stayed alive, decline command was accepted, immutable manifest dry-run validated, and normal `gp` reconciled durable deployment state to r8.
-- FIX-004 records the observed r8 managed-file/deployment-ledger drift without inventing an unproven root cause; safe recovery used the canonical transaction rather than manual state edits.
-- D-015 locked post-update helper reconciliation of persistent runtime units.
-- D-016 locked watcher ownership of the managed update-dashboard process.
-- `git-pull.js` validates optional manifest `runtimeUnits` and derives change-aware runtime plans from staged file actions.
-- `git-pull-self-update.js` commits deployment state after self-refresh, then preserves/restarts/relaunches declared persistent runtime units in explicit restart order.
-- Runtime reconciliation failures surface as `committed-runtime-degraded` rather than pretending a committed file deployment rolled back.
-- `update-watcher.js` is a singleton persistent service and is declared as the first persistent runtime unit.
-- Watcher heartbeat relaunches its managed update dashboard after unexpected exit with a restart cooldown.
-- Watcher deployment telemetry distinguishes puller, self-refresh helper, runtime reconciliation, committed, degraded, and failed phases.
-- The update dashboard displays watcher lifecycle, dashboard liveness, deployment phases, and runtime-unit reconciliation results.
-- r9 runtime validation proved missing persistent watcher recovery with `gp --force`.
-- r9 runtime validation proved an unchanged running persistent watcher is preserved during forced same-revision reconciliation.
-- r10 runtime validation proved a changed running persistent watcher is stopped and relaunched with a new PID, and the replacement watcher opens a new dashboard.
-- r10 exposed FIX-005: the replaced dashboard process was killed but its old tail window remained visible.
-- r11 runtime validation proved watcher ownership takeover closes the old dashboard tail, kills the old process, and opens exactly one fresh replacement dashboard.
-- FIX-005 is resolved.
-- Persistent updater runtime validation is complete for unchanged-running preservation, missing-unit relaunch, changed-running restart, watcher-owned dashboard recovery, and dashboard UI cleanup.
+- Repository foundation, project rules, architecture, roadmap, decisions, fixes, and references established.
+- Deployment identity uses semantic version plus monotonic revision.
+- Bootstrap puller, self-refresh helper, deployment report, failure-preservation fixture, stale-revision protection, and canonical `gp` path validated.
+- Update watcher owns release detection/approval; dashboard uses bounded command-file interaction and never runs the puller directly.
+- React/Netscript callback concurrency issue resolved and runtime-validated.
+- Revision-specific immutable manifest paths introduced after the r6/r7 metadata publication race.
+- Persistent runtime-unit reconciliation implemented and validated: unchanged-running preserve, missing relaunch, changed-running controlled restart, watcher-owned dashboard recovery, and explicit old-tail cleanup.
+- FIX-005 resolved by r11 runtime validation.
+- D-017 locks redundant release discovery and commit-pinned release content.
+- r12 code adds cache-busted Raw discovery plus GitHub Contents API discovery, with highest-valid-revision selection and source telemetry.
+- r12 watcher keeps Raw at 30 seconds and bounds unauthenticated GitHub API checks to 75 seconds, forcing another API verification on approval.
+- r12 puller independently checks Raw + API before enforcing exact approved revision.
+- Production descriptors from r12 onward require immutable `releaseRef` Git commit identity.
+- Pinned puller resolves manifest and managed file sources from the exact `releaseRef` rather than mutable `main`.
+- Self-refresh helper uses the same pinned release content before committing deployment state.
+- r12 compatibility bridge uses immutable-by-path snapshots under `deployment/releases/r12-src/` because the r11 puller cannot yet interpret `releaseRef`.
 
 ## Active feature
-**M1 — Reliable Deployment / release discovery freshness and immutable release content**
+**M1 — Reliable Deployment / r12 release-discovery and immutable-content runtime validation**
 
 Relevant current files:
 - `src/bootstrap/git-pull.js`
@@ -45,48 +33,42 @@ Relevant current files:
 - `src/bootstrap/update-watcher.js`
 - `src/ui/update-dashboard.jsx`
 - `deployment/version.json`
-- `deployment/releases/r11-manifest.json`
-- `deployment/manifest.json` (legacy shared metadata; not used by new release descriptors)
-- `data/deployment-state.txt` (runtime-generated, protected)
-- `data/deployment-pending.txt` (runtime-generated transaction state)
-- `data/git-pull-report.json` (runtime-generated, protected)
-- `data/update-status.json` (runtime-generated, protected)
-- `data/update-command.json` (runtime command slot, protected)
+- `deployment/releases/r12-manifest.json`
+- `deployment/releases/r12-src/`
+- `data/deployment-state.txt`
+- `data/deployment-pending.txt`
+- `data/git-pull-report.json`
+- `data/update-status.json`
+- `data/update-command.json`
 
 ## Exact next step
-1. Design the next M1 release-discovery mechanism so repeated 30-second checks cannot remain dependent on a stale GitHub Raw `main/deployment/version.json` view for several minutes.
-2. Preserve explicit user approval and exact-revision re-verification semantics.
-3. Add telemetry identifying which discovery source produced the current remote revision and its last successful check time.
-4. Make release file content immutable by pinning each release to an immutable commit/ref or equivalent immutable content identity rather than fetching manifest sources from mutable `main`.
-5. Ensure a stale descriptor can never combine an older release identity with newer source contents.
-6. Runtime-validate the new discovery path with a controlled revision and confirm detection occurs within the designed bound.
-7. Complete remaining stale/mismatched approval and duplicate/concurrent deployment validation before closing M1.
+1. Let the existing r11 watcher discover `v0.4.0-r12`; r11 still uses Raw-only discovery, so this first transition may retain the old propagation delay.
+2. Approve r12 once presented.
+3. Verify r12 deploys successfully from the revision-specific transition snapshot paths and the helper completes puller self-refresh.
+4. Verify the restarted r12 watcher/dashboard show discovery telemetry for Raw and GitHub API.
+5. Run `gp --dry-run` on installed r12 and confirm the report includes a valid `releaseRef` and dual-source discovery.
+6. Publish a controlled r13 using normal canonical manifest source paths plus a commit-pinned `releaseRef`.
+7. Confirm r12 detects r13 through either Raw or API within the designed bound (normally no more than the 75-second API cadence if GitHub API is available), even if Raw remains stale.
+8. Confirm r13 installation fetches canonical source paths from its immutable commit ref and does not mix branch content.
+9. Mark FIX-006 resolved only after both transition and first normal pinned release are runtime-validated.
+10. Complete stale/mismatched approval and duplicate/concurrent deployment validation before closing M1.
 
 ## Locked M1 behavior
-- `deployment/version.json` is the small mutable remote freshness descriptor until the release-discovery redesign replaces or supplements that role.
-- Versions use `vX.Y.Z`; revisions are monotonically increasing integers.
-- Remote requests are cache-busted.
-- Every new release descriptor points to an immutable revision-specific manifest under `deployment/releases/`.
-- Source files and immutable manifest are published before `deployment/version.json`, which is updated last for a release.
+- Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
+- Human approval is always required and bound to one exact revision.
+- Watcher and puller independently verify release freshness.
+- Discovery uses redundant Raw + GitHub API sources; highest valid revision wins.
+- Equal discovery revisions must agree on version, manifest, and `releaseRef`.
+- Production release bytes are identified by immutable `releaseRef`, not mutable `main`.
 - Descriptor and manifest version/revision must match or deployment fails closed.
-- Normal pulls refuse stale deployment; downgrades require an explicit override.
-- Dashboard/watchers never automatically install an update.
-- Player approval applies only to the exact revision presented.
-- Runtime data under `data/` is protected from manifest deployment.
-- `git-pull.js` is refreshed only after its running process exits, through the dedicated helper.
-- Local deployment revision is committed only after the helper successfully refreshes the puller.
-- Persistent runtime units are declared in the immutable manifest.
-- Unchanged running persistent units are left untouched.
-- Missing persistent units are relaunched after a successful commit.
-- Changed persistent units are restarted only after staged activation and puller self-refresh succeed.
-- Runtime reconciliation follows explicit restart order; updater/watch infrastructure is last.
-- Runtime reconciliation failure does not silently roll back committed deployment identity; it records a degraded committed state in the report.
-- The update watcher is persistent bootstrap infrastructure, not an automatic updater.
-- During M1 the watcher owns exactly one managed update-dashboard child and relaunches it if missing.
-- When watcher ownership intentionally replaces a dashboard process, its tail UI is closed before the process is killed.
-- Dashboard actions use `data/update-command.json`; dashboard code never calls `git-pull.js` directly.
-- Approval is re-verified against the remote descriptor and then passed to the puller as `--expect-revision N`.
-- React UI callbacks must not call Netscript APIs; each UI script serializes Netscript access through its `main()` loop or another explicit Netscript owner.
+- Runtime data under `data/` is protected from deployment.
+- `git-pull.js` is refreshed only after its running process exits through the helper.
+- Local deployment state commits only after successful puller self-refresh.
+- Persistent runtime units are manifest-declared and reconciled after commit in explicit restart order.
+- Unchanged running persistent units remain untouched; missing units relaunch; changed units restart only after staged validation.
+- Update watcher remains persistent bootstrap infrastructure and never auto-installs.
+- Watcher owns exactly one managed update-dashboard child and closes the old tail before intentional replacement.
+- React callbacks never call Netscript APIs directly.
 
 ## Locked architectural constraints
 - Centralized canonical state.
@@ -98,13 +80,14 @@ Relevant current files:
 - Repository is permanent project memory; avoid code dumps in chat.
 
 ## Known issues / validation gaps
-- FIX-004's historical root cause remains unproven; only the safe reconciliation procedure is established.
-- Immutable revision-specific manifests still reference mutable branch source paths. A stale release descriptor can therefore stage newer `main` content under an older manifest identity. Release content needs immutable source pinning before M1 is complete.
-- GitHub Raw descriptor propagation has repeatedly lagged publication across multiple 30-second watcher intervals; r11 took roughly 4–5 minutes to become visible in runtime despite continued checks. Release discovery needs a more reliable freshness path before M1 is complete.
-- Full rollback for a partially activated non-persistent deployment is not yet implemented.
-- Cryptographic manifest content hashing is still pending.
-- Explicit persistent-unit retirement is designed conceptually but not implemented in the current manifest contract.
-- Continuous general persistent-service supervision remains future Supervisor work; the helper only reconciles after deployment, while the watcher only supervises its own dashboard child.
+- FIX-006 is implemented in r12 but not yet runtime-validated.
+- The initial r11→r12 discovery still depends on the old Raw-only watcher; the faster dual-source behavior begins after r12 is installed.
+- r12 is a compatibility bridge using revision-specific source snapshots. A later controlled release must prove the normal canonical-path + `releaseRef` flow.
+- FIX-004's historical ledger-drift root cause remains unproven.
+- Full rollback for partially activated non-persistent deployment remains unimplemented.
+- Cryptographic per-file manifest hashing remains pending; commit pinning now supplies immutable Git content identity but hashes may still be added as defense in depth.
+- Explicit persistent-unit retirement remains conceptually designed but unimplemented.
+- Continuous general persistent-service supervision remains future Supervisor work.
 
 ## Do not work on yet
 Do not begin hacking, stocks, purchased servers, progression, or other domain automation until earlier roadmap foundations are completed and validated.
