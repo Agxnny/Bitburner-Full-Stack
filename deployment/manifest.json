@@ -1,9 +1,11 @@
 {
   "schemaVersion": 1,
-  "version": "v0.1.0",
-  "revision": 4,
+  "version": "v0.2.0",
+  "revision": 5,
   "files": [
     {"source": "src/bootstrap/git-pull.js", "target": "src/bootstrap/git-pull.js"},
-    {"source": "src/bootstrap/git-pull-self-update.js", "target": "src/bootstrap/git-pull-self-update.js"}
+    {"source": "src/bootstrap/git-pull-self-update.js", "target": "src/bootstrap/git-pull-self-update.js"},
+    {"source": "src/bootstrap/update-watcher.js", "target": "src/bootstrap/update-watcher.js"},
+    {"source": "src/ui/update-dashboard.jsx", "target": "src/ui/update-dashboard.jsx"}
   ]
 }
