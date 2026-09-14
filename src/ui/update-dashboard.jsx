@@ -1,11 +1,12 @@
 /**
- * Minimal React update dashboard for M1 deployment validation.
+ * React update dashboard for M1 deployment validation.
  * React never calls Netscript directly; main() owns all Netscript access.
  */
 
 const STATUS_PATH = "data/update-status.json";
 const COMMAND_PATH = "data/update-command.json";
 const REPORT_PATH = "data/git-pull-report.json";
+const SCRIPT_PATH = "src/ui/update-dashboard.jsx";
 const REFRESH_MS = 1_000;
 
 /** @param {NS} ns */
@@ -14,6 +15,11 @@ export async function main(ns) {
         ns.tprint("ERROR | update-dashboard must run on home");
         return;
     }
+
+    const dashboards = ns.ps("home")
+        .filter((process) => process.filename === SCRIPT_PATH)
+        .sort((a, b) => a.pid - b.pid);
+    if (dashboards.length > 0 && dashboards[0].pid !== ns.pid) return;
 
     ns.disableLog("sleep");
     const bridge = {
@@ -100,16 +106,21 @@ function UpdateDashboard({ bridge }) {
     const heartbeatAge = status.heartbeatAt ? Date.now() - status.heartbeatAt : null;
     const heartbeatFresh = heartbeatAge !== null && heartbeatAge < 15_000;
     const deploymentReport = status.deployment?.report ?? summarizeReport(report);
+    const runtimeUnits = deploymentReport?.runtime?.units ?? [];
 
     return (
-        <div style={{ fontFamily: "monospace", minWidth: "520px", padding: "8px" }}>
-            <Panel title="Update Status">
+        <div style={{ fontFamily: "monospace", minWidth: "560px", padding: "8px" }}>
+            <Panel title="Update Service">
                 <Row label="Watcher" value={`${status.health ?? "unknown"} / ${status.phase ?? "unknown"}`} />
+                <Row label="Lifecycle" value={status.lifecycle ?? "—"} />
+                <Row label="Watcher PID" value={status.watcherPid ?? "—"} />
+                <Row label="Dashboard" value={dashboardStatus(status.dashboard)} />
                 <Row label="Heartbeat" value={heartbeatFresh ? `${formatAge(heartbeatAge)} ago` : `STALE (${formatAge(heartbeatAge)} ago)`} />
                 <Row label="Local" value={release(status.local)} />
                 <Row label="Remote" value={release(status.remote)} />
                 <Row label="Last check" value={formatTime(status.lastCheckAt)} />
                 <Row label="Next check" value={formatTime(status.nextCheckAt)} />
+                {status.dashboard?.error ? <ErrorText>{status.dashboard.error}</ErrorText> : null}
                 {status.error ? <ErrorText>{status.error}</ErrorText> : null}
             </Panel>
 
@@ -129,10 +140,17 @@ function UpdateDashboard({ bridge }) {
             </Panel>
 
             <Panel title="Deployment">
-                <Row label="Running" value={status.deployment?.running ? `yes (pid ${status.deployment.pid})` : "no"} />
+                <Row label="Phase" value={status.deployment?.phase ?? "—"} />
+                <Row label="Running" value={status.deployment?.running ? "yes" : "no"} />
+                <Row label="Puller PID" value={status.deployment?.pullerPid ?? "—"} />
+                <Row label="Helper PID" value={status.deployment?.helperPid ?? "—"} />
                 <Row label="Requested" value={status.deployment?.requestedRevision != null ? `r${status.deployment.requestedRevision}` : "—"} />
                 <Row label="Result" value={deploymentReport?.status ?? "—"} />
                 <Row label="Release" value={release(deploymentReport?.remote)} />
+                <Row label="Runtime" value={deploymentReport?.runtime?.status ?? "—"} />
+                {runtimeUnits.map((unit) => (
+                    <Row key={unit.id} label={`↳ ${unit.id}`} value={`${unit.outcome ?? "—"}${unit.pid ? ` (pid ${unit.pid})` : ""}`} />
+                ))}
                 {deploymentReport?.error ? <ErrorText>{deploymentReport.error}</ErrorText> : null}
             </Panel>
         </div>
@@ -144,7 +162,7 @@ function Panel({ title, children }) {
 }
 
 function Row({ label, value }) {
-    return <div style={{ display: "grid", gridTemplateColumns: "130px 1fr", gap: "8px", marginBottom: "4px" }}><strong>{label}</strong><span>{value ?? "—"}</span></div>;
+    return <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: "8px", marginBottom: "4px" }}><strong>{label}</strong><span>{value ?? "—"}</span></div>;
 }
 
 function ErrorText({ children }) { return <p style={{ fontWeight: "bold" }}>ERROR: {children}</p>; }
@@ -159,9 +177,23 @@ function approvalMessage(status) {
     return "No update approval is currently available.";
 }
 
+function dashboardStatus(value) {
+    if (!value) return "unknown";
+    if (value.running) return `running (pid ${value.pid}, starts ${value.restartCount ?? 0})`;
+    return `not running (starts ${value.restartCount ?? 0})`;
+}
+
 function summarizeReport(report) {
     if (!report) return null;
-    return { status: report.status ?? null, success: report.success ?? null, clean: report.clean ?? null, remote: report.remote ?? null, error: report.error ?? null, finishedAt: report.finishedAt ?? null };
+    return {
+        status: report.status ?? null,
+        success: report.success ?? null,
+        clean: report.clean ?? null,
+        remote: report.remote ?? null,
+        runtime: report.runtime ?? null,
+        error: report.error ?? null,
+        finishedAt: report.finishedAt ?? null,
+    };
 }
 
 function readJson(ns, path) {
