@@ -4,28 +4,30 @@ A modular, centrally governed Bitburner automation stack.
 
 ## Project principles
 
-- GitHub is the permanent source of truth for code, architecture, decisions, fixes, and handoff state.
+- GitHub is the permanent source of truth for code, architecture, decisions, fixes, working changes, and handoff state.
 - Chat is for reasoning and decisions; implementation code should live in the repository.
 - Shared resources and contested decision domains are governed centrally.
 - Core services expose structured telemetry for React production and validation dashboards.
 - Features move through design, implementation, validation, documentation, and completion in order.
+- In-progress work is preserved in `CHANGES.md`, and feature documentation is updated whenever feature behavior changes.
 
 ## Start here
 
 Future development sessions should read these documents before making changes:
 
 1. `PROJECT_RULES.md`
-2. `CURRENT_STATE.md`
-3. `ARCHITECTURE.md`
-4. `DECISIONS.md`
-5. `ROADMAP.md`
-6. `FIXES.md`
-7. `REFERENCES.md`
+2. `CHANGES.md`
+3. `CURRENT_STATE.md`
+4. `ARCHITECTURE.md`
+5. `DECISIONS.md`
+6. `ROADMAP.md`
+7. `FIXES.md`
+8. `REFERENCES.md`
 
 Before relying on any Bitburner API behavior, verify it against the current official documentation/source referenced in `REFERENCES.md`.
 
 ## Current milestone
 
-**M0 — Project Foundation**
+**M1 — Reliable Deployment**
 
-Governance, architecture, repository structure, and handoff documentation are being established before implementation begins.
+Reliable deployment, updater lifecycle, update UI, and validation behavior are being completed before the project advances to later control-plane milestones.
