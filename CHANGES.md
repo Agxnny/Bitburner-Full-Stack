@@ -24,35 +24,32 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M1 explicit persistent-unit retirement
-**Status:** Implementation
+**Status:** Runtime validation setup — r18 ready to publish
 
 **Goal:** Add and runtime-validate an explicit retirement contract for persistent runtime units so a service is stopped only when a newer validated manifest positively authorizes retirement.
 
 **Files / areas touched:**
 - `src/bootstrap/git-pull.js`
 - `src/bootstrap/git-pull-self-update.js`
+- `src/bootstrap/validation/retirement-fixture.js`
 - `deployment/README.md`
 - `deployment/releases/r18-manifest.json`
 - `deployment/releases/r19-manifest.json` after r18 validation
 - `deployment/version.json`
-- a small retirement validation fixture under `src/bootstrap/validation/`
 - `CURRENT_STATE.md`
-- `DECISIONS.md` if the manifest contract needs a durable decision amendment
 
 **Decisions / constraints:**
-- Manifest schema remains version 1; retirement is an additive optional field `retireRuntimeUnits` containing persistent unit IDs.
-- A retirement ID must exist in the previously committed deployment state's `runtimeUnits` and must not also appear in the new manifest's active `runtimeUnits`.
-- Retirement reuses the previously committed unit invocation metadata; the new manifest does not need to redeploy the retired script merely to stop it.
-- The puller validates and carries retirement entries into the pending runtime plan only after all replacement files have staged successfully.
-- The helper stops matching retired processes during reconciliation and never relaunches them.
-- Retired units are omitted from the newly committed `runtimeUnits` ledger.
-- Disappearance from `runtimeUnits` without explicit `retireRuntimeUnits` remains non-authoritative and must not stop a process.
-- Runtime validation uses two controlled releases: r18 deploys a harmless persistent validation fixture; r19 explicitly retires that fixture. The real update watcher remains active throughout.
+- Manifest schema remains version 1; retirement is the additive optional `retireRuntimeUnits` array of persistent unit IDs.
+- A retirement ID must exist in the previously committed `runtimeUnits` ledger and must not also appear in the new manifest's active `runtimeUnits`.
+- Retirement reuses the previously committed unit invocation metadata, so the retiring release does not need to redeploy the retired script merely to stop it.
+- The puller validates retirement only after release metadata and files are staged; disappearance alone remains non-authoritative.
+- The helper stops matching retired processes, verifies they are gone, never relaunches them, reports `retired`/`already-stopped`, and excludes them from the newly committed runtime ledger.
+- r18 introduces a harmless persistent `retirement-validation-fixture`; r19 will explicitly retire it. The real update watcher remains an active persistent unit throughout.
 - No unrelated deployment refactor or schema redesign.
 
-**Validation:** Exact-revision approval, concurrent-deployment rejection, and final normal r17 installation are already runtime validated. Explicit retirement is not yet runtime validated.
+**Validation:** Source implementation and feature documentation are updated. `deployment/releases/r18-manifest.json` contains the retirement-aware puller/helper plus the harmless validation fixture and declares both the fixture and update watcher as persistent units. Runtime behavior is not yet proven.
 
-**Next step:** Implement the additive retirement contract and publish r18, which installs the retirement-aware deployment code and launches the harmless persistent retirement fixture. After r18 is confirmed healthy and the fixture is running, publish r19 with explicit retirement and verify the helper stops it without affecting the update watcher.
+**Next step:** Publish r18 by updating `deployment/version.json` last with releaseRef `5f4732259ae57d2addaf56bcfa481992462e93fe`. After r18 is presented, install it normally and verify `src/bootstrap/validation/retirement-fixture.js` and the update watcher are both running before publishing r19.
 
 ## Recently completed
 
