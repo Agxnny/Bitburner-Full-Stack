@@ -100,3 +100,12 @@ GitHub API polling is deliberately slower than Raw polling to stay below the una
 Every production descriptor from the transition release onward includes an immutable 40-character Git commit SHA in `releaseRef`. After the descriptor is discovered, the manifest and all manifest sources are fetched from that exact commit rather than mutable `main`. The self-update helper also refreshes `git-pull.js` from the same immutable release content before committing deployment state.
 
 Release r12 is the one-time compatibility bridge because the r11 puller cannot interpret `releaseRef`. Its manifest points to revision-unique source snapshots under `deployment/releases/r12-src/`, allowing the old puller to stage immutable-by-path transition content. The r12 helper permits that narrowly scoped fallback only for revision 12. Later releases must use `releaseRef`; unpinned self-refresh fails closed.
+
+## D-018 — Dashboards share one grey-blue visual language
+**Status:** Locked
+
+All React dashboard surfaces use a common dark grey-blue presentation system so operator and validation UIs feel like one product. The base language uses near-black/charcoal backgrounds, blue-grey raised surfaces, cool blue borders/dividers, bright blue primary actions, pale blue-grey secondary text, green healthy state, amber attention/update state, and red only for explicit failures.
+
+The M1 update watcher uses the approved ultra-compact single-row presentation: current release, heartbeat, polling interval, and update approval only. Detailed engineering telemetry remains available to validation surfaces rather than crowding this operator widget.
+
+The later Production Dashboard should use the same palette but may use larger status-card compositions similar to the approved compact status-card concept. Visual consistency is shared; layout density is allowed to vary by dashboard purpose.
