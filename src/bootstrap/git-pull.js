@@ -78,7 +78,6 @@ export async function main(ns) {
 
         const stagedFiles = [];
         const targets = new Set();
-
         for (let index = 0; index < manifest.files.length; index++) {
             const file = manifest.files[index];
             validateFileEntry(file);
@@ -87,8 +86,11 @@ export async function main(ns) {
 
             const stagePath = `${STAGE_ROOT}/r${descriptor.revision}-${index}-${nonce}.txt`;
             stagedPaths.push(stagePath);
-            const url = cacheBust(`${RAW_BASE}/${file.source}`, `r${descriptor.revision}-${nonce}`);
-            const ok = await ns.wget(url, stagePath, "home");
+            const ok = await ns.wget(
+                cacheBust(`${RAW_BASE}/${file.source}`, `r${descriptor.revision}-${nonce}`),
+                stagePath,
+                "home",
+            );
             if (!ok) throw new Error(`Download failed: ${file.source}`);
 
             const content = ns.read(stagePath);
@@ -99,15 +101,16 @@ export async function main(ns) {
             const same = existed && previous === content;
             const deferredSelf = file.target === SELF_PATH;
             let action = existed ? (same ? "unchanged" : "updated") : "added";
-
             if (same && (flags.force || deferredSelf)) action = "refreshed";
             stagedFiles.push({ ...file, content, action, deferredSelf });
         }
 
+        const runtimePlan = buildRuntimePlan(manifest, stagedFiles, targets);
         report.files = stagedFiles.map(({ source, target, action, deferredSelf }) => ({
             source, target, action, deferred: deferredSelf,
         }));
         report.counts = countActions(report.files);
+        report.runtime = { planned: runtimePlan.map(runtimeSummary), status: "planned", units: [] };
 
         if (validationFailure) {
             throw new Error("Validation fixture unexpectedly staged successfully; activation blocked.");
@@ -122,10 +125,12 @@ export async function main(ns) {
             return;
         }
 
-        const selfEntry = stagedFiles.find((file) => file.target === SELF_PATH);
-        const helperEntry = stagedFiles.find((file) => file.target === SELF_HELPER_PATH);
-        if (!selfEntry) throw new Error(`Manifest must include ${SELF_PATH}.`);
-        if (!helperEntry) throw new Error(`Manifest must include ${SELF_HELPER_PATH}.`);
+        if (!stagedFiles.some((file) => file.target === SELF_PATH)) {
+            throw new Error(`Manifest must include ${SELF_PATH}.`);
+        }
+        if (!stagedFiles.some((file) => file.target === SELF_HELPER_PATH)) {
+            throw new Error(`Manifest must include ${SELF_HELPER_PATH}.`);
+        }
 
         const sameRevision = descriptor.revision === Number(localState?.revision ?? -1);
         if (sameRevision && !flags.force) {
@@ -138,6 +143,7 @@ export async function main(ns) {
                     : file,
             );
             report.counts = countActions(report.files);
+            report.runtime.status = "not-required";
             finishReport(ns, report);
             printSummary(ns, report);
             return;
@@ -161,6 +167,7 @@ export async function main(ns) {
             manifest: descriptor.manifest,
             previousVersion: localState?.version ?? null,
             previousRevision: localState?.revision ?? null,
+            runtimePlan,
             report,
             stagedAt: Date.now(),
         };
@@ -189,6 +196,51 @@ export async function main(ns) {
     }
 }
 
+function buildRuntimePlan(manifest, stagedFiles, targets) {
+    if (manifest.runtimeUnits == null) return [];
+    if (!Array.isArray(manifest.runtimeUnits)) throw new Error("Manifest runtimeUnits must be an array.");
+    const fileActions = new Map(stagedFiles.map((file) => [file.target, file.action]));
+    const ids = new Set();
+
+    return manifest.runtimeUnits.map((unit) => {
+        validateRuntimeUnit(unit, targets);
+        if (ids.has(unit.id)) throw new Error(`Duplicate runtime unit id: ${unit.id}`);
+        ids.add(unit.id);
+        return {
+            id: unit.id,
+            lifecycle: unit.lifecycle,
+            script: unit.script,
+            host: unit.host,
+            threads: unit.threads,
+            args: [...unit.args],
+            files: [...unit.files],
+            restartOrder: unit.restartOrder,
+            changed: unit.files.some((path) => ["updated", "added"].includes(fileActions.get(path))),
+        };
+    });
+}
+
+function validateRuntimeUnit(unit, targets) {
+    if (!unit || typeof unit.id !== "string" || !unit.id) throw new Error("Runtime unit is missing id.");
+    if (unit.lifecycle !== "persistent") throw new Error(`Unsupported runtime lifecycle for ${unit.id}.`);
+    if (unit.host !== "home") throw new Error(`Runtime unit ${unit.id} must currently run on home.`);
+    if (typeof unit.script !== "string" || !targets.has(unit.script)) {
+        throw new Error(`Runtime unit ${unit.id} script is not a deployed manifest target.`);
+    }
+    if (!Number.isSafeInteger(unit.threads) || unit.threads < 1) throw new Error(`Invalid threads for ${unit.id}.`);
+    if (!Array.isArray(unit.args)) throw new Error(`Invalid args for ${unit.id}.`);
+    if (!Array.isArray(unit.files) || unit.files.length === 0 || unit.files.some((path) => !targets.has(path))) {
+        throw new Error(`Invalid managed files for runtime unit ${unit.id}.`);
+    }
+    if (!Number.isSafeInteger(unit.restartOrder) || unit.restartOrder < 0) {
+        throw new Error(`Invalid restartOrder for ${unit.id}.`);
+    }
+}
+
+function runtimeSummary(unit) {
+    return { id: unit.id, lifecycle: unit.lifecycle, script: unit.script, changed: unit.changed, restartOrder: unit.restartOrder };
+}
+
 function createReport(startedAt, localState, flags, descriptorPath) {
     return {
         schemaVersion: 1,
@@ -198,10 +250,7 @@ function createReport(startedAt, localState, flags, descriptorPath) {
         clean: null,
         success: null,
         alarm: { active: false, type: null, message: null },
-        local: {
-            version: localState?.version ?? null,
-            revision: localState?.revision ?? null,
-        },
+        local: { version: localState?.version ?? null, revision: localState?.revision ?? null },
         remote: { version: null, revision: null },
         options: {
             force: Boolean(flags.force),
@@ -213,6 +262,7 @@ function createReport(startedAt, localState, flags, descriptorPath) {
         },
         counts: { unchanged: 0, refreshed: 0, updated: 0, added: 0 },
         files: [],
+        runtime: { planned: [], status: "none", units: [] },
         error: null,
     };
 }
