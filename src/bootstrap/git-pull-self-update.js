@@ -12,10 +12,6 @@ const PENDING_STATE_PATH = "data/deployment-pending.txt";
 const REPORT_PATH = "data/git-pull-report.json";
 const TRANSITION_REVISION = 12;
 const TRANSITION_SOURCE_PREFIX = "deployment/releases/r12-src/";
-const DASHBOARD_SCRIPTS = [
-    "src/ui/update-dashboard.jsx",
-    "src/ui/system-health-dashboard.jsx",
-];
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -61,6 +57,7 @@ export async function main(ns) {
         previousVersion: pending.previousVersion,
         previousRevision: pending.previousRevision,
         runtimeUnits: activeUnits.map(persistedUnit),
+        managedFiles: Array.isArray(pending.managedFiles) ? [...pending.managedFiles] : [],
         deployedAt: committedAt,
     };
 
@@ -77,21 +74,30 @@ export async function main(ns) {
     ns.write(REPORT_PATH, JSON.stringify(report, null, 2), "w");
 
     const runtimeResults = await reconcileRuntime(ns, runtimePlan);
-    const dashboardResults = await refreshDashboards(ns);
-    report.runtime.units = [...runtimeResults, ...dashboardResults];
+    report.runtime.units = runtimeResults;
+    const retirementResults = await retireFiles(ns, Array.isArray(pending.retireFiles) ? pending.retireFiles : []);
+    report.retirement = {
+        planned: (pending.retireFiles ?? []).map((item) => ({ path: item.path })),
+        status: retirementResults.some((item) => item.status === "failed") ? "degraded" : (retirementResults.length ? "complete" : "none"),
+        files: retirementResults,
+    };
     const runtimeFailed = report.runtime.units.some((item) => item.outcome === "failed");
+    const retirementFailed = retirementResults.some((item) => item.status === "failed");
+    const deploymentDegraded = runtimeFailed || retirementFailed;
     report.runtime.status = runtimeFailed ? "degraded" : "healthy";
-    report.status = runtimeFailed ? "committed-runtime-degraded" : "committed";
-    report.clean = !runtimeFailed;
-    report.success = !runtimeFailed;
-    report.error = runtimeFailed
-        ? report.runtime.units.filter((item) => item.outcome === "failed").map((item) => `${item.id}: ${item.error}`).join("; ")
-        : null;
+    report.status = deploymentDegraded ? "committed-runtime-degraded" : "committed";
+    report.clean = !deploymentDegraded;
+    report.success = !deploymentDegraded;
+    const errors = [
+        ...report.runtime.units.filter((item) => item.outcome === "failed").map((item) => `${item.id}: ${item.error}`),
+        ...retirementResults.filter((item) => item.status === "failed").map((item) => `retire ${item.path}: ${item.error}`),
+    ];
+    report.error = errors.length ? errors.join("; ") : null;
     report.finishedAt = Date.now();
     ns.write(REPORT_PATH, JSON.stringify(report, null, 2), "w");
 
-    if (runtimeFailed) {
-        ns.tprint(`FAIL | ${release(report.remote)} | deployment committed but persistent runtime reconciliation degraded`);
+    if (deploymentDegraded) {
+        ns.tprint(`FAIL | ${release(report.remote)} | deployment committed but runtime/file retirement reconciliation degraded`);
         return;
     }
     printSummary(ns, report);
@@ -172,30 +178,55 @@ async function reconcileRuntime(ns, runtimePlan) {
     return results;
 }
 
-async function refreshDashboards(ns) {
+async function retireFiles(ns, entries) {
     const results = [];
-    for (const script of DASHBOARD_SCRIPTS) {
-        const matches = ns.ps("home").filter((process) => process.filename === script);
+    for (const entry of entries) {
+        const path = entry.path;
+        const item = { path, existedBefore: ns.fileExists(path, "home"), matchedPids: [], stoppedPids: [], status: "pending", error: null, handledAt: Date.now() };
+        if (!item.existedBefore) {
+            item.status = "already-absent";
+            ns.tprint(`RETIRE | ALREADY ABSENT | ${path}`);
+            results.push(item);
+            continue;
+        }
+        const matches = ns.ps("home").filter((process) => process.filename === path);
+        item.matchedPids = matches.map((process) => process.pid);
+        let stopOk = true;
         for (const process of matches) {
             ns.ui.closeTail(process.pid);
-            if (!ns.kill(process.pid)) {
-                results.push({ id: `dashboard:${script}`, script, changed: true, retired: false, outcome: "failed", pid: null, error: "Could not stop dashboard for deployment refresh.", handledAt: Date.now() });
-                continue;
-            }
+            if (ns.kill(process.pid)) {
+                item.stoppedPids.push(process.pid);
+                ns.tprint(`RETIRE | STOPPED pid ${process.pid} | ${path}`);
+            } else stopOk = false;
         }
-        if (matches.length > 0) await ns.sleep(100);
-        const pid = ns.run(script, 1);
-        results.push({
-            id: `dashboard:${script}`,
-            script,
-            changed: true,
-            retired: false,
-            outcome: pid > 0 ? "refreshed" : "failed",
-            pid: pid || null,
-            error: pid > 0 ? null : "Could not relaunch dashboard after deployment.",
-            handledAt: Date.now(),
-        });
+        if (matches.length === 0) ns.tprint(`RETIRE | NO PROCESS | ${path}`);
+        if (matches.length > 0) await ns.sleep(150);
+        const remaining = ns.ps("home").filter((process) => process.filename === path);
+        if (!stopOk || remaining.length > 0) {
+            item.status = "failed";
+            item.error = remaining.length ? `Process still running: ${remaining.map((p) => p.pid).join(", ")}. File preserved.` : "One or more stop requests failed. File preserved.";
+            ns.tprint(`RETIRE | BLOCKED | ${path} | ${item.error}`);
+            results.push(item);
+            continue;
+        }
+        ns.tprint(`RETIRE | VERIFIED STOPPED | ${path}`);
+        const removed = ns.rm(path, "home");
+        if (!removed || ns.fileExists(path, "home")) {
+            item.status = "failed";
+            item.error = "File deletion failed or file remained present.";
+            ns.tprint(`RETIRE | DELETE FAILED | ${path}`);
+            results.push(item);
+            continue;
+        }
+        item.status = "retired";
+        ns.tprint(`RETIRE | DELETED | ${path}`);
+        ns.tprint(`RETIRE | VERIFIED ABSENT | ${path}`);
+        results.push(item);
     }
+    const retired = results.filter((x) => x.status === "retired").length;
+    const absent = results.filter((x) => x.status === "already-absent").length;
+    const failed = results.filter((x) => x.status === "failed").length;
+    if (results.length) ns.tprint(`RETIREMENT SUMMARY | requested ${results.length} | deleted ${retired} | already absent ${absent} | failed ${failed}`);
     return results;
 }
 
@@ -257,6 +288,7 @@ function legacyReport(pending) {
         counts: { unchanged: 0, refreshed: 0, updated: 2, added: 0 },
         files: [],
         runtime: { planned: [], status: "none", units: [] },
+        retirement: { planned: [], status: "none", files: [] },
         error: null,
         legacyTransition: true,
     };
@@ -289,7 +321,8 @@ function fail(ns, report, message) {
 
 function printSummary(ns, report) {
     const c = report.counts;
-    ns.tprint(`CLEAN | ${release(report.remote)} | unchanged ${c.unchanged} | refreshed ${c.refreshed} | updated ${c.updated} | added ${c.added}`);
+    const retired = report.retirement?.files?.filter((item) => item.status === "retired").length ?? 0;
+    ns.tprint(`CLEAN | ${release(report.remote)} | unchanged ${c.unchanged} | refreshed ${c.refreshed} | updated ${c.updated} | added ${c.added} | retired ${retired}`);
 }
 
 function release(value) {
