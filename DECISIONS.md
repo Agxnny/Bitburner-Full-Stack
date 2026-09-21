@@ -280,3 +280,11 @@ Raw may remain eventually consistent even with a unique query parameter. Therefo
 M3 collection cadence control is owned by the persistent `collection-control` service, separately from canonical game-state ownership. Consumer requests are leases containing stable identity, owner, domain, requested interval, and expiry. Port 3 transports commands only. The durable collection-cadence state is authoritative and survives service restart.
 
 For each domain, the fastest active valid lease wins, bounded by the collector's minimum safe interval and its normal baseline. Expiry or explicit release removes authority automatically; no active lease means baseline cadence. Collectors consume resolved cadence but do not inspect or arbitrate competing leases. Market port 5 remains reserved for later market-specific high-frequency control.
+
+
+## D-036 — Stock/server resource associations are derived canonical facts
+**Status:** Locked
+
+The stock-symbol ↔ organization ↔ server relationship belongs to canonical state, not the future authority registry or stock trader. The canonical owner derives it only from canonical market and network inputs. Stock organization comes from `ns.stock.getOrganization(symbol)`; server organization comes from `ns.getServer(host).organizationName`. Only exact non-empty organization-name equality creates an association. Unmatched resources remain explicit and are never guessed or filled from a static table.
+
+The derived state's provenance includes both source revisions/timestamps and its observation time is the older input timestamp. Association does not imply authority, exclusivity, or action compatibility; those are separate authority-policy decisions.
