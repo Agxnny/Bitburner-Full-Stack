@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r33 collector/API and dashboard overflow stabilization
-**Status:** Approved — implementation
+**Status:** Implementation complete — publication pending
 
 **Goal:** Correct the r32 Bitburner v3 API regression and make large health incidents remain readable without allowing a dynamically sized dashboard to extend beyond the usable viewport.
 
@@ -43,9 +43,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - System Health remains a compact alarm surface. It displays concise single-line failure summaries; full diagnostic detail remains in telemetry/logs for engineering surfaces.
 - No unrelated collector behavior, authority, or dashboard docking changes.
 
-**Validation:** r32 runtime reproduced `REMOVED FUNCTION ERROR` for `getPurchasedServers` and demonstrated isolation. r31 reactive update-width grow path is PASS. Static r33 implementation/audit pending.
+**Validation:** r32 runtime reproduced `REMOVED FUNCTION ERROR` for `getPurchasedServers` and demonstrated isolation. r31 reactive update-width grow path is PASS. Official v3.0.1 docs confirm `ns.cloud.getServerNames()` as the supported owned-server enumeration API. The r32 collector calls were rechecked against v3.0.1 generated docs/source surfaces; no additional removed top-level call was identified. Infrastructure API, viewport-aware max height, compact incident rendering, FIX-007, and feature docs are implemented. Runtime validation pending.
 
-**Next step:** Audit collector calls, implement the cloud API correction and bounded dashboard overflow behavior, document the reusable incident, then publish r33 for runtime validation.
+**Next step:** Publish immutable r33 and descriptor last. Then install normally and validate infrastructure recovery, seven-service health, bounded/scrollable health sizing under a large incident, and isolated collector failure.
 
 ## Recently completed
 
