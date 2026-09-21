@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "version": "v0.6.0",
-  "revision": 58,
-  "manifest": "deployment/releases/r58-manifest.json",
-  "releaseRef": "ccb626d9c08cac0f53bfd379d6b86d6d7cabf4c1",
-  "releasedAt": "2026-09-22T02:40:00Z"
+  "revision": 59,
+  "manifest": "deployment/releases/r59-manifest.json",
+  "releaseRef": "62e01302ad2489a9aa84c283a9e972f94908cf0f",
+  "releasedAt": "2026-09-22T03:00:00Z"
 }
