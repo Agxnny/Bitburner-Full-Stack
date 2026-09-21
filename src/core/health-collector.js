@@ -36,12 +36,13 @@ export async function main(ns) {
     while (true) {
         const now = Date.now();
         if (now >= nextSelfAt) {
-            ingestHealth(services, serviceHealth(ns, "health-collector", {
+            const self = ingestHealth(services, serviceHealth(ns, "health-collector", {
                 lifecycle: "persistent",
                 health: "healthy",
                 phase: "collecting",
                 staleAfterMs: 12_000,
             }), now);
+            for (const incident of self.incidents) incidents = addIncident(incidents, incident);
             nextSelfAt = now + SELF_HEARTBEAT_MS;
         }
 
