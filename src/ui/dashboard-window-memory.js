@@ -8,6 +8,7 @@ const SAVE_ARM_DELAY_MS = 500;
 const SAVE_DEBOUNCE_MS = 120;
 const SIZE_DEBOUNCE_MS = 100;
 const SIZE_TOLERANCE_PX = 3;
+const CONTENT_EDGE_SAFETY_PX = 8;
 const POSITION_TOLERANCE_PX = 2;
 const MANUAL_DRAG_THRESHOLD_PX = 12;
 const DRAG_SETTLE_MS = 220;
@@ -82,12 +83,12 @@ export function useDashboardWindow(key, bridge, options = {}) {
             const vh = Math.max(minHeight, window.innerHeight || minHeight);
             const availableHeight = Math.max(minHeight, vh - Math.max(0, resizableRect.top) - 8);
             bridge.desiredSize = {
-                width: clamp(Math.ceil(contentWidth + nativeWidthOverhead), minWidth, Math.min(maxWidth, vw - 8)),
+                width: clamp(Math.ceil(contentWidth + nativeWidthOverhead + CONTENT_EDGE_SAFETY_PX), minWidth, Math.min(maxWidth, vw - 8)),
                 height: clamp(Math.ceil(contentHeight + nativeHeightOverhead), minHeight, Math.min(maxHeight, availableHeight)),
             };
             bridge.windowMetrics = {
                 measuredAt: Date.now(), nativeOverhead: { width:nativeWidthOverhead, height:nativeHeightOverhead },
-                content: { width:contentWidth, height:contentHeight }, resizable: { width:resizableRect.width, height:resizableRect.height },
+                content: { width:contentWidth, height:contentHeight, edgeSafety:CONTENT_EDGE_SAFETY_PX }, resizable: { width:resizableRect.width, height:resizableRect.height },
                 viewport: { width:contentViewport.clientWidth, height:contentViewport.clientHeight, availableHeight },
             };
         };
