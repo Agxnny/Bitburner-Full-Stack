@@ -16,7 +16,7 @@ export async function main(ns) {
             formulas: probe(() => Boolean(ns.formulas?.skills)),
             torRouter: ns.hasTorRouter(),
         };
-        writeObservation(ns, DOMAIN, "capabilities-collector", "available", data, { freshForMs: 45_000 });
+        writeObservation(ns, DOMAIN, "capabilities-collector", "available", data);
         return { status: "available" };
     });
 }
