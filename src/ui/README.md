@@ -134,3 +134,12 @@ Desired placement and restart authority do not belong to this dashboard or to M2
 The harness offers known 600×300, 720×420, and 840×540 native tail targets. The Netscript main loop alone applies those exact sizes. r25 established that `resizeTail()` matches `.react-resizable` exactly while the React root's vertical offset changes with target height. r26 therefore enumerates every ancestor from the React root through `.react-resizable`, reporting bounding/client/scroll dimensions, scroll position, display/position/overflow, flex layout properties, and root-relative offsets. Explicit top/bottom content markers separate actual rendered extent from native-container placement.
 
 Use it only for sizing validation. r26 measurements identified the scrollable column-reverse content viewport used by the production sizing helper; the harness remains available for diagnosis if a future Bitburner UI release changes the native tail DOM.
+
+
+### Disruptive emergency-focus validation
+
+`m2.dashboard.emergency-focus` is the first DISRUPTIVE registered test. Tests requires explicit confirmation before dispatch. The runner captures and temporarily stops only the player, network, market, and infrastructure observation collectors; it never stops Health Collector, Update Watcher, Validation Dashboard, or capabilities collector. Four targets are required to cross the production emergency rule with seven reporting services.
+
+Restoration is armed before mutation and records the exact process script/host/thread/argument tuple for each target. Completion, failure, timeout, and script death all attempt to restore only processes the test actually stopped. A failed restoration is a failed validation condition, not a successful test with cleanup warnings.
+
+Emergency UI facts follow FIX-002: React may update the dashboard's ordinary-JavaScript bridge when it automatically selects Health or receives Acknowledge; only dashboard `main()` writes those facts to `data/validation/ui-state.json`. The disruptive runner observes that file and health telemetry. Recovery clears the previous emergency focus/acknowledgement generation so a later independent recurrence can escalate once again.
