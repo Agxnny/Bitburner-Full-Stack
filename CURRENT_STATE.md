@@ -119,3 +119,5 @@ A fresh development chat should read `PROJECT_RULES.md`, `CHANGES.md`, this file
 - r60 runtime validated the compact Validation Dashboard layout: auto-sized narrow window, 4+3 icon/text navigation, and full Overview height without cropping.
 
 - v0.6.0-r63 runtime validated M3 collection cadence control end-to-end: SAFE lease bounds/expiry plus disruptive collection-control restart recovery. A live player lease survived owner restart from durable state, remained bounded at 500ms, and expired back to the 2000ms baseline. No current validation-plan tests remain outstanding.
+
+- v0.6.0-r66 runtime validated canonical resource associations: CLEAN deployment/reconciliation followed by SAFE `m3.resource.associations` PASS (7/7). Live canonical state exposed 33 exact stock/server association pairs, 1 unmatched stock, and 37 unmatched organization servers with source provenance and no invented/duplicate links. No current validation-plan tests remain outstanding.
