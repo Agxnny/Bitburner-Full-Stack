@@ -268,7 +268,7 @@ Process termination and tail-window cleanup are separate Bitburner lifecycle act
 
 ### FIX-009 — New manifest retirement field was invisible to the pre-feature puller
 **Date:** 2026-09-21  
-**Status:** Recovery pending r51 runtime validation  
+**Status:** Resolved and runtime validated in r51  
 **Subsystem:** M1 deployment / managed-file retirement transition  
 **Affected files:**
 - `src/bootstrap/git-pull.js`
@@ -286,7 +286,7 @@ The r50 deployment transaction itself was executed by the installed r49 `git-pul
 Use r50 as the bootstrap transition that installs the retirement-aware puller, then repeat the explicit retirement declarations in r51. The locally installed r50 puller can serialize the r51 retirement plan, allowing the r50/r51 helper path to execute stop → verify stopped → delete → verify absent.
 
 #### Verification
-r50 runtime observation confirms the compatibility gap. r51 must print per-file retirement actions for both legacy dashboard scripts, remove both files only after their processes are verified stopped, close both legacy tails, and finish with healthy backend services.
+r50 runtime observation confirmed the compatibility gap. r51 runtime output printed STOPPED, VERIFIED STOPPED, DELETED, and VERIFIED ABSENT for both legacy dashboard scripts, with `requested 2 | deleted 2 | already absent 0 | failed 0` and final `retired 2`. Both legacy tails disappeared while the backend updater remained ONLINE / Install clean.
 
 #### Prevention / notes
 Any release that introduces a new manifest field whose semantics must be acted on by the currently running puller requires a compatibility transition. New helper behavior alone is insufficient when the old puller is responsible for constructing pending state. Design future deployment-schema changes against the N-1 puller or use a deliberate two-release transition.
