@@ -324,3 +324,35 @@ Validation over independently changing runtime files must not assume a multi-fil
 
 #### Related
 - D-032 — M3 canonical state separates factual time from consumer freshness.
+
+
+---
+
+### FIX-011 — Watcher poll cadence overstated redundant discovery freshness
+**Date:** 2026-09-22  
+**Status:** Corrected; runtime validation pending  
+**Subsystem:** M1 Reliable Deployment / release discovery  
+**Affected files:**
+- `src/bootstrap/update-watcher.js`
+- `ARCHITECTURE.md`
+- `DECISIONS.md`
+
+#### Symptoms
+Recent releases sometimes required 2–3 operator-visible 30-second watcher cycles before appearing even though Raw requests already carried a changing cache-busting query parameter.
+
+#### Root cause
+The displayed 30-second poll was not actually a complete redundant discovery cycle. Raw was sampled every 30 seconds, but the GitHub Contents API fallback was sampled only every 75 seconds. Raw branch views can retain propagation/cache latency even with unique query strings, so the first reliably fresh API observation could naturally arrive after 2–3 displayed cycles.
+
+#### Fix
+A normal watcher discovery cycle is now 65 seconds and samples both Raw and Contents API together. The unique Raw cache-buster remains, but is no longer treated as a freshness guarantee. The 65-second cadence keeps normal unauthenticated Contents API traffic below GitHub's 60 requests/hour public ceiling with small headroom. Approval still forces a fresh complete check.
+
+#### Verification
+Repository inspection confirms every normal `checkRemote` invocation now fetches both sources and the published `pollIntervalMs` matches that complete-cycle cadence. Runtime proof requires installing the corrective release and then publishing a later harmless revision to verify first-cycle detection.
+
+#### Prevention / notes
+Operator-visible polling cadence must describe the cadence of the reliability guarantee, not merely the fastest partial source. If redundant sources intentionally run at different frequencies, UI/telemetry must expose those as separate cadences rather than calling the faster partial check the update poll.
+
+#### Related
+- FIX-006 — Raw discovery lag and mutable branch sources could mix releases.
+- D-017 — Release discovery is redundant; release content is commit-pinned.
+- D-034 — Operator-visible update poll is one complete redundant discovery cycle.
