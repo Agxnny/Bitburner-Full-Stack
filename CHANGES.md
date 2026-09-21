@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 diagnostics / incident intelligence
-**Status:** Implementation started
+**Status:** Implemented; immutable release and SAFE runtime validation pending
 
 **Goal:** Add one durable diagnostics owner that turns structured runtime/deployment/health failures into evidence-backed incidents and concise Validation Dashboard explanations, so operators can distinguish observed symptoms, correlated evidence, and bounded inference without manually reconstructing failures.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Diagnostics explains evidence; it does not invent root causes. Findings are classified as OBSERVED, CORRELATED, or INFERRED and carry confidence/evidence. Repeated failures deduplicate into durable incidents with occurrence counts. Telemetry remains transport; diagnostics durable state is the diagnostic truth. Existing canonical/health/deployment owners remain unchanged. Diagnostics must correlate deployment runtime reconciliation failures with changed runtime units/files when available. Dashboard remains a consumer.
 
-**Validation:** Pending. First SAFE validation will exercise a synthetic structured diagnostic event and verify durable correlation/explanation/deduplication without disrupting production services. A later disruptive fixture will validate service/startup failure correlation if needed.
+**Validation:** Code review complete for the first slice. SAFE m3.diagnostics.intelligence is registered to publish synthetic evidence, verify durable ownership/classification/deduplication, and explicitly resolve the fixture without disrupting production services. Runtime proof is pending.
 
-**Exact next step:** Implement the diagnostics contract/service and dashboard consumer, then publish the next immutable release for SAFE runtime validation.
+**Exact next step:** Publish immutable r67, install it, confirm diagnostics-service health and the Diagnostics dashboard tab, then run SAFE m3.diagnostics.intelligence.
 
 ## Recently completed
 
