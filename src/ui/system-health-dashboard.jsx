@@ -62,7 +62,7 @@ function HealthDashboard({ bridge }) {
             {recent.map((x,i) => <div key={i} style={{display:"grid",gridTemplateColumns:"120px 80px 1fr",gap:10,padding:"5px 0",fontSize:12}}>
                 <span style={{color:C.text}}>{x.service}</span>
                 <span style={{color:x.severity==="error"?C.red:C.amber}}>{x.severity.toUpperCase()}</span>
-                <span style={{color:C.muted}}>{x.message}</span>
+                <span title={x.message ?? ""} style={{color:C.muted,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{concise(x.message)}</span>
             </div>)}
         </Section> : null}
         <Section title="SERVICE PLACEMENT">
@@ -78,7 +78,7 @@ function Row({ service }) {
     return <div style={{display:"grid",gridTemplateColumns:"150px 90px 1fr",gap:10,padding:"6px 0",fontSize:12}}>
         <span style={{color:C.text}}>{service.service}</span>
         <span style={{color:healthColor(service.health),fontWeight:700}}>{service.health.toUpperCase()}</span>
-        <span style={{color:C.muted}}>{service.reason ?? `${service.host} · pid ${service.pid}`}</span>
+        <span title={service.reason ?? ""} style={{color:C.muted,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{concise(service.reason) ?? `${service.host} · pid ${service.pid}`}</span>
     </div>;
 }
 function Section({ title, children }) {
@@ -90,6 +90,7 @@ function Header({ bridge }) {
 function Shell({rootRef,children}) {
     return <div ref={rootRef} style={{fontFamily:'Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif',minWidth:560,padding:10,background:C.page,color:C.text}}><div style={{overflow:"hidden",border:`1px solid ${C.border}`,borderRadius:10,background:`linear-gradient(180deg,${C.raised},${C.surface})`}}>{children}</div></div>;
 }
+function concise(value){ if(typeof value!=="string")return value; return value.split(/\r?\n/)[0].trim(); }
 function healthColor(value){ return value==="healthy"?C.green:value==="failed"?C.red:C.amber; }
 function age(at){ if(!Number.isFinite(at))return "—"; const ms=Math.max(0,Date.now()-at); return ms<1000?`${Math.floor(ms)}ms`:ms<60000?`${Math.floor(ms/1000)}s`:`${Math.floor(ms/60000)}m`; }
 function readSnapshot(ns){ return {health:readJson(ns,HEALTH_PATH),incidents:readJson(ns,INCIDENTS_PATH)}; }
