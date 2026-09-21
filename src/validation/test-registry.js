@@ -1,5 +1,11 @@
 export const TESTS = [
     {
+        id:"m3.cadence.control", subsystem:"Collection Control", title:"Consumer cadence lease", risk:"SAFE",
+        runner:"src/validation/tests/cadence-control-test.js",
+        description:"Requests an intentionally over-fast short player cadence lease, verifies minimum-floor clamping and faster observations, then proves expiry restores baseline cadence.",
+        validates:["Durable collection-control owner","Bounded consumer cadence leases","Automatic cadence lease expiry and baseline fallback"],
+    },
+    {
         id:"m3.canonical.state", subsystem:"Canonical State", title:"Canonical state contract", risk:"SAFE",
         runner:"src/validation/tests/canonical-state-test.js",
         description:"Checks canonical service health, five durable domains, observation timestamp preservation, positive revisions, and the absence of a universal freshness label.",
