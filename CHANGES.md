@@ -23,28 +23,27 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r34 Update Watcher sizing and useful poll countdown
-**Status:** r35 installed — Health rollback PASS; updater probe correction FAIL
+### r36 unify Update Watcher with root-measured dashboard sizing
+**Status:** Approved — implementation
 
-**Goal:** Eliminate the remaining compact Update Watcher right-edge crop and make its polling indicator show useful time remaining until the next real remote check.
+**Goal:** Remove the updater-only synthetic width model and use the same rendered-root sizing path that is already stable for System Health.
 
 **Files / areas touched:**
 - `src/ui/update-dashboard.jsx`
 - `src/ui/dashboard-window-memory.js`
 - `src/ui/README.md`
-- deployment r34 metadata
+- deployment r36 metadata
 
 **Decisions / constraints:**
-- r33 collector recovery is PASS: all seven reporting services are healthy.
-- Heartbeat display becomes whole seconds only and reserves stable width; telemetry timestamp precision is unchanged.
-- Poll metric is derived from watcher-owned `nextCheckAt`, counts down in whole seconds, and resets only when the watcher schedules its next actual check.
-- r34 shared 8px width safety is rejected and will be removed. Layout coordinator is not the source of the sizing request: it only publishes the native `.react-resizable` rectangle after resize and uses that rectangle for docking.
-- Update Watcher uniquely supplies `widthProbeSelector`; shared sizing therefore replaces normal root width with the status-row intrinsic width. The probe already includes its own 28px row padding, then only adds the root's 20px padding. It does not include the inner card border/box footprint used by the rendered Shell. The correction belongs to the updater-local probe contract, not global sizing.
-- Preserve r31/r32-proven reactive update-available grow/shrink behavior and existing docking.
+- Install/Later remain conditionally rendered only while an update is presented; no permanent reserved action panel.
+- Update Watcher no longer supplies a status-row width probe or probe compensation. Its complete rendered React root is the width authority, matching System Health.
+- Normalize the updater Shell box model so its minimum width includes padding rather than competing with the hook minimum.
+- Remove shared width-probe machinery once no dashboard uses it; keep content mutation/resize observation so action-state appearance/disappearance triggers grow/shrink.
+- Layout coordinator, countdown, heartbeat formatting, height behavior, and System Health sizing remain unchanged.
 
-**Validation:** r34 installed cleanly. Whole-second heartbeat and live next-check countdown are working at runtime (observed 19s then 8s). The failed shared 8px width allowance has now been fully removed, restoring ordinary root-measured dashboards such as System Health to the pre-r34 width calculation. Probe-based sizing now accepts explicit local compensation; Update Watcher supplies exactly 2px for its bordered card box. Layout coordinator is unchanged. Runtime r35 validation: System Health width rollback PASS; seven services remain healthy and countdown remains functional. Update Watcher right-edge crop persists, so the 2px probe compensation is disproven as root cause. The remaining strong mismatch is the updater Shell CSS box model: `minWidth: 620px` is content-box by default, making its rendered outer width 640px before the inner card border, while the window hook treats 620px as the native minimum/request baseline. r35 immutable manifest published r35 immutable manifest published at releaseRef `19bb3975baf87e9e907595d70e6804ac264f7040`; descriptor published last. r34 immutable manifest published at releaseRef `fe8926ca4477fe314b0c1f98114a70b985742c63`; descriptor published last.
+**Validation:** r35 runtime: System Health rollback PASS; Update Watcher probe-based crop FAIL. Direct model comparison shows Health measures the complete root while Update Watcher bypasses that path with a synthetic status-row probe.
 
-**Next step:** Stop adding probe compensation. r35 proves the Health rollback worked but the updater-local +2px did not solve clipping. Inspect the updater's minimum-width/root CSS box model against the native viewport: the Shell has `minWidth: 620px` with default content-box sizing plus 20px padding, while the sizing hook also uses `minWidth: 620`. Correct that box-model contract (prefer `boxSizing: border-box` / single ownership of minimum width) before another release.
+**Next step:** Remove the updater probe path, normalize its Shell box model, delete unused shared probe machinery, update docs, publish r36, then validate compact and update-presented states.
 
 ## Recently completed
 
