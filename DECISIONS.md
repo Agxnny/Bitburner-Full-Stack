@@ -118,3 +118,13 @@ Every dashboard tail uses the shared `src/ui/dashboard-window-memory.js` helper 
 Geometry is browser-local presentation state, not canonical runtime state. Failure to read, write, or apply saved geometry must never prevent a dashboard from opening. Restored values are clamped to the current viewport to prevent resolution changes from leaving a dashboard unreachable.
 
 React may observe DOM geometry and write browser-local presentation memory because those are ordinary browser APIs. Netscript UI calls such as `ns.ui.moveTail()` and `ns.ui.resizeTail()` remain owned by the script `main()` path, preserving the no-concurrent-Netscript invariant from FIX-002.
+
+
+## D-020 — Operational telemetry has one aggregate health owner
+**Status:** Locked
+
+M2 operational telemetry uses a shared producer contract and one central `health-collector` on `home` as the owner of aggregate service health and bounded incident storage. Producers report stable service identity plus per-process instance ID, observed hostname/PID, lifecycle, heartbeat/freshness, health, phase, and reason through a host-independent transport.
+
+Observed runtime placement is telemetry, not lifecycle authority. The future M4 Supervisor owns desired placement, launches, restarts, duplicate/orphan reconciliation, and startup ordering. M2 health collection may mark missing heartbeats stale but may not independently relocate or restart general services.
+
+Telemetry is also distinct from M3 canonical game state: operational health/events describe the automation system; observed player/server/game facts belong to the canonical state owner.
