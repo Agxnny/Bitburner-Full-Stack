@@ -52,8 +52,8 @@ export async function main(ns) {
             let record;
             try { record = JSON.parse(String(raw)); } catch { record = null; }
             if (validHealthRecord(record)) {
-                const transition = ingestHealth(services, record, now);
-                if (transition) incidents = addIncident(incidents, transition);
+                const result = ingestHealth(services, record, now);
+                for (const incident of result.incidents) incidents = addIncident(incidents, incident);
                 changed = true;
             } else if (validEventRecord(record)) {
                 if (record.severity !== "info") incidents = addIncident(incidents, eventIncident(record));
@@ -91,7 +91,38 @@ export async function main(ns) {
 }
 
 function ingestHealth(services, record, now) {
-    const previous = services.get(record.instanceId);
+    const incidents = [];
+    const previousInstance = services.get(record.instanceId);
+    const replaced = [...services.values()].filter((entry) =>
+        entry.service === record.service && entry.instanceId !== record.instanceId
+    );
+
+    for (const entry of replaced) {
+        services.delete(entry.instanceId);
+        incidents.push({
+            at: now,
+            service: record.service,
+            severity: "info",
+            code: "SERVICE_INSTANCE_REPLACED",
+            message: `Active instance moved from ${entry.host}:pid ${entry.pid} to ${record.host}:pid ${record.pid}.`,
+            host: record.host,
+            instanceId: record.instanceId,
+            previousInstanceId: entry.instanceId,
+        });
+        if (entry.effectiveHealth !== "healthy" && record.health === "healthy") {
+            incidents.push({
+                at: now,
+                service: record.service,
+                severity: "info",
+                code: "SERVICE_RECOVERED",
+                message: `Recovered from ${entry.effectiveHealth} with replacement instance.`,
+                host: record.host,
+                instanceId: record.instanceId,
+                previousInstanceId: entry.instanceId,
+            });
+        }
+    }
+
     const next = {
         ...record,
         receivedAt: now,
@@ -99,22 +130,25 @@ function ingestHealth(services, record, now) {
         effectiveReason: record.reason,
     };
     services.set(record.instanceId, next);
-    if (!previous) return null;
 
-    const was = previous.effectiveHealth;
-    const is = next.effectiveHealth;
-    if (was === is) return null;
-    if (is === "healthy") {
-        return {
-            at: now, service: record.service, severity: "info", code: "SERVICE_RECOVERED",
-            message: `Recovered from ${was}.`, host: record.host, instanceId: record.instanceId,
-        };
+    if (previousInstance) {
+        const was = previousInstance.effectiveHealth;
+        const is = next.effectiveHealth;
+        if (was !== is) {
+            incidents.push(is === "healthy"
+                ? {
+                    at: now, service: record.service, severity: "info", code: "SERVICE_RECOVERED",
+                    message: `Recovered from ${was}.`, host: record.host, instanceId: record.instanceId,
+                }
+                : {
+                    at: now, service: record.service, severity: is === "failed" ? "error" : "warning",
+                    code: is === "failed" ? "SERVICE_FAILED" : "SERVICE_DEGRADED",
+                    message: record.reason ?? `Health changed to ${is}.`, host: record.host, instanceId: record.instanceId,
+                });
+        }
     }
-    return {
-        at: now, service: record.service, severity: is === "failed" ? "error" : "warning",
-        code: is === "failed" ? "SERVICE_FAILED" : "SERVICE_DEGRADED",
-        message: record.reason ?? `Health changed to ${is}.`, host: record.host, instanceId: record.instanceId,
-    };
+
+    return { incidents };
 }
 
 function writeSnapshot(ns, services, invalidRecords, now) {
