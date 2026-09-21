@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M2 resilient observation/data collection foundation
-**Status:** Approved — implementation
+**Status:** Implementation complete — publication pending
 
 **Goal:** Add broadly useful observational data collection for player, network/world, market, infrastructure, and optional game capabilities while isolating collectors so one unavailable API or failed domain does not collapse the observation stack.
 
@@ -44,9 +44,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - M3 remains owner of future canonical shared game state. These M2 files are observations, not competing canonical truth.
 - r31 health incident uniqueness is runtime PASS. Dashboard update-available width remains under test and this change does not alter dashboard geometry.
 
-**Validation:** Implementation pending. Bitburner API assumptions are being checked against the official v3.0.1 release/source before use.
+**Validation:** Static implementation complete. Official v3.0.1 release/API definitions were checked for `getPlayer`, `getServer`, stock standardized APIs, Hacknet observations, and no-access membership probes for Gang/Corporation/Bladeburner. Five independent domain collectors plus shared observation/runtime helpers are implemented. No dashboard geometry code changed.
 
-**Next step:** Implement independent collectors and storage contracts, update feature docs, publish immutable r32, then stop before install so the running r31 Update Watcher can be inspected with r32 available.
+**Next step:** Publish immutable r32 with all five collectors as independent persistent runtime units. Stop before operator install: first inspect the running r31 Update Watcher while r32 is available to validate its current Install/Later resize behavior.
 
 ## Recently completed
 
