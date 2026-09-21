@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M2 telemetry foundation + System Health Watcher
-**Status:** Implementation complete — release publication
+**Status:** Runtime validation — instance replacement defect found
 
 **Goal:** Establish the first M2 vertical slice: shared structured service-health/event telemetry, central protected runtime storage, service instance/location tracking, bounded incident history, and a lightweight System Health Watcher dashboard.
 
@@ -46,9 +46,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - M4 remains responsible for desired placement, launch/restart policy, and reconciliation; M2 only reports observed runtime placement.
 - Preserve the React/Netscript ownership rule and shared dashboard geometry memory.
 
-**Validation:** Shared telemetry contract, central collector/storage, bounded incidents, update-watcher producer integration, observed host/PID reporting, compact health dashboard, feature docs, and D-020 are implemented. Static contract review caught and corrected event identity completeness. Runtime behavior is not yet validated.
+**Validation:** r21 baseline passed: health collector and update watcher reported healthy with actual host/PID. Stopping update-watcher correctly produced STALE, active issue, degraded aggregate health, and a retained warning. Restarting update-watcher exposed a lifecycle defect: old instance pid 17 remains stale while replacement pid 19 is healthy, so service recovery cannot clear the old active issue.
 
-**Next step:** Publish v0.5.0-r21 using immutable releaseRef `e67e3eb0af1a93b217c84f26644fcb6f5b74fd24`, install normally, then validate healthy placement, stale detection, recovery, incident retention, and dashboard geometry.
+**Next step:** Fix collector instance supersession so a newer healthy instance for the same stable service replaces the prior stale instance in active health while preserving the stale/recovery incident history. Publish r22 and repeat stale → restart validation.
 
 ## Recently completed
 
