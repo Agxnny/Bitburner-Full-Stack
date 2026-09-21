@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Dashboard layout coordinator + selectable anchor
-**Status:** Approved — implementation
+**Status:** Implementation complete — runtime validation pending
 
 **Goal:** Coordinate dashboard window placement so dynamically growing/shrinking dashboards reflow as a group, with an operator-selectable anchor dashboard.
 
@@ -45,9 +45,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Current group is a vertical stack: Update Watcher order 10, System Health order 20. Design must permit later dashboards/orders without pair-specific coupling.
 - Stale registry entries expire so closed dashboards do not reserve layout space.
 
-**Validation:** r27 sizing PASS from operator screenshots. Coordinator implementation/runtime validation pending.
+**Validation:** r27 sizing PASS is recorded in CURRENT_STATE. Shared browser-local coordinator, stale-member expiry, generic ordered vertical stacking, main-loop-only native movement, and reusable Anchor controls are implemented for Update Watcher/System Health. Static implementation/docs complete; runtime coordination is pending.
 
-**Next step:** Implement shared coordinator and Anchor controls, publish r28, then validate anchor transfer, drag-follow, dynamic growth reflow, recovery shrink, restart persistence, and stale-member expiry.
+**Next step:** Publish r28 from immutable manifest commit `cfef22bb4a08fd8a3d70d2db181e0a166bea4562`, install normally, then validate default anchor/stack, anchor transfer, drag-follow, stale growth/recovery reflow, restart persistence, and stale-member expiry.
 
 ## Recently completed
 
