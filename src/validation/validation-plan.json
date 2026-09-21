@@ -74,6 +74,32 @@
           "validationVersion": 1
         }
       ]
+    },
+    {
+      "id": "m3-resource-associations",
+      "milestone": "M3",
+      "title": "Canonical Resource Associations",
+      "revision": 64,
+      "requirements": [
+        {
+          "id": "association-canonical",
+          "title": "Canonical stock organization server associations",
+          "testId": "m3.resource.associations",
+          "validationVersion": 1
+        },
+        {
+          "id": "association-provenance",
+          "title": "Association source provenance and timestamp bound",
+          "testId": "m3.resource.associations",
+          "validationVersion": 1
+        },
+        {
+          "id": "association-no-guessing",
+          "title": "Exact-match associations with explicit unmatched resources",
+          "testId": "m3.resource.associations",
+          "validationVersion": 1
+        }
+      ]
     }
   ]
 }
