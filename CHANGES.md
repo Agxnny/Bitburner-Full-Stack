@@ -23,30 +23,29 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M2 resilient observation/data collection foundation
-**Status:** Published as v0.5.0-r32 — pre-install validation pending
+### r33 collector/API and dashboard overflow stabilization
+**Status:** Approved — implementation
 
-**Goal:** Add broadly useful observational data collection for player, network/world, market, infrastructure, and optional game capabilities while isolating collectors so one unavailable API or failed domain does not collapse the observation stack.
+**Goal:** Correct the r32 Bitburner v3 API regression and make large health incidents remain readable without allowing a dynamically sized dashboard to extend beyond the usable viewport.
 
 **Files / areas touched:**
-- new shared observation snapshot contract/storage helper under `src/core/`
-- independent domain collectors under `src/collectors/`
-- `src/core/README.md` and collector feature documentation
-- deployment r32 release metadata
+- `src/collectors/infrastructure-collector.js`
+- all r32 collector API assumptions audited against Bitburner v3.0.1
+- `src/ui/dashboard-window-memory.js`
+- `src/ui/system-health-dashboard.jsx`
+- `src/ui/README.md`, `src/collectors/README.md`, `FIXES.md`
+- deployment r33 metadata
 
 **Decisions / constraints:**
-- Each domain is a separate persistent runtime unit and owns only its own snapshot. No aggregate collector process is a single point of failure.
-- Collectors are observation-only: no purchases, trading, hacking actions, progression actions, or controller authority.
-- Each snapshot carries schema version, stable domain/producer identity, collection/freshness timestamps, status, and structured data.
-- Optional/locked mechanics report `unavailable`/limited capability as data rather than crashing or degrading the whole suite.
-- Actual collector/API failures report their own service degradation through the existing health telemetry; other collectors continue independently.
-- Network discovery is observational topology/server metadata only. Market history is bounded; ordinary latest-state domains replace snapshots rather than accumulating unbounded history.
-- M3 remains owner of future canonical shared game state. These M2 files are observations, not competing canonical truth.
-- r31 health incident uniqueness is runtime PASS. Dashboard update-available width remains under test and this change does not alter dashboard geometry.
+- r32 runtime proved collector failure isolation: infrastructure degraded while the other six reporting services stayed healthy.
+- Purchased/cloud server enumeration uses v3 `ns.cloud.getServerNames()`; removed legacy `ns.getPurchasedServers()` must not be reintroduced.
+- Dynamic sizing remains content-driven, but maximum height is constrained by the window's current on-screen position and usable viewport. Oversized content must scroll rather than push the native tail off-screen.
+- System Health remains a compact alarm surface. It displays concise single-line failure summaries; full diagnostic detail remains in telemetry/logs for engineering surfaces.
+- No unrelated collector behavior, authority, or dashboard docking changes.
 
-**Validation:** Static implementation complete. Official v3.0.1 release/API definitions were checked for `getPlayer`, `getServer`, stock standardized APIs, Hacknet observations, and no-access membership probes for Gang/Corporation/Bladeburner. Five independent domain collectors plus shared observation/runtime helpers are implemented. D-025 and collector/core docs updated. No dashboard geometry code changed. r32 immutable manifest published at releaseRef `d03b76338b65d45f4712b84c658d8fa50cce7f7d`; descriptor published last. Pre-install runtime validation PASS: running r31 reacted to the presented r32 release by expanding the native tail enough to show the complete `r32 available`, Install, and Later controls with intact rounded content edges.
+**Validation:** r32 runtime reproduced `REMOVED FUNCTION ERROR` for `getPurchasedServers` and demonstrated isolation. r31 reactive update-width grow path is PASS. Static r33 implementation/audit pending.
 
-**Next step:** Install r32 normally. Then validate that System Health reports the seven expected services, each observation snapshot refreshes independently, market capability absence is non-failing when TIX is unavailable, and stopping one collector causes only that collector to become stale/degraded while unrelated collectors remain healthy.
+**Next step:** Audit collector calls, implement the cloud API correction and bounded dashboard overflow behavior, document the reusable incident, then publish r33 for runtime validation.
 
 ## Recently completed
 
