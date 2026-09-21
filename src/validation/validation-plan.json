@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "milestone": {
+    "id": "M3",
+    "title": "Canonical State"
+  },
+  "groups": [
+    {
+      "id": "m3-canonical-state",
+      "milestone": "M3",
+      "title": "Canonical State",
+      "revision": 53,
+      "requirements": [
+        {
+          "id": "service-domains",
+          "title": "Canonical service and five domains",
+          "testId": "m3.canonical.state",
+          "validationVersion": 1
+        },
+        {
+          "id": "timestamps",
+          "title": "Observation timestamp preservation",
+          "testId": "m3.canonical.state",
+          "validationVersion": 1
+        },
+        {
+          "id": "revisions",
+          "title": "Canonical revision progression",
+          "testId": "m3.canonical.state",
+          "validationVersion": 1
+        },
+        {
+          "id": "consumer-freshness",
+          "title": "Consumer-defined freshness contract",
+          "testId": "m3.canonical.state",
+          "validationVersion": 1
+        },
+        {
+          "id": "restart-reconciliation",
+          "title": "Restart reconciliation",
+          "testId": "m3.canonical.restart",
+          "validationVersion": 1
+        }
+      ]
+    }
+  ]
+}
