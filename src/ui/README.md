@@ -69,9 +69,9 @@ The Validation Dashboard has a dedicated `Tests` tab. `Validating` remains the a
 
 Executable tests are allow-listed in `src/validation/test-registry.js` by stable test ID. React submits only a typed `run-validation-test` intent. Dashboard `main()` resolves that ID through the registry and may launch only the registered runner with registry-owned arguments. The UI cannot supply arbitrary script paths or arbitrary arguments.
 
-The first automated test, `m2.dashboard.smoke`, is SAFE/read-only and checks the dashboard process, health snapshot/service count, updater status, and freshness of all five M2 observation domains. It writes its bounded latest result to `data/validation/latest-result.json`.
+The first automated test, `m2.dashboard.smoke`, is SAFE/read-only and checks the dashboard process, health snapshot/service count, updater status, and freshness of all five M2 observation domains. It writes its latest detailed result to `data/validation/latest-result.json` and appends bounded durable evidence to `data/validation/evidence.json`. Dashboard-owned runners disable ordinary Netscript logging so Tests remains the normal operator output surface.
 
-`m2.updater.notification` is intentionally observational rather than synthetic. A genuine newer published release supplies the stimulus; the test framework does not write fake updater telemetry or directly manipulate the notification badge. The operator verifies that Updater receives an unread badge without navigation changing before the newer release is installed.
+`m2.updater.notification` is intentionally observational rather than synthetic. A genuine newer published release supplies the stimulus; the test framework does not write fake updater telemetry or directly manipulate the notification badge. After performing the documented observation, the operator can explicitly record an operator-confirmed PASS. That evidence is labelled `operator-confirmed` rather than masquerading as an automated assertion.
 
 ## M1 update dashboard slice
 
