@@ -48,8 +48,6 @@ export function useDashboardWindow(key, bridge, options = {}) {
     const minHeight = options.minHeight ?? 120;
     const maxWidth = options.maxWidth ?? 1200;
     const maxHeight = options.maxHeight ?? 900;
-    const widthProbeSelector = options.widthProbeSelector ?? null;
-    const widthProbeExtra = Math.max(0, options.widthProbeExtra ?? 0);
     const layoutGroup = options.layoutGroup ?? null;
     const layoutOrder = options.layoutOrder ?? 100;
     const layoutGap = options.layoutGap ?? 6;
@@ -73,11 +71,7 @@ export function useDashboardWindow(key, bridge, options = {}) {
             const resizableRect = resizable.getBoundingClientRect();
             const nativeWidthOverhead = Math.max(0, resizable.clientWidth - contentViewport.clientWidth);
             const nativeHeightOverhead = Math.max(0, resizable.clientHeight - contentViewport.clientHeight);
-            const probe = widthProbeSelector ? root.querySelector(widthProbeSelector) : null;
-            const rootCss = getComputedStyle(root);
-            const horizontalChrome = parseFloat(rootCss.paddingLeft || "0") + parseFloat(rootCss.paddingRight || "0");
-            const probeWidth = probe ? Math.ceil(intrinsicRowWidth(probe) + horizontalChrome + widthProbeExtra) : 0;
-            const contentWidth = probe ? probeWidth : Math.max(root.scrollWidth, Math.ceil(rootRect.width));
+            const contentWidth = Math.max(root.scrollWidth, Math.ceil(rootRect.width));
             const contentHeight = Math.max(root.scrollHeight, Math.ceil(rootRect.height));
             const vw = Math.max(minWidth, window.innerWidth || minWidth);
             const vh = Math.max(minHeight, window.innerHeight || minHeight);
@@ -88,7 +82,7 @@ export function useDashboardWindow(key, bridge, options = {}) {
             };
             bridge.windowMetrics = {
                 measuredAt: Date.now(), nativeOverhead: { width:nativeWidthOverhead, height:nativeHeightOverhead },
-                content: { width:contentWidth, height:contentHeight, widthProbeExtra }, resizable: { width:resizableRect.width, height:resizableRect.height },
+                content: { width:contentWidth, height:contentHeight }, resizable: { width:resizableRect.width, height:resizableRect.height },
                 viewport: { width:contentViewport.clientWidth, height:contentViewport.clientHeight, availableHeight },
             };
         };
@@ -183,7 +177,7 @@ export function useDashboardWindow(key, bridge, options = {}) {
             window.removeEventListener("resize", measureSoon);
             if (layoutGroup) removeDashboardGeometry(layoutGroup, key);
         };
-    }, [key, bridge, minWidth, minHeight, maxWidth, maxHeight, widthProbeSelector, widthProbeExtra, layoutGroup, layoutOrder, layoutGap]);
+    }, [key, bridge, minWidth, minHeight, maxWidth, maxHeight, layoutGroup, layoutOrder, layoutGap]);
 
     return rootRef;
 }
@@ -218,14 +212,6 @@ function clampPosition(value) {
     const vw = Math.max(TITLE_VISIBLE_WIDTH, window.innerWidth || TITLE_VISIBLE_WIDTH);
     const vh = Math.max(TITLE_VISIBLE_HEIGHT, window.innerHeight || TITLE_VISIBLE_HEIGHT);
     return { schemaVersion:SCHEMA_VERSION, x:clamp(value.x,0,Math.max(0,vw-TITLE_VISIBLE_WIDTH)), y:clamp(value.y,0,Math.max(0,vh-TITLE_VISIBLE_HEIGHT)), savedAt:Number.isFinite(value.savedAt)?value.savedAt:Date.now() };
-}
-function intrinsicRowWidth(element) {
-    const css = getComputedStyle(element);
-    const padding = parseFloat(css.paddingLeft || "0") + parseFloat(css.paddingRight || "0");
-    const gap = parseFloat(css.columnGap || css.gap || "0");
-    const children = [...element.children];
-    const childWidth = children.reduce((sum, child) => sum + child.getBoundingClientRect().width, 0);
-    return Math.ceil(padding + childWidth + Math.max(0, children.length - 1) * gap);
 }
 function storageKey(key) { return `${STORAGE_PREFIX}${key}`; }
 function clamp(value,min,max) { return Math.min(max,Math.max(min,Number(value))); }
