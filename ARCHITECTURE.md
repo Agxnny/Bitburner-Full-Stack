@@ -44,7 +44,7 @@ The stack is a modular control system built around centralized state, authority,
 ## Core responsibilities
 
 ### State service
-Owns the canonical observed view of the game. Raw observations and derived state are clearly distinguished. State includes freshness metadata so consumers can fail closed on stale data.
+Owns the canonical observed view of the game. Raw observations and derived state are clearly distinguished. Canonical data carries factual observation time and availability; freshness is consumer policy derived from the shared wall-time contract rather than a producer-owned label.
 
 ### Resource, Authority & Budget Manager
 Owns contested-resource governance.
@@ -137,6 +137,6 @@ The design starting point is:
 - **Telemetry/history:** diagnostic and validation evidence, not operational authority.
 - **React bridge:** UI-local presentation bridge only; never a cross-process bus.
 
-Before implementation, lock port allocation, message envelope fields and validation, correlation/idempotence conventions, queue/backpressure/overflow behavior, canonical state envelopes/domain boundaries, freshness/stale/unavailable semantics, startup/restart behavior, and Validation Dashboard transport/state tests.
+M3 implementation uses a centralized port registry. Port 1 remains telemetry; ordinary observations use a shared ingress lane, while market has a dedicated observation lane and reserved control lane. Ports are transient single-consumer queues, never canonical truth or broadcast/pub-sub.\n\nWall time is factual system metadata. Producers stamp observations with observedAt; M3 preserves that timestamp and records canonicalizedAt/revision. Availability is factual. Freshness is intentionally not stored as a universal state judgement: each consumer compares observedAt with the current wall clock under its own maximum-age requirement. Historical windows use elapsed time rather than sample count, so collection gaps remain visible.\n\nThe canonical state owner persists one latest envelope per domain under data/state. It can reconcile from durable M2 snapshots after restart, so missed port traffic cannot erase current truth. Collection cadence control is a separate control-plane contract: collectors will retain baseline/safe-minimum configuration while M3 resolves leased consumer cadence requests; cadence policy does not belong inside individual domain collectors.
 
 The existing `data/observations/*` files remain M2 inputs. M3 may ingest them behind an interface but must not make them canonical merely by reusing their storage paths. Future M4+ consumers should depend on M3 contracts rather than collector file layouts.
