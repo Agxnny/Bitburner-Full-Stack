@@ -93,6 +93,7 @@ function UpdateDashboard({ bridge }) {
     const updateAvailable = status.phase === "update-available" && Number.isSafeInteger(updateRevision);
     const version = release(status.local);
     const interval = formatInterval(status.pollIntervalMs);
+    const install = installationState(status);
 
     function send(action) {
         if (!updateAvailable) {
@@ -123,6 +124,8 @@ function UpdateDashboard({ bridge }) {
                     <Online fresh={heartbeatFresh} />
                 )}
 
+                {install ? <InstallBadge state={install} /> : null}
+
                 <Divider />
                 <Metric icon="♡" value={heartbeatAge === null ? "—" : `${formatAge(heartbeatAge)} ago`} danger={!heartbeatFresh} />
                 <Divider />
@@ -137,8 +140,8 @@ function UpdateDashboard({ bridge }) {
                 ) : null}
             </StatusRow>
 
-            {view.feedback ? <Feedback>{view.feedback}</Feedback> : null}
-            {status.error ? <ErrorLine>{status.error}</ErrorLine> : null}
+            {install?.message ? <Feedback tone={install.tone}>{install.message}</Feedback> : (view.feedback ? <Feedback>{view.feedback}</Feedback> : null)}
+            {status.error && install?.tone !== "success" ? <ErrorLine>{status.error}</ErrorLine> : null}
         </Shell>
     );
 }
@@ -212,6 +215,27 @@ function Online({ fresh }) {
     );
 }
 
+function InstallBadge({ state }) {
+    const palette = state.tone === "success"
+        ? { color: COLORS.success, border: "#237f68", background: "rgba(41,216,163,0.10)" }
+        : state.tone === "danger"
+            ? { color: COLORS.danger, border: "#8f3941", background: "rgba(255,93,104,0.10)" }
+            : { color: COLORS.accent, border: COLORS.border, background: "rgba(41,147,255,0.10)" };
+    return (
+        <span style={{
+            padding: "7px 10px",
+            border: `1px solid ${palette.border}`,
+            borderRadius: "7px",
+            background: palette.background,
+            color: palette.color,
+            fontSize: "12px",
+            fontWeight: 750,
+        }}>
+            {state.label}
+        </span>
+    );
+}
+
 function UpdateBadge({ children }) {
     return (
         <span style={{
@@ -279,8 +303,9 @@ function CubeIcon() {
     );
 }
 
-function Feedback({ children }) {
-    return <div style={{ padding: "0 14px 8px", color: COLORS.muted, fontSize: "11px" }}>{children}</div>;
+function Feedback({ children, tone = "muted" }) {
+    const color = tone === "success" ? COLORS.success : tone === "danger" ? COLORS.danger : COLORS.muted;
+    return <div style={{ padding: "0 14px 8px", color, fontSize: "11px" }}>{children}</div>;
 }
 
 function ErrorLine({ children }) {
@@ -289,6 +314,40 @@ function ErrorLine({ children }) {
 
 function StateText({ children }) {
     return <div style={{ padding: "18px", color: COLORS.muted }}>{children}</div>;
+}
+
+function installationState(status) {
+    const deployment = status?.deployment;
+    const report = deployment?.report;
+    const revision = Number.isSafeInteger(report?.remote?.revision) ? report.remote.revision : deployment?.requestedRevision;
+
+    if (deployment?.running || ["puller", "self-refresh", "runtime-reconcile"].includes(deployment?.phase)) {
+        return {
+            tone: "active",
+            label: Number.isSafeInteger(revision) ? `↻ Installing r${revision}` : "↻ Installing",
+            message: Number.isSafeInteger(revision) ? `Installation r${revision} is still in progress.` : "Installation is still in progress.",
+        };
+    }
+
+    if (!report || !Number.isSafeInteger(revision)) return null;
+
+    if (report.status === "committed" && report.success === true && report.clean === true) {
+        return {
+            tone: "success",
+            label: "✓ Install clean",
+            message: `Last installation completed successfully (r${revision}).`,
+        };
+    }
+
+    if (report.status === "committed-runtime-degraded" || report.status === "failed" || report.success === false || report.clean === false) {
+        return {
+            tone: "danger",
+            label: report.status === "committed-runtime-degraded" ? "! Install degraded" : "! Install failed",
+            message: report.error || `Last installation did not finish cleanly (r${revision}).`,
+        };
+    }
+
+    return null;
 }
 
 function readJson(ns, path) {
