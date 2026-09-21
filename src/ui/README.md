@@ -92,6 +92,6 @@ Desired placement and restart authority do not belong to this dashboard or to M2
 
 `dashboard-geometry-calibration.jsx` is a temporary/diagnostic presentation harness used to establish the real relationship between `ns.ui.resizeTail()` dimensions and Bitburner's rendered tail DOM. It is not a production dashboard and does not alter the shared sizing policy by itself.
 
-The harness offers known 600×300, 720×420, and 840×540 native tail targets. The Netscript main loop alone applies those exact sizes. React measures the dashboard root, root scroll size, nearest `.react-resizable` element, enclosing native frame, offsets between those boxes, and the requested-minus-measured deltas. Comparing the three settled measurements determines whether the correction needed by dynamic sizing is fixed or size-dependent.
+The harness offers known 600×300, 720×420, and 840×540 native tail targets. The Netscript main loop alone applies those exact sizes. r25 established that `resizeTail()` matches `.react-resizable` exactly while the React root's vertical offset changes with target height. r26 therefore enumerates every ancestor from the React root through `.react-resizable`, reporting bounding/client/scroll dimensions, scroll position, display/position/overflow, flex layout properties, and root-relative offsets. Explicit top/bottom content markers separate actual rendered extent from native-container placement.
 
 Use it only for sizing validation. Production sizing should be changed from measured evidence rather than further guessed chrome offsets.
