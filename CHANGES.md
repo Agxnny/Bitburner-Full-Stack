@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r34 Update Watcher sizing and useful poll countdown
-**Status:** Diagnosis complete — rollback + updater-local correction approved
+**Status:** Approved — r35 implementation
 
 **Goal:** Eliminate the remaining compact Update Watcher right-edge crop and make its polling indicator show useful time remaining until the next real remote check.
 
@@ -44,7 +44,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** r34 installed cleanly. Whole-second heartbeat and live next-check countdown are working at runtime (observed 19s then 8s). The shared 8px width safety did not cure the Update Watcher right-edge crop and caused System Health to grow wider than its prior correct footprint. Treat the shared width allowance as a failed experiment to revert, not tune upward. r34 immutable manifest published at releaseRef `fe8926ca4477fe314b0c1f98114a70b985742c63`; descriptor published last.
 
-**Next step:** Remove the shared r34 width allowance, then make the Update Watcher's width probe represent the complete rendered card/Shell footprint before it reaches `bridge.desiredSize`. Leave layout-coordinator geometry publication/docking unchanged. Publish the correction only after docs/static validation.
+**Next step:** Revert the shared r34 width allowance, add updater-local width-probe box compensation so the request represents the complete rendered Shell/card footprint, update UI docs, and publish r35 without changing layout-coordinator geometry/docking.
 
 ## Recently completed
 
