@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r47 Validation dashboard tail lifecycle cleanup
-**Status:** r47 runtime PASS — quiet Tests and persistent tail lifecycle validated; awaiting operator evidence confirmation
+**Status:** r47 runtime PASS — quiet Tests, tail lifecycle, and evidence provenance validated
 
 **Goal:** Preserve the now-proven quiet Tests execution while fixing deployment replacement of the persistent Validation Dashboard so its previous native tail is explicitly closed before the process is killed/restarted.
 
@@ -39,9 +39,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Only processes being intentionally stopped/replaced are tail-closed; non-UI processes tolerate `closeTail(pid)` as a no-visible-tail cleanup.
 - Do not mix updater convergence or emergency-focus work into this release.
 
-**Validation:** r46 runtime screenshot proves quiet test execution PASS: 9/9 smoke assertions render and the previous green parent `run:` line is absent. Operator reports that installs restart the Validation Dashboard process but leave the old Validation Dashboard native tail window open. Repository inspection showed `reconcileRuntime()` stopped changed persistent units via `ns.kill()` only, while the older special-case `refreshDashboards()` correctly called `ns.ui.closeTail(pid)` first. r47 now applies close-tail-before-kill in generic persistent reconciliation, matching FIX-005. Immutable releaseRef is `d7606aebb449adfde783f952f20394361338b06c`; descriptor publication was last. Operator installed r47 cleanly through the integrated Updater and confirmed the previous Validation Dashboard tail closed and exactly one fresh dashboard restarted. This runtime-validates FIX-008. r46 quiet-run behavior had already passed with 9/9 smoke assertions and no parent `run:` log leakage.
+**Validation:** r46 runtime screenshot proves quiet test execution PASS: 9/9 smoke assertions render and the previous green parent `run:` line is absent. Operator reports that installs restart the Validation Dashboard process but leave the old Validation Dashboard native tail window open. Repository inspection showed `reconcileRuntime()` stopped changed persistent units via `ns.kill()` only, while the older special-case `refreshDashboards()` correctly called `ns.ui.closeTail(pid)` first. r47 now applies close-tail-before-kill in generic persistent reconciliation, matching FIX-005. Immutable releaseRef is `d7606aebb449adfde783f952f20394361338b06c`; descriptor publication was last. Operator installed r47 cleanly through the integrated Updater and confirmed the previous Validation Dashboard tail closed and exactly one fresh dashboard restarted. This runtime-validates FIX-008. r46 quiet-run behavior had already passed with 9/9 smoke assertions and no parent `run:` log leakage. Operator then used `Confirm Observed Pass` for `m2.updater.notification`; screenshot shows the test now PASS, latest provenance `operator-confirmed`, and Recent Evidence contains the operator-confirmed updater record separately from automated smoke records. Durable evidence provenance is therefore runtime-validated.
 
-**Next step:** In Tests, use `Confirm Observed Pass` for `m2.updater.notification` to durably record the already-performed genuine r44 notification observation. Verify Recent Evidence shows an `operator-confirmed` PASS. Then design the controlled/disruptive emergency-focus validation before implementing it.
+**Next step:** Design the controlled/disruptive emergency-focus validation before implementation: choose safe target services, trigger threshold, restoration/abort guarantees, acknowledgement semantics, focus-steal assertions, evidence provenance, and PASS/FAIL criteria. Do not implement the disruptive runner until this design is approved.
 
 ## Recently completed
 
