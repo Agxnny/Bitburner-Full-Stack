@@ -23,31 +23,30 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Dashboard layout coordinator + selectable anchor
-**Status:** Implementation complete — runtime validation pending
+### Drag-selectable dashboard docking + updater width response
+**Status:** Approved — implementation
 
-**Goal:** Coordinate dashboard window placement so dynamically growing/shrinking dashboards reflow as a group, with an operator-selectable anchor dashboard.
+**Goal:** Extend the validated r28 anchor coordinator so a follower can be dragged to the anchor's top/bottom/left/right side and snap there, while fixing Update Watcher width growth when update approval controls appear.
 
 **Files / areas touched:**
-- shared dashboard layout coordinator
+- `src/ui/dashboard-layout-coordinator.js`
 - `src/ui/dashboard-window-memory.js`
-- Update Watcher and System Health dashboard headers
+- Update Watcher sizing surface
 - UI docs / decisions / deployment release
 
 **Decisions / constraints:**
-- r27 measured content-viewport sizing is runtime validated: healthy fit, stale/degraded growth, and recovery shrink all passed without clipping/black-gap regression.
-- Layout coordination is browser-local presentation state, not canonical telemetry/state.
-- Dashboards publish current geometry into a bounded browser-local group registry; no dashboard directly inspects another dashboard's React DOM.
-- One dashboard per group is the anchor. Selecting Anchor transfers ownership immediately.
-- Anchor position is user-owned/persistent. Followers derive position from anchor + ordered dashboard heights + a small gap and do not persist independent positions while following.
-- Dynamic size changes reflow followers automatically.
-- React/browser code may calculate/publish layout intent, but only each dashboard main loop may call Netscript move/resize APIs.
-- Current group is a vertical stack: Update Watcher order 10, System Health order 20. Design must permit later dashboards/orders without pair-specific coupling.
-- Stale registry entries expire so closed dashboards do not reserve layout space.
+- Operator screenshots validate r28 anchor transfer, anchor movement, follower movement, ordering reversal, and basic vertical stack coordination.
+- Dock side is browser-local presentation state per follower/anchor relationship; supported sides are top, bottom, left, right.
+- A follower remains coordinated normally. A native manual drag that materially departs from its commanded position temporarily releases it, and after drag settle the nearest anchor side is selected and persisted.
+- Reversing the anchor preserves the physical relation where possible by using the inverse side (left↔right, top↔bottom).
+- Dynamic size changes reflow from the persisted dock side.
+- React/browser code detects drag geometry and calculates intent only; each dashboard main loop remains sole Netscript move/resize owner.
+- Update Watcher must grow only when its nowrap status-row content requires it, then shrink after approval controls disappear. Do not make its normal state permanently wider.
+- r27 measured content-viewport sizing remains the sizing authority.
 
-**Validation:** r27 sizing PASS is recorded in CURRENT_STATE. Shared browser-local coordinator, stale-member expiry, generic ordered vertical stacking, main-loop-only native movement, and reusable Anchor controls are implemented for Update Watcher/System Health. Static implementation/docs complete; runtime coordination is pending.
+**Validation:** r28 anchor/drag screenshots PASS core coordination. Side docking and updater update-available width response pending implementation/runtime validation.
 
-**Next step:** Publish r28 from immutable manifest commit `cfef22bb4a08fd8a3d70d2db181e0a166bea4562`, install normally, then validate default anchor/stack, anchor transfer, drag-follow, stale growth/recovery reflow, restart persistence, and stale-member expiry.
+**Next step:** Implement side-aware docking + drag release/snap and intrinsic updater width measurement, publish r29, then validate all four dock sides, anchor reversal, size reflow, and update-available grow/shrink.
 
 ## Recently completed
 
