@@ -47,7 +47,7 @@
       "id": "m3-cadence-control",
       "milestone": "M3",
       "title": "Collection Cadence Control",
-      "revision": 61,
+      "revision": 63,
       "requirements": [
         {
           "id": "cadence-owner",
@@ -65,6 +65,12 @@
           "id": "cadence-expiry",
           "title": "Automatic cadence lease expiry and baseline fallback",
           "testId": "m3.cadence.control",
+          "validationVersion": 1
+        },
+        {
+          "id": "cadence-restart-recovery",
+          "title": "Cadence lease restart recovery",
+          "testId": "m3.cadence.restart",
           "validationVersion": 1
         }
       ]
