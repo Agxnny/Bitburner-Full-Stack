@@ -23,28 +23,28 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r44 Validation Tests workspace
-**Status:** r44 installed cleanly — first dashboard-run test PASS; test-runner tail noise identified
+### r45 Quiet validation runners and durable evidence
+**Status:** Implementation
 
-**Goal:** Add a dedicated Tests tab to the Validation Dashboard so approved validation scripts can be launched and observed from the dashboard rather than the terminal. Use r44 itself as the real updater-notification stimulus.
+**Goal:** Complete the first Tests workflow refinement: dashboard-owned automated tests run quietly, while automated and operator-confirmed validation evidence is durably recorded and visible from Tests/Validated rather than relying on terminal/tail output or chat history.
 
 **Files / areas touched:**
-- `src/ui/validation-dashboard.jsx`
-- new validation test registry/executor/UI modules
-- deployment r44 metadata
-- `src/ui/README.md`, `DECISIONS.md`, `CURRENT_STATE.md`
+- `src/ui/validation-dashboard.jsx`, `src/ui/validation-tests-tab.jsx`, `src/ui/validation-work-tab.jsx`
+- `src/validation/test-registry.js` and validation evidence helpers
+- `src/validation/tests/dashboard-smoke-test.js`
+- deployment r45 metadata and Validation Dashboard documentation
 
 **Decisions / constraints:**
-- Tests is execution; Validating remains the active acceptance/evidence queue; Validated remains the completed evidence archive.
-- React never invokes Netscript. Test buttons submit typed intents through the dashboard bridge; `main()` dispatches only stable registered test IDs.
-- No arbitrary script path/arguments are accepted from React. The registry is the allow-list and owns runner script/arguments/risk metadata.
-- Test execution is single-flight for the first slice, with bounded result state under `data/validation/`.
-- The first registered test is a SAFE dashboard smoke test that validates current r44 shell/telemetry prerequisites. Publishing r44 itself supplies the genuine newer-release condition for the updater notification test; the test framework does not forge updater telemetry.
-- Update availability remains ordinary attention: badge only, no automatic navigation.
+- Tests remains the sole normal operator surface for validation execution/results; test runner logs are suppressed unless a future explicit debug workflow requests them.
+- Test execution remains registry-controlled and fail-closed; no arbitrary scripts/arguments.
+- Automated results and operator-confirmed observations share a bounded validation evidence store, but evidence kind remains explicit.
+- Manual confirmation records what the operator observed; it does not pretend the system automatically asserted visual/navigation behavior.
+- Existing r44 updater-notification evidence may be recorded through the new manual-confirmation workflow after r45 installation.
+- No updater convergence fix is mixed into r45.
 
-**Validation:** r43 six-tab rendering/runtime pass is recorded. r44 adds the seventh Tests tab, registry-controlled typed dispatch, and the SAFE `m2.dashboard.smoke` runner. Static review confirms the immutable r44 manifest includes the new UI/registry/runner files; Validation Dashboard runtime dependencies include the Tests UI and registry. Immutable releaseRef is `1e1a56619516fa9e2a203bf26f2fce1afc6bfcdc`; descriptor publication was last. Operator screenshot while still running r43 provides genuine pre-install r44 notification evidence: Overview retained focus; Updater displayed unread badge `1`; Deployment and Attention both reported r44 available; Health remained 7/7 healthy; standalone Update Watcher independently showed r44 available. This passes the non-focus-stealing update notification condition. Operator then installed r44 through the integrated Validation Dashboard Updater and reported a clean installation. Screenshot after restart shows v0.5.0-r44 with the new Tests tab present and Updater active. The unread badge is gone. The watcher temporarily continued to present `r44 available` for roughly 20 seconds after the local deployment had already advanced to r44, then cleared without intervention. This is recorded as a transient post-deployment convergence observation, not yet a proven defect/root cause. The screenshot also shows discovery sources briefly split (Raw r43, API r44) while selected source was GitHub API, consistent with known source propagation lag. Runtime Tests evidence now passes: operator ran `m2.dashboard.smoke` from the Tests tab without terminal use; the dashboard rendered PASS with all nine assertions green (dashboard process, health snapshot, 7 services, updater status, and five fresh observation domains). The full UI→typed intent→registry→runner→result→dashboard evidence path is therefore proven. The runner did, however, emit Bitburner's default `run: 'src/validation/tests/dashboard-smoke-test.js' ...` line into its own tail window. That presentation noise should be suppressed for dashboard-owned test runners so Tests remains the sole operator surface.
+**Validation:** r44 proved the full dashboard-run smoke path with nine passing assertions, but exposed runner tail/log noise. r44 also proved genuine updater notification without focus stealing and integrated installation. r45 implementation/static review are in progress.
 
-**Next step:** Make dashboard-owned validation runners headless/quiet so launching a registered test does not create or populate an operator-facing tail; preserve result-file evidence as the Tests-tab output. Then re-run the smoke test from Tests to prove no tail noise. After that, investigate the ~20-second post-install update-available convergence separately without assuming a root cause.
+**Next step:** Implement quiet runner launch plus bounded evidence recording/UI, publish r45, then operator re-runs smoke from Tests and records the already-observed updater notification through the explicit confirmation workflow.
 
 ## Recently completed
 
