@@ -178,3 +178,15 @@ Broad game data collection is split into independent persistent domain services 
 Observation snapshots are versioned, timestamped, freshness-bounded inputs. They are not canonical shared game state; M3 remains responsible for canonical state ownership and reconciliation. Optional locked mechanics are represented as unavailable capability data when that condition is expected, while unexpected collection failures degrade only the responsible service.
 
 Collectors are read-only. Collection does not grant controller, spending, scheduling, execution, or resource authority.
+
+
+## D-026 — Validation Dashboard is the engineering validation hub
+**Status:** Locked
+
+The Validation Dashboard is one persistent tabbed application and the primary engineering surface for correctness, health, freshness, diagnostics, and milestone evidence. Its initial tabs are Overview, Validating, Validated, Health, Updater, and Data. Tabs are presentation boundaries only: Health Collector, Update Watcher, and domain collectors remain independent backend services.
+
+Validation lifecycle and individual test result are distinct. Active/incomplete/regressed validation belongs in Validating; completed evidence belongs in Validated and is collapsed away from the active workspace. A regression returns affected work to Validating rather than leaving stale green evidence visible.
+
+The dashboard shell owns attention presentation. Ordinary events use unread badges/highlights and never change the selected tab. Critical/emergency escalation may force focus to the relevant tab once per materially distinct incident signature; acknowledgement suppresses repeated focus stealing for that same condition without hiding the active failure. Update availability is ordinary attention and therefore badges Updater rather than navigating automatically.
+
+React remains Netscript-free under FIX-002. The dashboard main loop is the sole Netscript owner and uses existing command interfaces for actions such as exact-revision update approval. The dashboard does not gain lifecycle, canonical-state, authority, spending, scheduling, or execution ownership from presenting those systems.
