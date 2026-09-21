@@ -96,7 +96,7 @@ function UpdateDashboard({ bridge }) {
     const updateRevision = status.presentedRevision;
     const updateAvailable = status.phase === "update-available" && Number.isSafeInteger(updateRevision);
     const version = release(status.local);
-    const interval = formatInterval(status.pollIntervalMs);
+    const nextCheck = formatCountdown(status.nextCheckAt);
     const install = installationState(status);
 
     function send(action) {
@@ -132,9 +132,9 @@ function UpdateDashboard({ bridge }) {
                 {install ? <InstallBadge state={install} /> : null}
 
                 <Divider />
-                <Metric icon="♡" value={heartbeatAge === null ? "—" : `${formatAge(heartbeatAge)} ago`} danger={!heartbeatFresh} />
+                <Metric icon="♡" value={heartbeatAge === null ? "—" : `${formatAge(heartbeatAge)} ago`} danger={!heartbeatFresh} minWidth={76} />
                 <Divider />
-                <Metric icon="↻" value={interval} />
+                <Metric icon="↻" value={nextCheck} minWidth={48} />
 
                 {updateAvailable ? (
                     <>
@@ -257,9 +257,9 @@ function UpdateBadge({ children }) {
     );
 }
 
-function Metric({ icon, value, danger = false }) {
+function Metric({ icon, value, danger = false, minWidth = 0 }) {
     return (
-        <span style={{ display: "flex", alignItems: "center", gap: "8px", color: danger ? COLORS.danger : "#b6cae4" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: "8px", minWidth, color: danger ? COLORS.danger : "#b6cae4" }}>
             <span style={{ color: danger ? COLORS.danger : COLORS.accent, fontSize: "20px", lineHeight: 1 }}>{icon}</span>
             <span style={{ fontSize: "14px", fontWeight: 600 }}>{value}</span>
         </span>
@@ -364,15 +364,13 @@ function release(value) {
     return value?.version && Number.isSafeInteger(value?.revision) ? `${value.version}-r${value.revision}` : "—";
 }
 
-function formatInterval(value) {
-    if (!Number.isFinite(value)) return "—";
-    if (value < 1_000) return `${value}ms`;
-    return `${Math.round(value / 1_000)}s`;
+function formatCountdown(nextCheckAt) {
+    if (!Number.isFinite(nextCheckAt)) return "—";
+    return `${Math.max(0, Math.ceil((nextCheckAt - Date.now()) / 1_000))}s`;
 }
 
 function formatAge(value) {
     if (!Number.isFinite(value)) return "unknown";
-    if (value < 1_000) return `${Math.max(0, Math.floor(value))}ms`;
-    if (value < 60_000) return `${Math.floor(value / 1_000)}s`;
+    if (value < 60_000) return `${Math.max(0, Math.floor(value / 1_000))}s`;
     return `${Math.floor(value / 60_000)}m`;
 }
