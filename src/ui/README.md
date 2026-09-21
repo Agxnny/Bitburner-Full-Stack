@@ -42,7 +42,7 @@ After every successful deployment, dashboard presentation processes are explicit
 
 `dashboard-layout-coordinator.js` coordinates presentation geometry without making dashboards directly inspect or control one another. Active dashboards publish a short-lived browser-local geometry record (stable ID, order, position, size, heartbeat). Entries expire when a dashboard stops reporting so closed windows do not reserve stack space.
 
-The current `operations` group is a vertical stack with a 6px gap. Exactly one active member is the anchor. The anchor's position remains user-controlled and persistent; followers derive their position from the anchor and the ordered heights of preceding members. Dynamic size changes therefore reflow the stack automatically.
+The current `operations` group uses a 6px gap and exactly one active anchor. The anchor's position remains user-controlled and persistent. Followers dock to a persisted `top`, `bottom`, `left`, or `right` side; members sharing a side stack by configured order. Dragging a follower materially away from its commanded position temporarily releases coordination, and after the native drag settles the nearest normalized anchor side is selected and the follower snaps to that side. Dynamic size changes reflow the docked layout automatically. Changing the anchor preserves the physical relationship where possible by inverting the previous side.
 
 Each dashboard exposes the shared compact `Anchor` control. Selecting it transfers anchor ownership for the group. Current ordering is Update Watcher 10 and System Health 20; ordering is generic so later dashboards can join without pair-specific positioning code.
 
@@ -71,6 +71,8 @@ It writes only:
 - `data/update-command.json` — a bounded single-slot `approve` or `decline` command for the exact presented revision
 
 The dashboard never calls `git-pull.js` directly. `src/bootstrap/update-watcher.js` owns command validation and delegates approved execution to the puller.
+
+The Update Watcher status row is also the dashboard's intrinsic width probe. Its nowrap child widths, padding, and gaps determine the requested content width, allowing the tail to grow when Install/Later controls appear and shrink back when they disappear; the normal compact width remains the minimum.
 
 ### Lifecycle ownership
 
