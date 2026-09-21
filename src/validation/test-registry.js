@@ -17,7 +17,7 @@ export const TESTS = [
         description:"Observe a genuine newer release while remaining on another tab. The Updater badge must appear without navigation being stolen.",
         validates:["Notification badges"],
         manual:true,
-    },,
+    },
     {
         id:"m2.dashboard.emergency-focus",
         subsystem:"Dashboard",
@@ -30,4 +30,4 @@ export const TESTS = [
     },
 ];
 
-export function findTest(id){return TESTS.find((test)=>test.id===id)??null;}
+export function findTest(id){return TESTS.find((test)=>test?.id===id)??null;}
