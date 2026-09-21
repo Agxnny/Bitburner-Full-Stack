@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 collection cadence control
-**Status:** Implementation in progress
+**Status:** Implemented and published as v0.6.0-r61; runtime validation pending
 
 **Goal:** Add a single durable collection-control owner so consumers can request bounded, expiring collector cadence leases without owning collector configuration or canonical state.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Collector baseline cadence remains the fallback. Each domain declares a minimum safe interval. Consumers request owner/domain/interval/expiry leases; fastest active valid request wins, clamped to the domain floor. Port 3 is transport only; durable control state is authority. Expired leases are removed automatically. Collectors consume resolved cadence and never arbitrate competing requests. Market port 5 remains reserved for later dedicated market control.
 
-**Validation:** Pending. First SAFE proof will accelerate the player collector with a short lease, verify bounded faster observations, allow expiry, and verify automatic return to baseline. Service health and durable resolved state must be observable.
+**Validation:** Static repository inspection complete and r61 published. SAFE test `m3.cadence.control` is registered in the plan/dashboard. It verifies collection-control health, publishes a 100ms player request that must clamp to the 500ms floor, observes accelerated collection, waits for automatic lease expiry, and verifies return to the 2000ms baseline. Runtime proof is pending.
 
-**Exact next step:** Implement the collection-control owner and collector consumption path, register the SAFE validation requirement, package the next immutable release, then runtime validate through the Validation Dashboard.
+**Exact next step:** Install v0.6.0-r61, confirm the stack returns healthy with the new collection-control service, then run the SAFE `Consumer cadence lease` test from the Validation Dashboard.
 
 ## Recently completed
 
