@@ -151,6 +151,8 @@ export function useDashboardWindow(key, bridge, options = {}) {
         resizeObserver.observe(resizable);
         const mutationObserver = new MutationObserver(() => { persistPositionSoon(); nativeMoveObserved(); });
         mutationObserver.observe(frame, { attributes:true, attributeFilter:["style"] });
+        const contentMutationObserver = new MutationObserver(measureSoon);
+        contentMutationObserver.observe(root, { childList:true, subtree:true, characterData:true });
         window.addEventListener("resize", measureSoon);
 
         const armTimer = setTimeout(() => {
@@ -175,6 +177,7 @@ export function useDashboardWindow(key, bridge, options = {}) {
             if (layoutTimer !== null) clearInterval(layoutTimer);
             resizeObserver.disconnect();
             mutationObserver.disconnect();
+            contentMutationObserver.disconnect();
             window.removeEventListener("resize", measureSoon);
             if (layoutGroup) removeDashboardGeometry(layoutGroup, key);
         };
