@@ -30,7 +30,7 @@ export async function main(ns) {
 }
 
 function HealthDashboard({ bridge }) {
-    const rootRef = useDashboardWindow(WINDOW_KEY, bridge, { minWidth: 590, minHeight: 210, maxWidth: 900, maxHeight: 760 });
+    const rootRef = useDashboardWindow(WINDOW_KEY, bridge, { minWidth: 590, minHeight: 180, maxWidth: 900, maxHeight: 760 });
     const [snapshot, setSnapshot] = React.useState(bridge.snapshot);
     React.useEffect(() => {
         const timer = setInterval(() => setSnapshot(bridge.snapshot), REFRESH_MS);
