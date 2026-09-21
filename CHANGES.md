@@ -23,15 +23,15 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r42 Validation Dashboard foundation
-**Status:** r42 published — awaiting runtime validation
+### r43 Validation Dashboard foundation
+**Status:** r43 superseded before runtime validation — correcting updater intent envelope for r43
 
 **Goal:** Establish the full Validation Dashboard as the engineering/test hub, with modular tabs for Overview, Validating, Validated, Health, Updater, and Data. Migrate Health and Updater presentation into tabs while keeping their backend services independent.
 
 **Files / areas touched:**
 - `src/ui/validation-dashboard*.jsx` and shared validation UI modules
 - Update Watcher / Health Collector presentation lifecycle
-- deployment r42 metadata
+- deployment r43 metadata
 - `src/ui/README.md`, `DECISIONS.md`, `CURRENT_STATE.md`
 
 **Decisions / constraints:**
@@ -45,9 +45,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Existing standalone Health/Updater dashboards remain source references during migration but are not the target long-term presentation surfaces.
 - Shared dark grey-blue visual language from D-018 remains authoritative.
 
-**Validation:** Design approved in chat. Initial modular implementation is complete: six-tab shell, Health/Updater/Data consumers, Validating/Validated catalog split, unread Updater badge, and one-shot emergency Health focus/acknowledgement. Existing compact dashboards are intentionally retained in r42 for parity comparison. Static release review confirms the r42 manifest includes every Validation Dashboard module and declares the dashboard as its own persistent runtime unit. Immutable releaseRef is `6b2601488c80c51dee0583e4e3d060d67c83ff49`; descriptor publication is last. Runtime validation is required before compact dashboards are retired.
+**Validation:** Design approved in chat. Initial modular implementation is complete: six-tab shell, Health/Updater/Data consumers, Validating/Validated catalog split, unread Updater badge, and one-shot emergency Health focus/acknowledgement. Existing compact dashboards are intentionally retained in r43 for parity comparison. Post-publication static review found the integrated Updater tab omitted the `type: update-command` discriminator expected by the Validation Dashboard main-loop intent handler. r42 must not be installed for updater-control validation; r43 corrects that envelope. Runtime validation is required before compact dashboards are retired.
 
-**Next step:** Install r42 and runtime-validate dashboard launch/geometry, all six tabs, Health parity, observation freshness, Updater notification/controls, and controlled emergency focus/acknowledgement. Do not retire the standalone Health/Updater windows until parity passes.
+**Next step:** Install r43 and runtime-validate dashboard launch/geometry, all six tabs, Health parity, observation freshness, Updater notification/controls, and controlled emergency focus/acknowledgement. Do not retire the standalone Health/Updater windows until parity passes.
 
 ## Recently completed
 
