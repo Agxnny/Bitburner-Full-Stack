@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r47 Validation dashboard tail lifecycle cleanup
-**Status:** Implementation
+**Status:** r47 published — awaiting runtime tail-lifecycle validation
 
 **Goal:** Preserve the now-proven quiet Tests execution while fixing deployment replacement of the persistent Validation Dashboard so its previous native tail is explicitly closed before the process is killed/restarted.
 
@@ -39,7 +39,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Only processes being intentionally stopped/replaced are tail-closed; non-UI processes tolerate `closeTail(pid)` as a no-visible-tail cleanup.
 - Do not mix updater convergence or emergency-focus work into this release.
 
-**Validation:** r46 runtime screenshot proves quiet test execution PASS: 9/9 smoke assertions render and the previous green parent `run:` line is absent. Operator reports that installs restart the Validation Dashboard process but leave the old Validation Dashboard native tail window open. Repository inspection shows `reconcileRuntime()` stops changed persistent units via `ns.kill()` only, while the older special-case `refreshDashboards()` correctly calls `ns.ui.closeTail(pid)` first. This matches the already-documented FIX-005 lifecycle invariant.
+**Validation:** r46 runtime screenshot proves quiet test execution PASS: 9/9 smoke assertions render and the previous green parent `run:` line is absent. Operator reports that installs restart the Validation Dashboard process but leave the old Validation Dashboard native tail window open. Repository inspection showed `reconcileRuntime()` stopped changed persistent units via `ns.kill()` only, while the older special-case `refreshDashboards()` correctly called `ns.ui.closeTail(pid)` first. r47 now applies close-tail-before-kill in generic persistent reconciliation, matching FIX-005. Immutable releaseRef is `d7606aebb449adfde783f952f20394361338b06c`; descriptor publication was last.
 
 **Next step:** Update persistent runtime stop handling to close a process tail before kill, publish r47, then install r47 through the integrated Updater and verify exactly one Validation Dashboard window remains after replacement.
 
