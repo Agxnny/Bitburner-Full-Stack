@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r34 Update Watcher sizing and useful poll countdown
-**Status:** Implementation complete — publication pending
+**Status:** Published as v0.5.0-r34 — runtime validation pending
 
 **Goal:** Eliminate the remaining compact Update Watcher right-edge crop and make its polling indicator show useful time remaining until the next real remote check.
 
@@ -41,9 +41,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Remaining crop is treated as a sizing conversion/inset issue, not a heartbeat-text cause. Shared sizing adds a small explicit edge safety allowance after measured content/native overhead.
 - Preserve r31/r32-proven reactive update-available grow/shrink behavior and existing docking.
 
-**Validation:** Static implementation complete. Heartbeat presentation is whole-second with reserved width; poll display is derived from watcher-owned `nextCheckAt`; shared content-width conversion adds an 8px edge-safety allowance after measured native overhead. No watcher scheduling semantics or dashboard docking logic changed. Runtime validation pending.
+**Validation:** Static implementation complete. Heartbeat presentation is whole-second with reserved width; poll display is derived from watcher-owned `nextCheckAt`; shared content-width conversion adds an 8px edge-safety allowance after measured native overhead. No watcher scheduling semantics or dashboard docking logic changed. Runtime validation pending. r34 immutable manifest published at releaseRef `fe8926ca4477fe314b0c1f98114a70b985742c63`; descriptor published last.
 
-**Next step:** Publish immutable r34 and descriptor last, then install normally and validate compact right edge, live countdown/reset at the real check boundary, and preserved update-available growth.
+**Next step:** Install r34 normally. Validate that the compact Update Watcher shows an intact right rounded edge, heartbeat remains whole-second/stable, the refresh metric counts down to 0s and resets after the watcher completes its real remote check, and future update-available controls still trigger width growth.
 
 ## Recently completed
 
