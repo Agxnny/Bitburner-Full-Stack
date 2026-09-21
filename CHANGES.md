@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Validation plan + durable runtime ledger
-**Status:** r54 SAFE validation exposed a live-snapshot race and reconciliation weakness; corrective implementation in progress
+**Status:** Corrected and published as v0.6.0-r55; awaiting SAFE runtime re-validation
 
 **Goal:** Replace the hard-coded Validation Dashboard work catalog with a deployed repository plan describing what currently requires proof, while preserving runtime PASS truth in protected Bitburner data so completed validation survives later pulls.
 
@@ -41,9 +41,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Files / areas:** validation plan data, validation ledger/reconciliation helpers, test registry/evidence integration, Validation Dashboard work/tests/summary views, deployment manifest, docs.
 
-**Validation:** r54 launched cleanly and the new plan/ledger workflow behaved correctly. The first SAFE M3 canonical-state run failed only an infrastructure timestamp equality assertion. Operator snapshots appeared contradictory because they were read at different times while the collector continued updating. Repository inspection confirms observation-store writes the durable snapshot before publishing the same observation to the port, and official v3.0.1 API docs confirm ns.write is synchronous. The validation test itself performs two live file reads across independently updating services, so exact instantaneous equality is race-prone. Inspection also found canonical-state snapshot reconciliation was conditional on accepting zero port messages, allowing unrelated continuous ingress to postpone durable reconciliation.
+**Validation:** r54 launched cleanly and the new plan/ledger workflow behaved correctly. The first SAFE M3 canonical-state run failed only an infrastructure timestamp equality assertion. Operator snapshots appeared contradictory because they were read at different times while the collector continued updating. Repository inspection confirms observation-store writes the durable snapshot before publishing the same observation to the port, and official v3.0.1 API docs confirm ns.write is synchronous. The validation test itself performs two live file reads across independently updating services, so exact instantaneous equality is race-prone. Inspection also found canonical-state snapshot reconciliation was conditional on accepting zero port messages, allowing unrelated continuous ingress to postpone durable reconciliation. r55 makes reconciliation unconditional each loop and changes SAFE/restart validation to bounded exact-timestamp convergence rather than a single non-atomic cross-file read. The equality invariant itself remains strict.
 
-**Exact next step:** Make durable snapshot reconciliation unconditional each canonical loop and change canonical validation to bounded convergence sampling rather than a single race-prone equality read. Apply the same convergence rule to restart validation, publish the next revision, then rerun the unchanged validation requirements.
+**Exact next step:** Install v0.6.0-r55, confirm deployment is CLEAN, then rerun only the SAFE Canonical state contract test. Do not run the disruptive restart test until SAFE passes. The failed r54 ledger result should remain current until a real r55 PASS replaces it.
 
 ## Recently completed
 
