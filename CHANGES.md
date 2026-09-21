@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r36 unify Update Watcher with root-measured dashboard sizing
-**Status:** Published as v0.5.0-r36 — runtime validation pending
+**Status:** r36 installed — compact updater sizing PASS; collector count regression observed
 
 **Goal:** Remove the updater-only synthetic width model and use the same rendered-root sizing path that is already stable for System Health.
 
@@ -41,9 +41,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Remove shared width-probe machinery once no dashboard uses it; keep content mutation/resize observation so action-state appearance/disappearance triggers grow/shrink.
 - Layout coordinator, countdown, heartbeat formatting, height behavior, and System Health sizing remain unchanged.
 
-**Validation:** r35 runtime: System Health rollback PASS; Update Watcher probe-based crop FAIL. r36 static implementation removes all `widthProbe`/`intrinsicRowWidth` machinery and the updater probe marker; Update Watcher now uses the same complete-root width path as System Health. Updater Shell is `border-box`, so its 620px minimum includes its 20px horizontal padding. Countdown/docking code is unchanged. Runtime validation pending. r36 immutable manifest published at releaseRef `5fafb084563c162402b0d11f1d80e391fa149059`; descriptor published last.
+**Validation:** r35 runtime: System Health rollback PASS; Update Watcher probe-based crop FAIL. r36 static implementation removes all `widthProbe`/`intrinsicRowWidth` machinery and the updater probe marker; Update Watcher now uses the same complete-root width path as System Health. Updater Shell is `border-box`, so its 620px minimum includes its 20px horizontal padding. Countdown/docking code is unchanged. Runtime validation: compact Update Watcher right-edge sizing PASS on r36; rounded card edge is fully visible and countdown remains functional. System Health sizing remains correct. New issue observed: System Health reports 6 services and `capabilities-collector` is missing from Service Placement, despite seven services being healthy on r35. Action-state Install/Later expansion remains pending. r36 immutable manifest published at releaseRef `5fafb084563c162402b0d11f1d80e391fa149059`; descriptor published last.
 
-**Next step:** Install r36 normally. Validate compact Update Watcher right edge and unchanged System Health sizing. On the next presented revision, validate that conditional Install/Later content expands the root-measured window and shrinks again after resolution.
+**Next step:** Investigate why System Health now reports six services and `capabilities-collector` is absent from Service Placement before using another revision to test the updater action state. Preserve the r36 root-measured updater sizing, which passes in compact state; the next presented revision can validate Install/Later expansion once the missing collector is understood.
 
 ## Recently completed
 
