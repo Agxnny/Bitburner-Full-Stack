@@ -1,7 +1,7 @@
 # Current State
 
 ## Current milestone
-**M2 — Telemetry / Dashboard Foundation**
+**M3 — Canonical State**
 
 ## Status
 **M1 — Reliable Deployment is complete and runtime validated through v0.4.0-r20.** Bootstrap safety, persistent updater lifecycle behavior, redundant discovery, commit-pinned release content, exact-revision human approval, single-deployment concurrency protection, explicit persistent-unit retirement, dashboard geometry memory, and operator-visible deployment completion status have all been exercised in Bitburner v3.0.1.
@@ -42,25 +42,19 @@ M2 first vertical slice is runtime validated through v0.5.0-r22: shared cross-ho
 - r29 four-side dashboard docking runtime validated: followers snap to top/bottom/left/right of the selected anchor and anchor transfer preserves the physical relationship. Update-available width growth remains pending validation against the next presented release.
 
 ## Active feature
-**M2 — Validation Dashboard foundation and milestone closeout**
+**M3 — Canonical State design**
 
-Relevant starting surfaces:
-- `CHANGES.md`
-- `PROJECT_RULES.md`
-- `CURRENT_STATE.md`
-- `ARCHITECTURE.md`
-- `DECISIONS.md`
-- `ROADMAP.md`
-- `src/ui/README.md`
-- relevant `FIXES.md` entries
+M2 is complete and runtime validated through v0.5.0-r49. Its closeout evidence covers the seven-service telemetry/health model, stale/degraded/recovery behavior, isolated observation collectors, dashboard geometry/layout, Validation Dashboard smoke test, genuine updater-attention behavior, explicit automated/operator-confirmed evidence provenance, managed-tail replacement cleanup, and controlled emergency focus/recovery returning to 7/7 healthy.
+
+The five files under `data/observations/` remain replaceable M2 observations, not canonical state. M3 must define a single state authority and explicit raw/derived/freshness/reconciliation interfaces rather than promoting those files by convention.
 
 ## Exact next step
-1. Install r48 through the integrated Updater and open Tests.
-2. Start `m2.dashboard.emergency-focus`; verify the DISRUPTIVE confirmation appears before any collector is stopped.
-3. Confirm execution. The test should stop exactly four observation collectors and wait for the real health threshold.
-4. Verify the dashboard automatically selects Health once and displays the emergency banner. Press Acknowledge when prompted by the live emergency.
-5. Observe automatic restoration and final return to 7/7 healthy. Review the Tests result/evidence; any restoration failure is a test failure requiring recovery.
-6. After this passes, investigate the bounded post-install updater convergence separately, then decide whether standalone Health/Updater presentation can retire.
+1. Design the canonical-state owner and its dependency direction from M2 observations/telemetry.
+2. Define versioned state schemas, raw-versus-derived boundaries, freshness metadata, and stale/unavailable semantics.
+3. Define reconciliation: what divergence can be corrected, what is observation-only, and what must fail closed.
+4. Define consumer interfaces so later Supervisor, resource manager, scheduler, controllers, and dashboards depend on state contracts rather than storage details.
+5. Define Validation Dashboard state-health views and registered M3 tests/evidence.
+6. Lock the design in DECISIONS/ARCHITECTURE before implementing the first M3 vertical slice.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
@@ -94,6 +88,10 @@ Relevant starting surfaces:
 - React Production and Validation dashboards are first-class clients.
 - Persistent runtime units receive special update protection.
 - Repository is permanent project memory; avoid code dumps in chat.
+
+## M2 closeout decisions
+- M2 is complete through v0.5.0-r49; the standalone compact Health/Updater surfaces may remain during M3 and can be consolidated later without reopening M2.
+- The previously observed bounded post-install updater convergence/stale transient feedback is presentation polish, not an M2 correctness blocker: deployment state converged without intervention and terminal install status is independently visible.
 
 ## Known issues / close-out decisions
 - FIX-004's historical ledger-drift root cause remains unproven; current deployment recovery behavior is validated, but the historical root cause must not be invented.
