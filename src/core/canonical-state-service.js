@@ -23,7 +23,7 @@ export async function main(ns) {
         let accepted = 0;
         accepted += drain(ns, PORTS.OBSERVATION_INGRESS, revisions);
         accepted += drain(ns, PORTS.MARKET_OBSERVATION_INGRESS, revisions);
-        if (accepted === 0) reconcileSnapshots(ns, revisions);
+        reconcileSnapshots(ns, revisions);
 
         publishTelemetry(ns, serviceHealth(ns, SERVICE, {
             startedAt,
