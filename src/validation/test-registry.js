@@ -1,5 +1,12 @@
 export const TESTS = [
     {
+        id:"m3.diagnostics.failure-correlation", subsystem:"Diagnostics", title:"Real failure correlation and recovery", risk:"DISRUPTIVE",
+        runner:"src/validation/tests/diagnostics-failure-correlation-test.js",
+        description:"Starts an isolated validation-only service, deliberately stops its heartbeat while it remains alive, verifies real health-to-diagnostics evidence and bounded explanation, then restores heartbeats and proves automatic incident resolution.",
+        validates:["Real service failure correlation","Evidence-backed bounded explanation","Observed recovery and incident resolution"],
+        confirmation:"Starts only a validation fixture. The fixture deliberately stops its own heartbeat long enough to become stale, then resumes. No production collector, canonical owner, updater, or control service is stopped.",
+    },
+    {
         id:"m3.diagnostics.intelligence", subsystem:"Diagnostics", title:"Incident intelligence contract", risk:"SAFE",
         runner:"src/validation/tests/diagnostics-intelligence-test.js",
         description:"Publishes a synthetic structured diagnostic, verifies durable evidence/classification and deduplication, then explicitly resolves it without disrupting production services.",
