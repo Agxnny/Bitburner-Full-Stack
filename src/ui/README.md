@@ -38,6 +38,16 @@ Position and requested size are clamped to the viewport. r25/r26 calibration est
 
 After every successful deployment, dashboard presentation processes are explicitly refreshed: the old native tails are closed before their processes are killed, then the dashboards are relaunched from the newly deployed files. This refresh does not by itself restart unchanged telemetry/core services. Future orchestration may replace the explicit dashboard list with a registry, but the lifecycle contract remains presentation refresh independent of service restart.
 
+## Shared dashboard layout coordination
+
+`dashboard-layout-coordinator.js` coordinates presentation geometry without making dashboards directly inspect or control one another. Active dashboards publish a short-lived browser-local geometry record (stable ID, order, position, size, heartbeat). Entries expire when a dashboard stops reporting so closed windows do not reserve stack space.
+
+The current `operations` group is a vertical stack with a 6px gap. Exactly one active member is the anchor. The anchor's position remains user-controlled and persistent; followers derive their position from the anchor and the ordered heights of preceding members. Dynamic size changes therefore reflow the stack automatically.
+
+Each dashboard exposes the shared compact `Anchor` control. Selecting it transfers anchor ownership for the group. Current ordering is Update Watcher 10 and System Health 20; ordering is generic so later dashboards can join without pair-specific positioning code.
+
+Layout registry and anchor choice are browser-local presentation state, not telemetry or canonical game state. React/browser code may publish geometry and calculate desired placement, but only each dashboard's Netscript `main()` loop calls `ns.ui.moveTail()` / `ns.ui.resizeTail()`.
+
 ## M1 update dashboard slice
 
 `update-dashboard.jsx` is the first narrow dashboard slice. Its production-facing view is intentionally minimal rather than diagnostic.
