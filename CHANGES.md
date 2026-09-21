@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r49 Emergency validation registry hotfix
-**Status:** r49 startup runtime PASS — disruptive test safety gate next
+**Status:** r49 emergency-focus runtime PASS — M2 closeout review next
 
 **Goal:** Repair the r48 startup crash before any disruptive validation is allowed to run. r48 installed a sparse `TESTS` array entry because the registry edit emitted `},,`; `findTest()` then dereferenced the resulting `undefined` element during Validation Dashboard startup.
 
@@ -37,9 +37,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Remove the accidental sparse array entry and make `findTest()` defensively tolerate malformed/sparse registry entries so a future registry defect fails closed instead of crashing the persistent dashboard.
 - The r48 disruptive test did not start; no collectors were intentionally stopped by this failure.
 
-**Validation:** Operator runtime on r48 produced `TypeError: Cannot read properties of undefined (reading 'id')` from `findTest()` during `TESTS_RUNNABLE()`. Repository inspection confirmed the exact source was the accidental `},,` between `m2.updater.notification` and `m2.dashboard.emergency-focus`. r49 removes the sparse entry and changes lookup to `test?.id`, so malformed/sparse entries no longer crash lookup. Immutable r49 releaseRef is `7f2e28ce3b3668c66dc64bc7fbcbe4813d24f8fb`; descriptor publication was last. Operator screenshot after install shows Validation Dashboard v0.5.0-r49 running normally, System Health 7/7 healthy, Update Watcher r49 ONLINE/Install clean, and no startup exception. This runtime-validates the registry startup hotfix.
+**Validation:** Operator runtime on r48 produced `TypeError: Cannot read properties of undefined (reading 'id')` from `findTest()` during `TESTS_RUNNABLE()`. Repository inspection confirmed the exact source was the accidental `},,` between `m2.updater.notification` and `m2.dashboard.emergency-focus`. r49 removes the sparse entry and changes lookup to `test?.id`, so malformed/sparse entries no longer crash lookup. Immutable r49 releaseRef is `7f2e28ce3b3668c66dc64bc7fbcbe4813d24f8fb`; descriptor publication was last. Operator screenshot after install shows Validation Dashboard v0.5.0-r49 running normally, System Health 7/7 healthy, Update Watcher r49 ONLINE/Install clean, and no startup exception. This runtime-validates the registry startup hotfix. Operator then accidentally proceeded through the full `m2.dashboard.emergency-focus` flow after seeing the DISRUPTIVE confirmation screen. The emergency remained active until explicit Acknowledge, as designed. Final screenshot shows automated PASS with all assertions green: initial 7/7 health, all four fixed targets captured/stopped, real emergency threshold observed, automatic Health focus event published, operator acknowledgement observed, focus count remained 1 after acknowledgement, every stopped collector relaunched, and final health returned to 7/7. Recent Evidence contains the automated emergency-focus PASS.
 
-**Next step:** Open Tests and verify all three registered entries render. Press Run Test for `m2.dashboard.emergency-focus` only far enough to display the DISRUPTIVE confirmation panel; do not confirm execution yet. Validate that no health degradation occurs before explicit confirmation.
+**Next step:** Perform M2 closeout review against ROADMAP/CURRENT_STATE: reconcile completed validation evidence, identify any remaining M2 blocker versus deferred polish (including stale updater command feedback/post-install convergence), update durable milestone docs, and only mark M2 complete if every required acceptance condition is satisfied.
 
 ### r48 Controlled emergency-focus validation
 **Status:** Superseded by r49 startup hotfix; disruptive runtime test not started
