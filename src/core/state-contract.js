@@ -28,7 +28,7 @@ export function validObservation(value) {
         value
         && value.schemaVersion === 2
         && value.kind === "observation"
-        && CANONICAL_DOMAINS.includes(value.domain)
+        && OBSERVATION_DOMAINS.includes(value.domain)
         && typeof value.producer === "string"
         && value.producer.length > 0
         && Number.isFinite(value.observedAt)
