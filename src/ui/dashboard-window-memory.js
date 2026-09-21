@@ -80,14 +80,15 @@ export function useDashboardWindow(key, bridge, options = {}) {
             const contentHeight = Math.max(root.scrollHeight, Math.ceil(rootRect.height));
             const vw = Math.max(minWidth, window.innerWidth || minWidth);
             const vh = Math.max(minHeight, window.innerHeight || minHeight);
+            const availableHeight = Math.max(minHeight, vh - Math.max(0, resizableRect.top) - 8);
             bridge.desiredSize = {
                 width: clamp(Math.ceil(contentWidth + nativeWidthOverhead), minWidth, Math.min(maxWidth, vw - 8)),
-                height: clamp(Math.ceil(contentHeight + nativeHeightOverhead), minHeight, Math.min(maxHeight, vh - 8)),
+                height: clamp(Math.ceil(contentHeight + nativeHeightOverhead), minHeight, Math.min(maxHeight, availableHeight)),
             };
             bridge.windowMetrics = {
                 measuredAt: Date.now(), nativeOverhead: { width:nativeWidthOverhead, height:nativeHeightOverhead },
                 content: { width:contentWidth, height:contentHeight }, resizable: { width:resizableRect.width, height:resizableRect.height },
-                viewport: { width:contentViewport.clientWidth, height:contentViewport.clientHeight },
+                viewport: { width:contentViewport.clientWidth, height:contentViewport.clientHeight, availableHeight },
             };
         };
 
