@@ -1,4 +1,5 @@
-import { applyDashboardSize, restoreDashboardPosition, useDashboardWindow } from "./dashboard-window-memory.js";
+import { applyDashboardPosition, applyDashboardSize, restoreDashboardPosition, useDashboardWindow } from "./dashboard-window-memory.js";
+import { DashboardAnchorControl } from "./dashboard-anchor-control.jsx";
 
 /**
  * Ultra-compact React update dashboard for M1.
@@ -10,6 +11,7 @@ const COMMAND_PATH = "data/update-command.json";
 const SCRIPT_PATH = "src/ui/update-dashboard.jsx";
 const WINDOW_MEMORY_KEY = "update-watcher";
 const REFRESH_MS = 1_000;
+const LAYOUT_GROUP = "operations";
 
 const COLORS = {
     page: "#0b1119",
@@ -38,7 +40,7 @@ export async function main(ns) {
     if (dashboards.length > 0 && dashboards[0].pid !== ns.pid) return;
 
     ns.disableLog("sleep");
-    const bridge = { snapshot: readSnapshot(ns), pendingIntent: null, feedback: "", desiredSize: null, appliedSize: null };
+    const bridge = { snapshot: readSnapshot(ns), pendingIntent: null, feedback: "", desiredSize: null, appliedSize: null, desiredPosition: null, appliedPosition: null, layout: null };
 
     ns.ui.openTail();
     ns.ui.setTailTitle("Full Stack — Update Watcher");
@@ -54,6 +56,7 @@ export async function main(ns) {
         }
         bridge.snapshot = readSnapshot(ns);
         applyDashboardSize(ns, bridge);
+        applyDashboardPosition(ns, bridge);
         await ns.sleep(REFRESH_MS);
     }
 }
@@ -77,7 +80,7 @@ function readSnapshot(ns) {
 }
 
 function UpdateDashboard({ bridge }) {
-    const windowRef = useDashboardWindow(WINDOW_MEMORY_KEY, bridge, { minWidth: 620, minHeight: 126, maxWidth: 820, maxHeight: 260 });
+    const windowRef = useDashboardWindow(WINDOW_MEMORY_KEY, bridge, { minWidth: 620, minHeight: 126, maxWidth: 820, maxHeight: 260, layoutGroup: LAYOUT_GROUP, layoutOrder: 10, layoutGap: 6 });
     const [view, setView] = React.useState(() => ({ snapshot: bridge.snapshot, feedback: bridge.feedback }));
 
     React.useEffect(() => {
@@ -114,6 +117,7 @@ function UpdateDashboard({ bridge }) {
             <Header>
                 <CubeIcon />
                 <span>UPDATE WATCHER</span>
+                <DashboardAnchorControl group={LAYOUT_GROUP} id={WINDOW_MEMORY_KEY} bridge={bridge} accent={COLORS.accent} muted={COLORS.muted} />
             </Header>
 
             <StatusRow>
