@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r45 Quiet validation runners and durable evidence
-**Status:** r45 runtime partial PASS — parent `ns.run()` log source identified; r46 fix in progress
+**Status:** r46 published — awaiting quiet-run runtime validation
 
 **Goal:** Complete the first Tests workflow refinement: dashboard-owned automated tests run quietly, while automated and operator-confirmed validation evidence is durably recorded and visible from Tests/Validated rather than relying on terminal/tail output or chat history.
 
@@ -42,7 +42,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Existing r44 updater-notification evidence may be recorded through the new manual-confirmation workflow after r45 installation.
 - No updater convergence fix is mixed into r45.
 
-**Validation:** r44 proved the full dashboard-run smoke path with nine passing assertions, but exposed runner tail/log noise. r44 also proved genuine updater notification without focus stealing and integrated installation. r45 now suppresses runner Netscript logging, records automated results into a bounded durable evidence store, and adds explicit operator-confirmed evidence for registry entries marked manual. Static source review complete. Immutable r45 manifest includes the new evidence store and all changed validation modules; Validation Dashboard runtime dependencies include the evidence store. Immutable releaseRef is `219673877f4f50a7eeea2a148153274a7be70255`; descriptor publication was last. Runtime screenshot confirms the smoke test still PASSes and durable automated evidence renders correctly. The green `run: ...` line still appears. The line is emitted by the Validation Dashboard process when it calls `ns.run()`, not by the child runner; disabling logs inside the runner cannot suppress a parent `run` API log. r46 will suppress the dashboard owner's `run` log specifically while preserving test evidence.
+**Validation:** r44 proved the full dashboard-run smoke path with nine passing assertions, but exposed runner tail/log noise. r44 also proved genuine updater notification without focus stealing and integrated installation. r45 now suppresses runner Netscript logging, records automated results into a bounded durable evidence store, and adds explicit operator-confirmed evidence for registry entries marked manual. Static source review complete. Immutable r45 manifest includes the new evidence store and all changed validation modules; Validation Dashboard runtime dependencies include the evidence store. Immutable releaseRef is `219673877f4f50a7eeea2a148153274a7be70255`; descriptor publication was last. Runtime screenshot confirms the smoke test still PASSes and durable automated evidence renders correctly. The green `run: ...` line still appears. The line is emitted by the Validation Dashboard process when it calls `ns.run()`, not by the child runner; disabling logs inside the runner cannot suppress a parent `run` API log. r46 suppresses the dashboard owner's `run` log specifically while preserving test evidence. Immutable r46 releaseRef is `fcedc0ec939a92d0289f78e5da58ea7efe0b86b9`; descriptor publication was last.
 
 **Next step:** Add `run` to the Validation Dashboard's disabled Netscript logs, publish r46, then re-run `m2.dashboard.smoke` from Tests. Confirm the green parent `run:` line is gone while PASS/evidence still render. Then record the updater observation with `Confirm Observed Pass`.
 
