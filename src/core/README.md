@@ -23,3 +23,8 @@ The collector reports itself. The update watcher is the first external real prod
 ### Runtime validation
 
 The first validation proves the collector and update watcher appear with actual host/PID, settle healthy, watcher loss becomes stale, watcher restart recovers, bounded incidents survive, and the dashboard uses shared geometry memory.
+
+
+## M2 observation storage
+
+Broad game observations are collected by isolated services documented in `src/collectors/README.md`. `src/core/observation-store.js` defines their replaceable snapshot envelope and bounded-history helper. Observation files are deliberately separate from service-health telemetry and are not canonical M3 state.
