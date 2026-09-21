@@ -240,3 +240,15 @@ A managed file is never deleted merely because it disappears from a later manife
 Retirement reconciliation runs only after newly deployed ownership code and persistent runtime reconciliation have removed any relaunch source. For each retirement path the helper discovers matching processes, closes their tails, requests termination, waits, and verifies that no process with that script path remains. If stop or verification fails, the file is preserved and deployment runtime status is degraded. Only a verified-stopped path may be deleted; deletion is followed by an explicit absence check.
 
 Every retirement produces operator-visible terminal lines and a structured `report.retirement.files` record including prior existence, matching/stopped PIDs, final status, and failure reason. Already-absent files are reported as such rather than claimed as deleted. Retirement declarations are one-release instructions; immutable manifests and deployment reports are the audit history.
+
+
+## D-032 — M3 canonical state separates factual time from consumer freshness
+**Status:** Locked
+
+M3 is the single durable owner of latest canonical game state. M2 collectors remain factual observation producers and publish versioned observations into M3 transport while retaining durable observation snapshots for restart reconciliation. Ports move observations and control messages but never become canonical truth or broadcast/pub-sub.
+
+All operational data uses a shared wall-time contract. An observation records when it was observed; canonical state preserves that timestamp and records its own revision/canonicalization time. Producers and M3 do not declare a universal fresh/stale judgement. Each consumer decides whether the observation age is acceptable for its use. Availability/unavailability remains factual producer data. Historical windows are elapsed-time windows, not record-count windows, so missing collection remains an explicit gap.
+
+Port allocation is centralized. Port 1 remains telemetry; ordinary observations share an ingress lane and market receives a dedicated observation lane plus a reserved control lane because high-frequency isolation is expected to matter. Dedicated lanes are justified by domain requirements, not allocated automatically per collector.
+
+Collection cadence is a control-plane concern. Collectors retain baseline and safe-minimum cadence constraints; M3 will resolve leased consumer cadence requests to an effective interval. A crashed requester must not permanently force high-frequency collection. This cadence mechanism changes acquisition frequency but does not make collectors controller-aware or grant consumers authority.
