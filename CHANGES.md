@@ -23,31 +23,28 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r43 Validation Dashboard foundation
-**Status:** r43 superseded before runtime validation — correcting updater intent envelope for r43
+### r44 Validation Tests workspace
+**Status:** Implementation
 
-**Goal:** Establish the full Validation Dashboard as the engineering/test hub, with modular tabs for Overview, Validating, Validated, Health, Updater, and Data. Migrate Health and Updater presentation into tabs while keeping their backend services independent.
+**Goal:** Add a dedicated Tests tab to the Validation Dashboard so approved validation scripts can be launched and observed from the dashboard rather than the terminal. Use r44 itself as the real updater-notification stimulus.
 
 **Files / areas touched:**
-- `src/ui/validation-dashboard*.jsx` and shared validation UI modules
-- Update Watcher / Health Collector presentation lifecycle
-- deployment r43 metadata
+- `src/ui/validation-dashboard.jsx`
+- new validation test registry/executor/UI modules
+- deployment r44 metadata
 - `src/ui/README.md`, `DECISIONS.md`, `CURRENT_STATE.md`
 
 **Decisions / constraints:**
-- One persistent Validation Dashboard process/window; tabs are presentation boundaries, not service boundaries.
-- React remains Netscript-free; dashboard `main()` exclusively owns Netscript reads/writes and native tail operations.
-- Navigation is never changed for ordinary notifications. Tab badges represent unread attention; underlying active state remains separate.
-- Critical/emergency events may force focus once per incident/escalation. Acknowledgement suppresses repeat focus stealing for that incident while the condition remains visibly active.
-- Validation work is separated into `Validating` (active work) and `Validated` (completed evidence). Regressions return affected work to Validating.
-- Update availability uses an Updater notification badge rather than automatically switching tabs.
-- Health Collector, Update Watcher, and observation collectors remain independent backend services; UI consolidation does not consolidate service ownership.
-- Existing standalone Health/Updater dashboards remain source references during migration but are not the target long-term presentation surfaces.
-- Shared dark grey-blue visual language from D-018 remains authoritative.
+- Tests is execution; Validating remains the active acceptance/evidence queue; Validated remains the completed evidence archive.
+- React never invokes Netscript. Test buttons submit typed intents through the dashboard bridge; `main()` dispatches only stable registered test IDs.
+- No arbitrary script path/arguments are accepted from React. The registry is the allow-list and owns runner script/arguments/risk metadata.
+- Test execution is single-flight for the first slice, with bounded result state under `data/validation/`.
+- The first registered test is a SAFE dashboard smoke test that validates current r44 shell/telemetry prerequisites. Publishing r44 itself supplies the genuine newer-release condition for the updater notification test; the test framework does not forge updater telemetry.
+- Update availability remains ordinary attention: badge only, no automatic navigation.
 
-**Validation:** Design approved in chat. Initial modular implementation is complete: six-tab shell, Health/Updater/Data consumers, Validating/Validated catalog split, unread Updater badge, and one-shot emergency Health focus/acknowledgement. Existing compact dashboards are intentionally retained in r43 for parity comparison. Post-publication static review found r42's integrated Updater tab omitted the `type: update-command` discriminator expected by the Validation Dashboard main-loop intent handler. r43 corrects that envelope. Static review confirms the r43 manifest includes every dashboard module and declares Validation Dashboard as its own persistent runtime unit. Immutable releaseRef is `8115546f49871bc7c8d9eb28dedfeb605077f455`; descriptor publication is last. Operator runtime evidence after a clean r43 install shows all six tabs render correctly: Overview reports HEALTHY with 7/7 services and current r43 deployment; Validating shows the two active M2 groups; Validated shows M1 deployment and M2 health evidence; Health shows 7 healthy services with live placement/uptime; Updater reports ONLINE / Install clean with Raw+API at r43; Data shows all five observation domains AVAILABLE and fresh. Navigation/layout show no visible clipping or geometry regression.
+**Validation:** r43 six-tab rendering/runtime pass is recorded. r44 implementation and static review are in progress. Runtime evidence still required for Tests execution and the genuine r44 Updater notification badge before installation.
 
-**Next step:** Continue r43 behavioral validation: exercise an update-available state to verify Updater unread badge plus exact-revision Later/Install controls, then run a controlled widespread-service failure to verify one-shot Health focus and acknowledgement. Do not retire standalone Health/Updater windows until these parity/escalation checks pass.
+**Next step:** Implement registry, runner, Tests UI and typed test intents; publish r44 last; operator captures the r44 Updater notification while still running r43 before pulling it.
 
 ## Recently completed
 
