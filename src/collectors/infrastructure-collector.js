@@ -9,6 +9,7 @@ export async function main(ns) {
         service: "infrastructure-collector",
         domain: DOMAIN,
         intervalMs: 5_000,
+        minimumIntervalMs: 1_000,
     }, async () => {
         const cloudServers = ns.cloud.getServerNames().map((host) => {
             const server = ns.getServer(host);
