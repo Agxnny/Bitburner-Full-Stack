@@ -23,51 +23,37 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r49 Emergency validation registry hotfix
-**Status:** r49 emergency-focus runtime PASS — M2 closeout review next
+### M3 Canonical State — design
+**Status:** Design
 
-**Goal:** Repair the r48 startup crash before any disruptive validation is allowed to run. r48 installed a sparse `TESTS` array entry because the registry edit emitted `},,`; `findTest()` then dereferenced the resulting `undefined` element during Validation Dashboard startup.
-
-**Files / areas touched:**
-- `src/validation/test-registry.js`
-- deployment r49 metadata
-
-**Decisions / constraints:**
-- This is a minimal hotfix. Do not change emergency-test behavior while repairing startup.
-- Remove the accidental sparse array entry and make `findTest()` defensively tolerate malformed/sparse registry entries so a future registry defect fails closed instead of crashing the persistent dashboard.
-- The r48 disruptive test did not start; no collectors were intentionally stopped by this failure.
-
-**Validation:** Operator runtime on r48 produced `TypeError: Cannot read properties of undefined (reading 'id')` from `findTest()` during `TESTS_RUNNABLE()`. Repository inspection confirmed the exact source was the accidental `},,` between `m2.updater.notification` and `m2.dashboard.emergency-focus`. r49 removes the sparse entry and changes lookup to `test?.id`, so malformed/sparse entries no longer crash lookup. Immutable r49 releaseRef is `7f2e28ce3b3668c66dc64bc7fbcbe4813d24f8fb`; descriptor publication was last. Operator screenshot after install shows Validation Dashboard v0.5.0-r49 running normally, System Health 7/7 healthy, Update Watcher r49 ONLINE/Install clean, and no startup exception. This runtime-validates the registry startup hotfix. Operator then accidentally proceeded through the full `m2.dashboard.emergency-focus` flow after seeing the DISRUPTIVE confirmation screen. The emergency remained active until explicit Acknowledge, as designed. Final screenshot shows automated PASS with all assertions green: initial 7/7 health, all four fixed targets captured/stopped, real emergency threshold observed, automatic Health focus event published, operator acknowledgement observed, focus count remained 1 after acknowledgement, every stopped collector relaunched, and final health returned to 7/7. Recent Evidence contains the automated emergency-focus PASS.
-
-**Next step:** Perform M2 closeout review against ROADMAP/CURRENT_STATE: reconcile completed validation evidence, identify any remaining M2 blocker versus deferred polish (including stale updater command feedback/post-install convergence), update durable milestone docs, and only mark M2 complete if every required acceptance condition is satisfied.
-
-### r48 Controlled emergency-focus validation
-**Status:** Superseded by r49 startup hotfix; disruptive runtime test not started
-
-**Goal:** Add the first DISRUPTIVE registered validation test. It must deliberately cross the real dashboard emergency threshold using only disposable M2 observation collectors, prove one-shot Health focus plus acknowledgement, restore every process it stopped, and record machine/operator evidence without terminal use.
+**Goal:** Begin M3 only after formally closing the runtime-validated M2 Telemetry / Dashboard Foundation. Define the canonical-state ownership, schemas, freshness semantics, raw-versus-derived boundary, reconciliation responsibilities, and Validation Dashboard state-health surfaces before implementation.
 
 **Files / areas touched:**
-- `src/validation/test-registry.js`, new emergency-focus runner
-- `src/ui/validation-dashboard.jsx`, `src/ui/validation-tests-tab.jsx`
-- validation UI-state/evidence files under `data/validation/`
-- Validation Dashboard docs/decisions/current state
-- deployment r48 metadata
+- `CURRENT_STATE.md`
+- `ROADMAP.md`
+- `DECISIONS.md`
+- `src/ui/README.md`
+- M3 design surfaces to be identified before code
 
 **Decisions / constraints:**
-- Test risk is `DISRUPTIVE`; Run Test opens an explicit confirmation panel before execution.
-- Targets are exactly four disposable observation collectors: player, network, market, infrastructure. Health Collector, Update Watcher, Validation Dashboard, and capabilities collector are never stopped.
-- Four targets are required because the live emergency rule is at least half of 7 reporting services (4 unhealthy). The test does not lower or bypass that production threshold.
-- Runner captures exact target script/host/threads/args before mutation and owns restoration. Normal completion, assertion failure, timeout, and script death all attempt restoration. It restarts only processes it stopped.
-- Dashboard React records only ordinary UI facts into the in-memory bridge; dashboard `main()` persists those facts. The runner never calls React or UI Netscript APIs.
-- Emergency acknowledgement remains operator action. Automated evidence verifies telemetry degradation, dashboard focus-event publication, acknowledgement publication, one-shot behavior, restoration, and final 7/7 health. Actual native-window foreground perception remains operator-observed.
-- Recovery clears the previous emergency acknowledgement/focus generation so a later materially separate identical failure can escalate again.
-- No updater-convergence work is mixed into r48.
+- M2 is complete at r49. Structured telemetry/events, central health/status aggregation, React Validation Dashboard shell, registered validation/evidence framework, and operator production surfaces are all runtime validated.
+- The five M2 observation files remain explicitly non-canonical inputs. M3 may consume/replace their interfaces but must not silently relabel them as canonical state.
+- Standalone System Health and Update Watcher windows may remain during M3; presentation consolidation is not an M2 blocker and must not delay state architecture.
+- The observed short post-install updater convergence/stale command-feedback polish is not a correctness blocker: deployment completion and update state converge without intervention and the canonical compact updater already exposes terminal install state. Track presentation polish separately rather than reopening M2.
+- No M3 implementation until ownership, dependencies, interfaces, reconciliation, freshness/failure semantics, validation plan, and done criteria are documented and approved.
 
-**Validation:** r47 is runtime PASS for quiet Tests, persistent dashboard tail replacement, and explicit automated/operator-confirmed evidence provenance. Official Bitburner v3.0.1 API verification confirms `NS.atExit()` is available for script-death cleanup callbacks. Static r48 review confirms: four fixed collector targets; real 4-of-7 emergency threshold; restoration callback armed before kills; exact process tuples captured; bounded emergency/ack/recovery timeouts; single-flight test dispatch; React only updates bridge UI facts while dashboard main persists them; recovery clears the prior emergency generation. Immutable r48 manifest includes the new emergency runner and all changed validation modules. Immutable releaseRef is `1def3c1a35cfab492ff5d6ad03c0169a65125e55`; descriptor publication was last. Runtime validation is pending.
+**Validation:** M2 closeout evidence includes healthy 7-service telemetry, stale/degraded/recovery handling, bounded incidents, five isolated observation collectors, dashboard sizing/layout behavior, Validation Dashboard smoke 9/9, genuine non-focus-stealing updater notification with operator-confirmed evidence, persistent dashboard replacement cleanup, and the controlled emergency-focus test with exact restoration and final 7/7 health.
 
-**Next step:** Publish immutable r48, install through the integrated Updater, then run `m2.dashboard.emergency-focus` only from Tests. Confirm the DISRUPTIVE warning first; during the run acknowledge the emergency after automatic Health focus; then verify restoration and final 7/7 health.
+**Next step:** Design the M3 canonical-state contract and validation criteria. Do not write M3 runtime code until the design is reviewed.
 
 ## Recently completed
+
+### M2 Telemetry / Dashboard Foundation
+**Status:** Complete and runtime validated through v0.5.0-r49
+
+M2 established structured service telemetry/events, aggregate health and incident handling, isolated observation producers, shared dashboard presentation infrastructure, the Validation Dashboard engineering hub, registered SAFE/DISRUPTIVE tests, durable evidence provenance, and emergency focus/recovery behavior. Final controlled validation crossed the real 4-of-7 emergency threshold, focused Health once, required acknowledgement, restored all four stopped collectors, and returned the stack to 7/7 healthy.
+
+
 
 ### r20 update-dashboard deployment completion status
 **Status:** Runtime validated
