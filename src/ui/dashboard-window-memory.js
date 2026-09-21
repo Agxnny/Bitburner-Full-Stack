@@ -4,7 +4,7 @@ const TITLE_VISIBLE_WIDTH = 96;
 const TITLE_VISIBLE_HEIGHT = 36;
 const SAVE_ARM_DELAY_MS = 500;
 const SAVE_DEBOUNCE_MS = 120;
-const SIZE_DEBOUNCE_MS = 80;
+const SIZE_DEBOUNCE_MS = 100;
 const SIZE_TOLERANCE_PX = 3;
 
 export async function restoreDashboardPosition(ns, key, pid = ns.pid) {
@@ -36,26 +36,47 @@ export function useDashboardWindow(key, bridge, options = {}) {
     const minHeight = options.minHeight ?? 120;
     const maxWidth = options.maxWidth ?? 1200;
     const maxHeight = options.maxHeight ?? 900;
-    const widthPadding = options.widthPadding ?? 0;
-    const heightPadding = options.heightPadding ?? 0;
 
     React.useEffect(() => {
         const root = rootRef.current;
         const resizable = root?.closest?.(".react-resizable") ?? null;
         const frame = resizable?.parentElement ?? null;
-        if (!root || !resizable || !frame) return undefined;
+        const contentViewport = findContentViewport(root, resizable);
+        if (!root || !resizable || !frame || !contentViewport) return undefined;
 
         let armed = false;
         let positionTimer = null;
         let sizeTimer = null;
 
         const measure = () => {
-            const rect = root.getBoundingClientRect();
+            const rootRect = root.getBoundingClientRect();
+            const resizableRect = resizable.getBoundingClientRect();
+            const nativeWidthOverhead = Math.max(0, resizable.clientWidth - contentViewport.clientWidth);
+            const nativeHeightOverhead = Math.max(0, resizable.clientHeight - contentViewport.clientHeight);
+
+            const contentWidth = Math.max(root.scrollWidth, Math.ceil(rootRect.width));
+            const contentHeight = Math.max(root.scrollHeight, Math.ceil(rootRect.height));
             const viewportWidth = Math.max(minWidth, window.innerWidth || minWidth);
             const viewportHeight = Math.max(minHeight, window.innerHeight || minHeight);
+
             bridge.desiredSize = {
-                width: clamp(Math.ceil(rect.width + widthPadding), minWidth, Math.min(maxWidth, viewportWidth - 8)),
-                height: clamp(Math.ceil(root.scrollHeight + heightPadding), minHeight, Math.min(maxHeight, viewportHeight - 8)),
+                width: clamp(
+                    Math.ceil(contentWidth + nativeWidthOverhead),
+                    minWidth,
+                    Math.min(maxWidth, viewportWidth - 8),
+                ),
+                height: clamp(
+                    Math.ceil(contentHeight + nativeHeightOverhead),
+                    minHeight,
+                    Math.min(maxHeight, viewportHeight - 8),
+                ),
+            };
+            bridge.windowMetrics = {
+                measuredAt: Date.now(),
+                nativeOverhead: { width: nativeWidthOverhead, height: nativeHeightOverhead },
+                content: { width: contentWidth, height: contentHeight },
+                resizable: { width: resizableRect.width, height: resizableRect.height },
+                viewport: { width: contentViewport.clientWidth, height: contentViewport.clientHeight },
             };
         };
 
@@ -72,6 +93,8 @@ export function useDashboardWindow(key, bridge, options = {}) {
 
         const resizeObserver = new ResizeObserver(measureSoon);
         resizeObserver.observe(root);
+        resizeObserver.observe(contentViewport);
+        resizeObserver.observe(resizable);
 
         const mutationObserver = new MutationObserver(persistPositionSoon);
         mutationObserver.observe(frame, { attributes: true, attributeFilter: ["style"] });
@@ -93,7 +116,7 @@ export function useDashboardWindow(key, bridge, options = {}) {
             mutationObserver.disconnect();
             window.removeEventListener("resize", measureSoon);
         };
-    }, [key, bridge, minWidth, minHeight, maxWidth, maxHeight, widthPadding, heightPadding]);
+    }, [key, bridge, minWidth, minHeight, maxWidth, maxHeight]);
 
     return rootRef;
 }
@@ -108,6 +131,19 @@ export function readDashboardPosition(key) {
     } catch {
         return null;
     }
+}
+
+function findContentViewport(root, resizable) {
+    let node = root?.parentElement ?? null;
+    let fallback = null;
+    while (node && node !== resizable) {
+        const css = getComputedStyle(node);
+        const scrollsY = css.overflowY === "scroll" || css.overflowY === "auto";
+        if (!fallback && scrollsY) fallback = node;
+        if (css.display === "flex" && css.flexDirection === "column-reverse" && scrollsY) return node;
+        node = node.parentElement;
+    }
+    return fallback;
 }
 
 function saveDashboardPosition(key, resizable) {
