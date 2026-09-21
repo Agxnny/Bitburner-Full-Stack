@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r42 Validation Dashboard foundation
-**Status:** Implementation
+**Status:** Implementation complete — preparing r42 validation release
 
 **Goal:** Establish the full Validation Dashboard as the engineering/test hub, with modular tabs for Overview, Validating, Validated, Health, Updater, and Data. Migrate Health and Updater presentation into tabs while keeping their backend services independent.
 
@@ -45,9 +45,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Existing standalone Health/Updater dashboards remain source references during migration but are not the target long-term presentation surfaces.
 - Shared dark grey-blue visual language from D-018 remains authoritative.
 
-**Validation:** Design approved in chat. Repository implementation and static review are in progress. Runtime validation is still required before standalone dashboard presentation is considered retired.
+**Validation:** Design approved in chat. Initial modular implementation is complete: six-tab shell, Health/Updater/Data consumers, Validating/Validated catalog split, unread Updater badge, and one-shot emergency Health focus/acknowledgement. Existing compact dashboards are intentionally retained in r42 for parity comparison. Runtime validation is required before they are retired.
 
-**Next step:** Implement the tabbed shell, Health/Updater/Data views, notification/escalation model, validation work/archive views, deployment integration, and documentation; publish r42 for runtime validation.
+**Next step:** Publish r42 and runtime-validate dashboard launch/geometry, all tabs, Health parity, observation freshness, Updater badge/controls, and controlled emergency focus/acknowledgement.
 
 ## Recently completed
 
