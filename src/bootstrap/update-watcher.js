@@ -1,3 +1,5 @@
+import { publishTelemetry, serviceHealth, serviceEvent } from "../core/telemetry.js";
+
 /**
  * Persistent update watcher for Bitburner Full Stack.
  * Detects releases, owns approval handling, and owns the update dashboard child.
@@ -74,6 +76,7 @@ export async function main(ns) {
             status.dashboard = ensureDashboard(ns, status.dashboard);
             status.deployment = readDeploymentObservation(ns, status.deployment);
             writeStatus(ns, status);
+            publishWatcherHealth(ns, status);
             nextHeartbeatAt = Date.now() + HEARTBEAT_MS;
         }
 
@@ -418,6 +421,25 @@ function cleanupTemps(ns) {
 function readJson(ns, path) {
     if (!ns.fileExists(path, "home")) return null;
     try { return JSON.parse(ns.read(path)); } catch { return null; }
+}
+
+function publishWatcherHealth(ns, status) {
+    const health = status.health === "healthy" ? "healthy" : status.health === "degraded" ? "degraded" : "healthy";
+    publishTelemetry(ns, serviceHealth(ns, "update-watcher", {
+        lifecycle: "persistent",
+        health,
+        phase: status.phase,
+        reason: status.error,
+        staleAfterMs: 15_000,
+        details: {
+            localRevision: status.local?.revision ?? null,
+            remoteRevision: status.remote?.revision ?? null,
+            dashboardPid: status.dashboard?.pid ?? null,
+        },
+    }));
+    if (status.error && status.lastCommand?.handledAt && Date.now() - status.lastCommand.handledAt < HEARTBEAT_MS + LOOP_MS) {
+        publishTelemetry(ns, serviceEvent(ns, "update-watcher", "warning", "UPDATE_WATCHER_ERROR", status.error));
+    }
 }
 
 function writeStatus(ns, status) {
