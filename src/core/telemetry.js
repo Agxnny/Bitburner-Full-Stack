@@ -21,6 +21,7 @@ export function serviceHealth(ns, service, options = {}) {
         lifecycle: options.lifecycle ?? "persistent",
         health: options.health ?? "healthy",
         heartbeatAt: options.heartbeatAt ?? now,
+        startedAt: options.startedAt ?? null,
         staleAfterMs: options.staleAfterMs ?? DEFAULT_STALE_AFTER_MS,
         phase: options.phase ?? null,
         reason: options.reason ?? null,
@@ -60,6 +61,7 @@ export function validHealthRecord(value) {
         && validIdentity(value)
         && HEALTH_STATES.includes(value.health)
         && Number.isFinite(value.heartbeatAt)
+        && (value.startedAt === null || (Number.isFinite(value.startedAt) && value.startedAt <= value.emittedAt))
         && Number.isFinite(value.emittedAt)
         && Number.isFinite(value.staleAfterMs)
         && value.staleAfterMs >= 1_000,
