@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "version": "v0.5.0",
+  "revision": 31,
+  "files": [
+    {"source":"src/bootstrap/git-pull.js","target":"src/bootstrap/git-pull.js"},
+    {"source":"src/bootstrap/git-pull-self-update.js","target":"src/bootstrap/git-pull-self-update.js"},
+    {"source":"src/bootstrap/update-watcher.js","target":"src/bootstrap/update-watcher.js"},
+    {"source":"src/core/telemetry.js","target":"src/core/telemetry.js"},
+    {"source":"src/core/health-collector.js","target":"src/core/health-collector.js"},
+    {"source":"src/ui/update-dashboard.jsx","target":"src/ui/update-dashboard.jsx"},
+    {"source":"src/ui/system-health-dashboard.jsx","target":"src/ui/system-health-dashboard.jsx"},
+    {"source":"src/ui/dashboard-window-memory.js","target":"src/ui/dashboard-window-memory.js"},
+    {"source":"src/ui/dashboard-layout-coordinator.js","target":"src/ui/dashboard-layout-coordinator.js"},
+    {"source":"src/ui/dashboard-anchor-control.jsx","target":"src/ui/dashboard-anchor-control.jsx"},
+    {"source":"src/ui/dashboard-geometry-calibration.jsx","target":"src/ui/dashboard-geometry-calibration.jsx"}
+  ],
+  "runtimeUnits": [
+    {"id":"health-collector","lifecycle":"persistent","script":"src/core/health-collector.js","host":"home","threads":1,"args":[],"files":["src/core/telemetry.js","src/core/health-collector.js","src/ui/system-health-dashboard.jsx","src/ui/dashboard-window-memory.js","src/ui/dashboard-layout-coordinator.js","src/ui/dashboard-anchor-control.jsx"],"restartOrder":900},
+    {"id":"update-watcher","lifecycle":"persistent","script":"src/bootstrap/update-watcher.js","host":"home","threads":1,"args":[],"files":["src/bootstrap/update-watcher.js","src/core/telemetry.js","src/ui/update-dashboard.jsx","src/ui/dashboard-window-memory.js","src/ui/dashboard-layout-coordinator.js","src/ui/dashboard-anchor-control.jsx"],"restartOrder":1000}
+  ]
+}
