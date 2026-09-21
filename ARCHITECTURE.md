@@ -149,3 +149,8 @@ Validation uses two deliberately separate truths. The deployed repository plan a
 The Validation Dashboard reconciles those sources. A requirement is Validated only when the ledger contains a PASS for the same test ID and validationVersion; otherwise it remains Validating and its registered test remains available in Tests. Changing ordinary release revision does not invalidate proof. Changing a requirement's validationVersion does. Historical evidence remains in the evidence store even when a newer validation definition supersedes it.
 
 The plan never supplies executable script paths. `src/validation/test-registry.js` remains the allowlist for runner path, risk, and manual/automated classification, preserving the registry-controlled execution boundary. Deployment manages the plan and code; it must not overwrite the runtime ledger.
+
+
+### M3 collection cadence control
+
+`src/core/collection-control-service.js` is the single durable owner of consumer cadence leases. Consumers send lease upsert/release commands through port 3; the port is transient transport and never authority. The owner persists `data/control/collection-cadence.json`, removes expired leases, and resolves each domain to the fastest active request bounded by that collector's declared minimum interval and baseline. Collectors read only the resolved durable state through `src/core/collection-control.js`; they do not arbitrate requests. With no active valid lease, collection returns automatically to its configured baseline. Port 5 remains reserved for later dedicated market control.
