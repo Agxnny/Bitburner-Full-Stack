@@ -23,34 +23,34 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r50/r51 Explicit managed-file retirement and standalone dashboard scrub
-**Status:** r51 runtime PASS — managed-file retirement validated; ready to resume M3 design
+### M3 Canonical State — handoff/design
+**Status:** Design only; no M3 runtime implementation started
 
-**Goal:** Add a fail-closed deployment contract for explicitly deprecated managed files, then use it to retire the standalone System Health and Update Watcher dashboard scripts without retiring their persistent backend services.
+**Goal:** Define the thin information-contract layer between the already-built M2 observation collectors and future M4+ consumers. M3 is not a second collection system and is not controller intelligence. It standardizes how current state is published/read and how events/commands move between owners.
 
-**Files / areas touched:**
-- `src/bootstrap/git-pull.js`
-- `src/bootstrap/git-pull-self-update.js`
-- `src/bootstrap/update-watcher.js`
-- `src/core/health-collector.js`
-- deployment r50 manifest/descriptor
-- deployment architecture/decision/current-state documentation
+**Current framing approved in chat:**
+- M2 collectors remain the producers of player, network, market, infrastructure, and capabilities observations.
+- M3 is primarily the in-between contract used by future Supervisor, resource/authority manager, scheduler, controllers, and dashboards.
+- Default transport rule to design/lock: **state through state interfaces/files; commands and events through ports/queues**.
+- Canonical/latest state should be durable enough that a restarted consumer can read current truth without reconstructing it from missed port messages.
+- Ports are for transient ordered commands/events, not the sole store of canonical state.
+- Direct process args are startup configuration/identity, not a general state bus.
+- Telemetry/event history is diagnostic evidence, not operational authority.
+- React in-memory bridges remain UI-local only and never become a system bus (FIX-002).
+- Shared canonical state follows single-writer/many-reader ownership. Consumers do not edit state files to “correct” them.
+- M3 should stay lean: normalize contracts, freshness/validity, ownership, message envelopes, port allocation, queue/backpressure rules, and consumer interfaces. Do not add controller decisions such as target selection or purchase decisions.
 
-**Decisions / constraints:**
-- File disappearance is never deletion authorization. Only explicit `retireFiles` entries may scrub files.
-- Retirement paths must be previously managed, must not be under protected `data/`, and cannot also be active manifest targets.
-- Runtime ownership/relaunch behavior is removed before retirement reconciliation.
-- For each retirement path: discover matching processes, close any tail, kill, wait, verify no matching process remains, then delete, then verify absence. If stop verification fails, preserve the file and mark deployment degraded.
-- Every retirement action is printed individually and persisted in `data/git-pull-report.json`: already absent, stopped PIDs, verified stopped, deleted, verified absent, or blocked/failure reason.
-- Retirements are one-release instructions; immutable release metadata/report provide durable audit history.
-- r50 retires only `src/ui/system-health-dashboard.jsx` and `src/ui/update-dashboard.jsx`. `health-collector.js` and `update-watcher.js` remain persistent backend services. Validation Dashboard remains the UI.
-- No M3 canonical-state runtime work is mixed into this deployment hygiene release.
+**Pre-M3 cleanup completed:**
+- M2 is complete and runtime validated through r49.
+- r51 runtime-validated explicit managed-file retirement. The obsolete standalone `src/ui/system-health-dashboard.jsx` and `src/ui/update-dashboard.jsx` were stopped, verified stopped, deleted, and verified absent with per-file terminal/report audit.
+- Health Collector and Update Watcher remain backend services. Validation Dashboard is now the sole UI surface.
+- FIX-009 documents the r50→r51 deployment-schema compatibility transition.
 
-**Validation:** r50 runtime FAIL for the retirement action: deployment committed cleanly but printed `retired 0`, and both legacy standalone dashboard windows remained. The screenshot also showed Health at 6 services immediately after deployment. Root cause: r50 was launched by the already-running r49 puller. Although r50 staged the new helper and new puller, the r49 puller did not know the new `retireFiles` manifest field and therefore did not serialize retirement instructions into `data/deployment-pending.txt`; the r50 helper correctly received an empty retirement plan. This is a bootstrap-transition compatibility issue, not a failure of the r50 stop/verify/delete implementation. Operator clarified the temporary 6-service Health view during r50 was publication timing only: the missing service process was active but had not yet populated the Health surface. The r50 puller is now installed locally and understands `retireFiles`, so r51 will repeat the explicit retirement declarations as the compatibility/recovery release. Static repository review confirms both backend owners contain zero references to the retired standalone dashboard paths/relaunch helpers; puller/helper source has balanced structural braces; r50 manifest removes both UI files from active files/runtime dependencies and explicitly lists both under `retireFiles`; retirement reconciliation is ordered after persistent runtime reconciliation and blocks deletion while any matching process remains. Immutable r50 releaseRef is `8e679fa2c3e9f8bd02ba9215a09793a01be1a980`; descriptor publication was last. Runtime deployment remains pending. Acceptance requires both old dashboard tails/processes closed, both files absent from home, backend Health Collector/Update Watcher still healthy, Validation Dashboard healthy, and retirement print/report evidence naming both files.
+**Validation state:** Documentation/handoff only. No M3 code, ports, schemas, or state authority process have been implemented or allocated yet.
 
-**Runtime validation:** r51 terminal output shows both retirement paths individually STOPPED with PIDs, VERIFIED STOPPED, DELETED, and VERIFIED ABSENT; summary is `requested 2 | deleted 2 | already absent 0 | failed 0`; final deployment line reports `retired 2`. Screenshot confirms both standalone System Health and Update Watcher windows are gone and only the Validation Dashboard remains. Backend updater is ONLINE / Install clean at r51. Managed-file retirement therefore passes its first production use.
+**Exact next step for the next chat:** Read the startup documents, then design the M3 communication contract before any code. Specifically propose: (1) port allocation/reservation map, (2) command/event envelope and schema/version/ID/timestamp conventions, (3) canonical state-file/envelope contract and domain layout, (4) writer/read ownership, (5) freshness/stale/unavailable semantics, (6) queue/backpressure/overflow behavior, (7) startup/restart behavior, and (8) Validation Dashboard tests/evidence. Review with the operator and lock decisions before implementation.
 
-**Next step:** Resume the already-approved M3 Canonical State design. No further deployment-hygiene work is required before M3.
+**Do not do yet:** Do not implement M3 runtime code, allocate ports by convention without documentation, promote `data/observations/*` directly to canonical truth, or begin M4+ behavior.
 
 ## Recently completed
 
