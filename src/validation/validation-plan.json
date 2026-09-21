@@ -42,6 +42,32 @@
           "validationVersion": 1
         }
       ]
+    },
+    {
+      "id": "m3-cadence-control",
+      "milestone": "M3",
+      "title": "Collection Cadence Control",
+      "revision": 61,
+      "requirements": [
+        {
+          "id": "cadence-owner",
+          "title": "Durable collection-control owner",
+          "testId": "m3.cadence.control",
+          "validationVersion": 1
+        },
+        {
+          "id": "cadence-bounds",
+          "title": "Bounded consumer cadence leases",
+          "testId": "m3.cadence.control",
+          "validationVersion": 1
+        },
+        {
+          "id": "cadence-expiry",
+          "title": "Automatic cadence lease expiry and baseline fallback",
+          "testId": "m3.cadence.control",
+          "validationVersion": 1
+        }
+      ]
     }
   ]
 }
