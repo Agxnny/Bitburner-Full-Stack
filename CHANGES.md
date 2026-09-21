@@ -23,25 +23,31 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r47 Validation dashboard tail lifecycle cleanup
-**Status:** r47 runtime PASS — quiet Tests, tail lifecycle, and evidence provenance validated
+### r48 Controlled emergency-focus validation
+**Status:** Implementation
 
-**Goal:** Preserve the now-proven quiet Tests execution while fixing deployment replacement of the persistent Validation Dashboard so its previous native tail is explicitly closed before the process is killed/restarted.
+**Goal:** Add the first DISRUPTIVE registered validation test. It must deliberately cross the real dashboard emergency threshold using only disposable M2 observation collectors, prove one-shot Health focus plus acknowledgement, restore every process it stopped, and record machine/operator evidence without terminal use.
 
 **Files / areas touched:**
-- `src/bootstrap/git-pull-self-update.js`
-- deployment r47 metadata
-- `FIXES.md` / deployment lifecycle documentation
+- `src/validation/test-registry.js`, new emergency-focus runner
+- `src/ui/validation-dashboard.jsx`, `src/ui/validation-tests-tab.jsx`
+- validation UI-state/evidence files under `data/validation/`
+- Validation Dashboard docs/decisions/current state
+- deployment r48 metadata
 
 **Decisions / constraints:**
-- Reuse the established FIX-005 invariant: managed UI process replacement must close its tail before kill.
-- Fix this in generic persistent runtime reconciliation, not as another special-case dashboard list entry.
-- Only processes being intentionally stopped/replaced are tail-closed; non-UI processes tolerate `closeTail(pid)` as a no-visible-tail cleanup.
-- Do not mix updater convergence or emergency-focus work into this release.
+- Test risk is `DISRUPTIVE`; Run Test opens an explicit confirmation panel before execution.
+- Targets are exactly four disposable observation collectors: player, network, market, infrastructure. Health Collector, Update Watcher, Validation Dashboard, and capabilities collector are never stopped.
+- Four targets are required because the live emergency rule is at least half of 7 reporting services (4 unhealthy). The test does not lower or bypass that production threshold.
+- Runner captures exact target script/host/threads/args before mutation and owns restoration. Normal completion, assertion failure, timeout, and script death all attempt restoration. It restarts only processes it stopped.
+- Dashboard React records only ordinary UI facts into the in-memory bridge; dashboard `main()` persists those facts. The runner never calls React or UI Netscript APIs.
+- Emergency acknowledgement remains operator action. Automated evidence verifies telemetry degradation, dashboard focus-event publication, acknowledgement publication, one-shot behavior, restoration, and final 7/7 health. Actual native-window foreground perception remains operator-observed.
+- Recovery clears the previous emergency acknowledgement/focus generation so a later materially separate identical failure can escalate again.
+- No updater-convergence work is mixed into r48.
 
-**Validation:** r46 runtime screenshot proves quiet test execution PASS: 9/9 smoke assertions render and the previous green parent `run:` line is absent. Operator reports that installs restart the Validation Dashboard process but leave the old Validation Dashboard native tail window open. Repository inspection showed `reconcileRuntime()` stopped changed persistent units via `ns.kill()` only, while the older special-case `refreshDashboards()` correctly called `ns.ui.closeTail(pid)` first. r47 now applies close-tail-before-kill in generic persistent reconciliation, matching FIX-005. Immutable releaseRef is `d7606aebb449adfde783f952f20394361338b06c`; descriptor publication was last. Operator installed r47 cleanly through the integrated Updater and confirmed the previous Validation Dashboard tail closed and exactly one fresh dashboard restarted. This runtime-validates FIX-008. r46 quiet-run behavior had already passed with 9/9 smoke assertions and no parent `run:` log leakage. Operator then used `Confirm Observed Pass` for `m2.updater.notification`; screenshot shows the test now PASS, latest provenance `operator-confirmed`, and Recent Evidence contains the operator-confirmed updater record separately from automated smoke records. Durable evidence provenance is therefore runtime-validated.
+**Validation:** r47 is runtime PASS for quiet Tests, persistent dashboard tail replacement, and explicit automated/operator-confirmed evidence provenance. Official Bitburner API docs confirm `NS.atExit()` is available and runs a callback when a script dies; the release is v3.0.1. r48 runtime validation is pending. citeturn0search0turn0search1
 
-**Next step:** Design the controlled/disruptive emergency-focus validation before implementation: choose safe target services, trigger threshold, restoration/abort guarantees, acknowledgement semantics, focus-steal assertions, evidence provenance, and PASS/FAIL criteria. Do not implement the disruptive runner until this design is approved.
+**Next step:** Implement the registry entry, confirmation UX, UI-event bridge/state, disruptive runner with guaranteed restoration path, docs, and immutable r48 release. Then run only through Tests and observe the emergency/acknowledgement/recovery sequence.
 
 ## Recently completed
 
