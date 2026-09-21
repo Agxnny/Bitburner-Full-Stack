@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Drag-selectable dashboard docking + updater width response
-**Status:** Approved — implementation
+**Status:** Implementation complete — runtime validation pending
 
 **Goal:** Extend the validated r28 anchor coordinator so a follower can be dragged to the anchor's top/bottom/left/right side and snap there, while fixing Update Watcher width growth when update approval controls appear.
 
@@ -44,9 +44,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Update Watcher must grow only when its nowrap status-row content requires it, then shrink after approval controls disappear. Do not make its normal state permanently wider.
 - r27 measured content-viewport sizing remains the sizing authority.
 
-**Validation:** r28 anchor/drag screenshots PASS core coordination. Side docking and updater update-available width response pending implementation/runtime validation.
+**Validation:** r28 operator screenshots PASS anchor transfer, anchor movement, follower movement, ordering reversal, and basic coordinated placement. r29 implements four-side persisted docking, follower drag release/snap, inverse-side anchor transfer, and intrinsic nowrap status-row width measurement for Update Watcher. Static implementation/docs complete; runtime validation pending.
 
-**Next step:** Implement side-aware docking + drag release/snap and intrinsic updater width measurement, publish r29, then validate all four dock sides, anchor reversal, size reflow, and update-available grow/shrink.
+**Next step:** Publish r29 from immutable manifest commit `b0e5c69f4700b3a58369ef04e96424b6dbbc3b8b`, install normally, then validate all four dock sides, anchor reversal, dynamic size reflow, and Update Watcher update-available grow/shrink.
 
 ## Recently completed
 
