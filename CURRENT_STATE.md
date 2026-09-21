@@ -4,7 +4,7 @@
 **M3 — Canonical State**
 
 ## Status
-**M3 first vertical slice is published as v0.6.0-r52 and awaiting runtime validation.** It introduces the shared wall-time contract, centralized port registry, versioned observation transport, a persistent single-writer canonical-state service, durable data/state domain snapshots, factual availability/timestamps, and Validation Dashboard canonical-state evidence. Freshness is consumer-defined from observedAt rather than stored as a universal producer judgement. Consumer cadence-request handling is intentionally deferred until this state path is runtime-proven.
+**M3 canonical-state slice is installed at r52; v0.6.0-r53 is published to replace hard-coded validation lifecycle with a deployed validation plan plus protected runtime proof ledger. r53 awaits runtime validation.** It introduces the shared wall-time contract, centralized port registry, versioned observation transport, a persistent single-writer canonical-state service, durable data/state domain snapshots, factual availability/timestamps, and Validation Dashboard canonical-state evidence. Freshness is consumer-defined from observedAt rather than stored as a universal producer judgement. Consumer cadence-request handling is intentionally deferred until this state path is runtime-proven.
 
 **M1 — Reliable Deployment is complete and runtime validated through v0.4.0-r20.** Bootstrap safety, persistent updater lifecycle behavior, redundant discovery, commit-pinned release content, exact-revision human approval, single-deployment concurrency protection, explicit persistent-unit retirement, dashboard geometry memory, and operator-visible deployment completion status have all been exercised in Bitburner v3.0.1.
 
