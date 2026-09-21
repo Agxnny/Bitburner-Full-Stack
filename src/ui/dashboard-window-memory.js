@@ -72,17 +72,18 @@ export function useDashboardWindow(key, bridge, options = {}) {
             const nativeWidthOverhead = Math.max(0, resizable.clientWidth - contentViewport.clientWidth);
             const nativeHeightOverhead = Math.max(0, resizable.clientHeight - contentViewport.clientHeight);
             const contentWidth = Math.max(root.scrollWidth, Math.ceil(rootRect.width));
+            const preferredWidth = Number.isFinite(bridge.preferredWidth) ? bridge.preferredWidth : null;
             const contentHeight = Math.max(root.scrollHeight, Math.ceil(rootRect.height));
             const vw = Math.max(minWidth, window.innerWidth || minWidth);
             const vh = Math.max(minHeight, window.innerHeight || minHeight);
             const availableHeight = Math.max(minHeight, vh - Math.max(0, resizableRect.top) - 8);
             bridge.desiredSize = {
-                width: clamp(Math.ceil(contentWidth + nativeWidthOverhead), minWidth, Math.min(maxWidth, vw - 8)),
+                width: clamp(preferredWidth ?? Math.ceil(contentWidth + nativeWidthOverhead), minWidth, Math.min(maxWidth, vw - 8)),
                 height: clamp(Math.ceil(contentHeight + nativeHeightOverhead), minHeight, Math.min(maxHeight, availableHeight)),
             };
             bridge.windowMetrics = {
                 measuredAt: Date.now(), nativeOverhead: { width:nativeWidthOverhead, height:nativeHeightOverhead },
-                content: { width:contentWidth, height:contentHeight }, resizable: { width:resizableRect.width, height:resizableRect.height },
+                content: { width:contentWidth, height:contentHeight, preferredWidth }, resizable: { width:resizableRect.width, height:resizableRect.height },
                 viewport: { width:contentViewport.clientWidth, height:contentViewport.clientHeight, availableHeight },
             };
         };
