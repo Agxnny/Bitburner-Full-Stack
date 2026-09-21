@@ -18,12 +18,10 @@ const TEMP_RAW_PATH = "data/update-watch-version-raw.txt";
 const TEMP_API_PATH = "data/update-watch-version-api.txt";
 const PULLER_PATH = "src/bootstrap/git-pull.js";
 const HELPER_PATH = "src/bootstrap/git-pull-self-update.js";
-const DASHBOARD_PATH = "src/ui/update-dashboard.jsx";
 const POLL_MS = 30_000;
 const API_POLL_MS = 75_000;
 const HEARTBEAT_MS = 5_000;
 const LOOP_MS = 1_000;
-const DASHBOARD_RESTART_COOLDOWN_MS = 5_000;
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -49,8 +47,7 @@ export async function main(ns) {
 
     const startedAt = Date.now();
     let status = initialStatus(ns);
-    status.dashboard = restartDashboardForOwnership(ns, status.dashboard);
-    writeStatus(ns, status);
+        writeStatus(ns, status);
 
     let nextCheckAt = 0;
     let nextHeartbeatAt = 0;
@@ -74,8 +71,7 @@ export async function main(ns) {
             status.heartbeatAt = Date.now();
             status.watcherPid = ns.pid;
             status.local = releaseOf(readJson(ns, LOCAL_STATE_PATH));
-            status.dashboard = ensureDashboard(ns, status.dashboard);
-            status.deployment = readDeploymentObservation(ns, status.deployment);
+                        status.deployment = readDeploymentObservation(ns, status.deployment);
             writeStatus(ns, status);
             publishWatcherHealth(ns, status, startedAt);
             nextHeartbeatAt = Date.now() + HEARTBEAT_MS;
@@ -255,50 +251,6 @@ async function processCommand(ns, status) {
     return recordCommand(status, command, "accepted", null);
 }
 
-function restartDashboardForOwnership(ns, previous) {
-    for (const process of dashboardProcesses(ns)) {
-        ns.ui.closeTail(process.pid);
-        ns.kill(process.pid);
-    }
-    const pid = ns.run(DASHBOARD_PATH, 1);
-    return {
-        pid: pid || null,
-        running: pid > 0,
-        restartCount: (previous?.restartCount ?? 0) + (pid > 0 ? 1 : 0),
-        lastStartedAt: pid > 0 ? Date.now() : previous?.lastStartedAt ?? null,
-        lastCheckedAt: Date.now(),
-        error: pid > 0 ? null : "Could not launch update dashboard.",
-    };
-}
-
-function ensureDashboard(ns, previous) {
-    const processes = dashboardProcesses(ns);
-    if (processes.length > 0) {
-        const process = processes.sort((a, b) => a.pid - b.pid)[0];
-        return { ...previous, pid: process.pid, running: true, lastCheckedAt: Date.now(), error: null };
-    }
-
-    const now = Date.now();
-    if (previous?.lastStartedAt && now - previous.lastStartedAt < DASHBOARD_RESTART_COOLDOWN_MS) {
-        return { ...previous, pid: null, running: false, lastCheckedAt: now };
-    }
-
-    const pid = ns.run(DASHBOARD_PATH, 1);
-    return {
-        ...previous,
-        pid: pid || null,
-        running: pid > 0,
-        restartCount: (previous?.restartCount ?? 0) + (pid > 0 ? 1 : 0),
-        lastStartedAt: pid > 0 ? now : previous?.lastStartedAt ?? null,
-        lastCheckedAt: now,
-        error: pid > 0 ? null : "Could not relaunch update dashboard.",
-    };
-}
-
-function dashboardProcesses(ns) {
-    return ns.ps("home").filter((process) => process.filename === DASHBOARD_PATH);
-}
-
 function recordCommand(status, command, outcome, error) {
     status.lastCommand = {
         id: command?.id ?? null,
@@ -436,7 +388,6 @@ function publishWatcherHealth(ns, status, startedAt) {
         details: {
             localRevision: status.local?.revision ?? null,
             remoteRevision: status.remote?.revision ?? null,
-            dashboardPid: status.dashboard?.pid ?? null,
         },
     }));
     if (status.error && status.lastCommand?.handledAt && Date.now() - status.lastCommand.handledAt < HEARTBEAT_MS + LOOP_MS) {
