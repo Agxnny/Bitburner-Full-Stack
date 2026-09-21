@@ -12,13 +12,13 @@ Telemetry ingress uses global Netscript port 1 so future services may report fro
 - `data/telemetry/health.json` — latest aggregate health and observed placement
 - `data/telemetry/incidents.json` — bounded recent warning/error/recovery history
 
-A health record identifies stable service ID, per-process instance ID, hostname/PID, lifecycle, reported health, heartbeat/stale threshold, and optional phase/reason/details. If a producer stops reporting beyond its stale threshold, the collector derives `stale`.
+A health record identifies stable service ID, per-process instance ID, hostname/PID, lifecycle, reported health, heartbeat/stale threshold, and optional phase/reason/details. The collector also records `observedSince` when it first sees the current instance. That timestamp is preserved across heartbeats for the same instance and resets when a replacement instance reports, providing an observed current-instance uptime without changing the producer telemetry schema. If a producer stops reporting beyond its stale threshold, the collector derives `stale`.
 
 Observed host/PID is reporting data only. For the M2 singleton-service model, a newly reporting instance with the same stable service ID supersedes the prior active instance. The old host/PID is removed from active health/placement immediately while stale and replacement/recovery incidents remain bounded history. This prevents legitimate restarts or relocations from leaving phantom stale services. M4 Supervisor will later own desired placement, launch/restart policy, duplicate/orphan reconciliation, and startup ordering.
 
 Meaningful warnings, errors, health transitions, stale transitions, and recoveries are retained in bounded history. Warning/error retention is unique by stable service ID plus incident code: a newer occurrence replaces the older retained occurrence of the same operational incident, while different codes and different services remain distinct. Existing incident storage is normalized through this rule when the collector starts. Recovery/info records remain bounded history. Routine healthy heartbeats are not appended. Malformed telemetry is rejected, counted, and surfaced as a warning.
 
-The collector reports itself. The update watcher is the first external real producer. `src/ui/system-health-dashboard.jsx` is the first consumer and remains a lightweight alarm/status surface rather than the full Validation Dashboard.
+The collector reports itself. The update watcher is the first external real producer. `src/ui/system-health-dashboard.jsx` is the first consumer and remains a lightweight alarm/status surface rather than the full Validation Dashboard. Service Placement displays current-instance uptime derived in React from `observedSince`; this live presentation uses ordinary JavaScript time and does not make Netscript calls or require per-second snapshot writes.
 
 ### Runtime validation
 
