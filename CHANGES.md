@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Dashboard geometry calibration harness
-**Status:** Approved — implementation
+**Status:** Implementation complete — runtime measurement pending
 
 **Goal:** Build a dedicated diagnostic dashboard that requests known native tail dimensions and reports measured DOM geometry so we can derive the actual resizeTail/content relationship instead of guessing chrome offsets.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Position remains movable/persistent only if useful; calibration results themselves are visible in the diagnostic window for screenshot-based validation.
 - Do not alter production dashboard sizing again until calibration evidence is collected.
 
-**Validation:** r24 proved production sizing still has a native-tail/content coordinate mismatch. Calibration harness not yet runtime validated.
+**Validation:** r24 proved production sizing still has a native-tail/content coordinate mismatch. Calibration harness now implements three exact native targets and reports root/resizable/frame bounds, offsets, scroll size, and requested-minus-measured deltas. Runtime measurements are pending.
 
-**Next step:** Implement calibration dashboard, deploy it in r25, collect screenshots at known target sizes, then use the measured deltas to correct the shared production sizing helper.
+**Next step:** Publish r25 from immutable manifest commit `c82b95131dd8460ee92b2292285ef31749edf6c0`, run the calibration dashboard, capture settled measurements at 600×300, 720×420, and 840×540, then correct production sizing from the measured relationship.
 
 ## Recently completed
 
