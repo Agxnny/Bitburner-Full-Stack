@@ -3,7 +3,7 @@ import { runCollector } from "./collector-runtime.js";
 const DOMAIN = "capabilities";
 function probe(fn) { try { return { available: true, value: fn() }; } catch (e) { return { available: false, reason: String(e?.message ?? e) }; } }
 export async function main(ns) {
-    await runCollector(ns, { service: "capabilities-collector", domain: DOMAIN, intervalMs: 15_000 }, async () => {
+    await runCollector(ns, { service: "capabilities-collector", domain: DOMAIN, intervalMs: 15_000, minimumIntervalMs: 5_000 }, async () => {
         const data = {
             stock: {
                 wse: ns.stock.hasWseAccount(), tix: ns.stock.hasTixApiAccess(),
