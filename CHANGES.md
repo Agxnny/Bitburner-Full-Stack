@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r34 Update Watcher sizing and useful poll countdown
-**Status:** r34 installed — countdown PASS; shared width safety regression
+**Status:** Diagnosis complete — rollback + updater-local correction approved
 
 **Goal:** Eliminate the remaining compact Update Watcher right-edge crop and make its polling indicator show useful time remaining until the next real remote check.
 
@@ -38,12 +38,13 @@ When the change is complete, move a concise summary to **Recently completed** an
 - r33 collector recovery is PASS: all seven reporting services are healthy.
 - Heartbeat display becomes whole seconds only and reserves stable width; telemetry timestamp precision is unchanged.
 - Poll metric is derived from watcher-owned `nextCheckAt`, counts down in whole seconds, and resets only when the watcher schedules its next actual check.
-- Remaining crop is treated as a sizing conversion/inset issue, not a heartbeat-text cause. Shared sizing adds a small explicit edge safety allowance after measured content/native overhead.
+- r34 shared 8px width safety is rejected and will be removed. Layout coordinator is not the source of the sizing request: it only publishes the native `.react-resizable` rectangle after resize and uses that rectangle for docking.
+- Update Watcher uniquely supplies `widthProbeSelector`; shared sizing therefore replaces normal root width with the status-row intrinsic width. The probe already includes its own 28px row padding, then only adds the root's 20px padding. It does not include the inner card border/box footprint used by the rendered Shell. The correction belongs to the updater-local probe contract, not global sizing.
 - Preserve r31/r32-proven reactive update-available grow/shrink behavior and existing docking.
 
 **Validation:** r34 installed cleanly. Whole-second heartbeat and live next-check countdown are working at runtime (observed 19s then 8s). The shared 8px width safety did not cure the Update Watcher right-edge crop and caused System Health to grow wider than its prior correct footprint. Treat the shared width allowance as a failed experiment to revert, not tune upward. r34 immutable manifest published at releaseRef `fe8926ca4477fe314b0c1f98114a70b985742c63`; descriptor published last.
 
-**Next step:** Revert the shared 8px width allowance before any further UI sizing change. Diagnose the Update Watcher crop locally at its Shell/status-row width contract instead of changing global dashboard sizing; preserve the working countdown and Health Watcher's pre-r34 width behavior.
+**Next step:** Remove the shared r34 width allowance, then make the Update Watcher's width probe represent the complete rendered card/Shell footprint before it reaches `bridge.desiredSize`. Leave layout-coordinator geometry publication/docking unchanged. Publish the correction only after docs/static validation.
 
 ## Recently completed
 
