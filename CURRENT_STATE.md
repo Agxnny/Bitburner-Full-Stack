@@ -38,6 +38,7 @@ M2 first vertical slice is runtime validated through v0.5.0-r22: shared cross-ho
 - `CHANGES.md` is required for preserving in-progress work between implementation steps, chats, and handoffs.
 - Project rules require each feature/subsystem's own documentation to be updated whenever its behavior, interface, configuration, lifecycle, telemetry, validation procedure, or operator workflow changes.
 - M2 r21/r22 health vertical slice runtime validated: healthy placement, stale detection, degraded aggregate state, retained incidents, replacement-instance supersession, and recovery to healthy with only the current PID active.
+- r27 measured content-viewport dashboard sizing runtime validated: both production dashboards fit healthy content; System Health grew for stale/degraded Active Issues and shrank after recovery without clipping, black-gap regression, or manual resizing.
 
 ## Active feature
 **M2 — Telemetry / Dashboard Foundation / first vertical slice**
@@ -79,7 +80,7 @@ Relevant starting surfaces:
 - Watcher owns exactly one managed update-dashboard child and closes the old tail before intentional replacement.
 - React callbacks never call Netscript APIs directly.
 - Dashboard visuals use the shared dark grey-blue language defined by D-018.
-- Every dashboard tail uses shared persistent geometry memory with a stable dashboard key; geometry is presentation state and fails open.
+- Every dashboard tail uses a stable dashboard key. User position is persistent presentation state; size is dashboard-owned and dynamically derived from measured content/native viewport geometry. Presentation coordination fails open.
 - Active implementation work is preserved in `CHANGES.md` before context switches or handoffs.
 - Feature/subsystem documentation is updated in the same work item as feature behavior changes.
 
