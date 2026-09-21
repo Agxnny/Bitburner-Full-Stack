@@ -42,7 +42,7 @@ M2 first vertical slice is runtime validated through v0.5.0-r22: shared cross-ho
 - r29 four-side dashboard docking runtime validated: followers snap to top/bottom/left/right of the selected anchor and anchor transfer preserves the physical relationship. Update-available width growth remains pending validation against the next presented release.
 
 ## Active feature
-**M2 — Telemetry / Dashboard Foundation / first vertical slice**
+**M2 — Validation Dashboard foundation and milestone closeout**
 
 Relevant starting surfaces:
 - `CHANGES.md`
@@ -55,11 +55,11 @@ Relevant starting surfaces:
 - relevant `FIXES.md` entries
 
 ## Exact next step
-1. Design the next M2 data-collection/storage slice around structured operational status/events, freshness, and consumer interfaces.
-2. Keep telemetry operational and distinct from M3 canonical game state.
-3. Define how later collectors publish data and how dashboards/validation consumers read it without direct producer coupling.
-4. Define bounded storage/retention and malformed/stale-data behavior before implementation.
-5. Implement only after the next slice design is recorded.
+1. Publish r42 with the first full Validation Dashboard application while retaining compact Health/Updater windows for parity comparison.
+2. Runtime-validate all six tabs, observation freshness, Health parity, exact-revision update controls, unread Updater badge behavior, and large-window geometry.
+3. Exercise a controlled widespread service failure to validate one-shot emergency focus and acknowledgement semantics.
+4. After parity passes, retire the standalone Health/Updater presentation windows without merging their backend service ownership.
+5. Use Validating/Validated as the hub for the formal M2 closeout review before beginning M3 canonical state.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
