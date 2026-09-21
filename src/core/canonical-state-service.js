@@ -18,12 +18,14 @@ export async function main(ns) {
     const startedAt = wallNow();
     const revisions = loadRevisions(ns);
     reconcileSnapshots(ns, revisions);
+    deriveAssociations(ns, revisions);
 
     while (true) {
         let accepted = 0;
         accepted += drain(ns, PORTS.OBSERVATION_INGRESS, revisions);
         accepted += drain(ns, PORTS.MARKET_OBSERVATION_INGRESS, revisions);
         reconcileSnapshots(ns, revisions);
+        deriveAssociations(ns, revisions);
 
         publishTelemetry(ns, serviceHealth(ns, SERVICE, {
             startedAt,
@@ -51,7 +53,7 @@ function drain(ns, port, revisions) {
 }
 
 function reconcileSnapshots(ns, revisions) {
-    for (const domain of DOMAINS) {
+    for (const domain of OBSERVATION_DOMAINS) {
         const value = readJson(ns, `data/observations/${domain}.json`, null);
         if (validObservation(value)) accept(ns, value, revisions);
     }
