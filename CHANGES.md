@@ -45,7 +45,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Recovery clears the previous emergency acknowledgement/focus generation so a later materially separate identical failure can escalate again.
 - No updater-convergence work is mixed into r48.
 
-**Validation:** r47 is runtime PASS for quiet Tests, persistent dashboard tail replacement, and explicit automated/operator-confirmed evidence provenance. Official Bitburner API docs confirm `NS.atExit()` is available and runs a callback when a script dies; the release is v3.0.1. r48 runtime validation is pending. citeturn0search0turn0search1
+**Validation:** r47 is runtime PASS for quiet Tests, persistent dashboard tail replacement, and explicit automated/operator-confirmed evidence provenance. Official Bitburner v3.0.1 API verification confirms `NS.atExit()` is available for script-death cleanup callbacks. r48 runtime validation is pending.
 
 **Next step:** Implement the registry entry, confirmation UX, UI-event bridge/state, disruptive runner with guaranteed restoration path, docs, and immutable r48 release. Then run only through Tests and observe the emergency/acknowledgement/recovery sequence.
 
