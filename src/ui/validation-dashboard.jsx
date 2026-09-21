@@ -6,17 +6,20 @@ import { ValidationWorkTab } from "./validation-work-tab.jsx";
 import { ValidationHealthTab } from "./validation-health-tab.jsx";
 import { ValidationUpdaterTab } from "./validation-updater-tab.jsx";
 import { ValidationDataTab } from "./validation-data-tab.jsx";
+import { ValidationTestsTab } from "./validation-tests-tab.jsx";
+import { findTest } from "../validation/test-registry.js";
 
 const SCRIPT_PATH="src/ui/validation-dashboard.jsx";
 const WINDOW_KEY="validation-dashboard";
 const REFRESH_MS=1000;
 const COMMAND_PATH="data/update-command.json";
+const TEST_RESULT_PATH="data/validation/latest-result.json";
 const PATHS={
     health:"data/telemetry/health.json", incidents:"data/telemetry/incidents.json", update:"data/update-status.json",
     player:"data/observations/player.json", network:"data/observations/network.json", market:"data/observations/market.json",
     infrastructure:"data/observations/infrastructure.json", capabilities:"data/observations/capabilities.json",
 };
-const TABS=[["overview","Overview"],["validating","Validating"],["validated","Validated"],["health","Health"],["updater","Updater"],["data","Data"]];
+const TABS=[["overview","Overview"],["validating","Validating"],["tests","Tests"],["validated","Validated"],["health","Health"],["updater","Updater"],["data","Data"]];
 
 /** @param {NS} ns */
 export async function main(ns){
@@ -35,15 +38,33 @@ export async function main(ns){
     }
 }
 function handleIntent(ns,intent){
+    if(intent.type==="run-validation-test")return runValidationTest(ns,intent.testId);
     if(intent.type!=="update-command")return "Unsupported dashboard intent.";
     if(ns.fileExists(COMMAND_PATH,"home"))return "Update command already queued.";
     const command={schemaVersion:1,id:`validation-ui-${Date.now()}-${Math.floor(Math.random()*1e6)}`,action:intent.action,revision:intent.revision,createdAt:Date.now(),origin:"validation-dashboard"};
     ns.write(COMMAND_PATH,JSON.stringify(command,null,2),"w");
     return `${intent.action==="approve"?"Installing":"Deferred"} r${intent.revision}.`;
 }
+function runValidationTest(ns,testId){
+    const test=findTest(testId);
+    if(!test||!test.runner||test.manual)return "Test is not executable.";
+    const active=ns.ps("home").find((p)=>p.filename===test.runner);
+    if(active)return `Test already running (pid ${active.pid}).`;
+    const pid=ns.run(test.runner,1,test.id);
+    return pid>0?`Started ${test.title} (pid ${pid}).`:`Could not start ${test.title}.`;
+}
 function readSnapshot(ns){
+    const test=findRunningTest(ns);
     const observations={}; for(const d of ["player","network","market","infrastructure","capabilities"])observations[d]=readJson(ns,PATHS[d]);
-    return {capturedAt:Date.now(),health:readJson(ns,PATHS.health),incidents:readJson(ns,PATHS.incidents),update:readJson(ns,PATHS.update),observations};
+    return {capturedAt:Date.now(),health:readJson(ns,PATHS.health),incidents:readJson(ns,PATHS.incidents),update:readJson(ns,PATHS.update),observations,testRun:test,testResult:readJson(ns,TEST_RESULT_PATH)};
+}
+function findRunningTest(ns){
+    for(const testId of ["m2.dashboard.smoke"]){
+        const test=findTest(testId); if(!test?.runner)continue;
+        const process=ns.ps("home").find((p)=>p.filename===test.runner);
+        if(process)return {testId,pid:process.pid,startedAt:Date.now()};
+    }
+    return null;
 }
 function ValidationDashboard({bridge}){
     const rootRef=useDashboardWindow(WINDOW_KEY,bridge,{minWidth:980,minHeight:680,maxWidth:1320,maxHeight:860});
@@ -75,12 +96,13 @@ function ValidationDashboard({bridge}){
         <div style={{border:`1px solid ${V.border}`,borderRadius:10,overflow:"hidden",background:V.surface,boxShadow:"0 10px 30px rgba(0,0,0,.28)"}}>
             <Header snapshot={snapshot}/>
             {emergencySignature&&ack!==emergencySignature?<Emergency count={unhealthy.length} onAck={()=>{setAck(emergencySignature);writeLocal("emergency-ack",emergencySignature);}}/>:null}
-            <nav style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:6,padding:"8px 10px",borderBottom:`1px solid ${V.divider}`}}>
+            <nav style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:6,padding:"8px 10px",borderBottom:`1px solid ${V.divider}`}}>
                 {TABS.map(([id,label])=><Tab key={id} active={tab===id} badge={badges[id]??0} danger={id==="health"&&emergency} onClick={()=>navigate(id)}>{label}</Tab>)}
             </nav>
             <main style={{padding:12,minHeight:540}}>
                 {tab==="overview"?<ValidationOverviewTab snapshot={snapshot} navigate={navigate}/>:null}
                 {tab==="validating"?<ValidationWorkTab mode="validating"/>:null}
+                {tab==="tests"?<ValidationTestsTab snapshot={snapshot} bridge={bridge} tick={tick}/>:null}
                 {tab==="validated"?<ValidationWorkTab mode="validated"/>:null}
                 {tab==="health"?<ValidationHealthTab snapshot={snapshot} tick={tick}/>:null}
                 {tab==="updater"?<ValidationUpdaterTab snapshot={snapshot} bridge={bridge} tick={tick}/>:null}
