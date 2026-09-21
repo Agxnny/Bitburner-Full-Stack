@@ -47,6 +47,7 @@ export async function main(ns) {
     ns.disableLog("ps");
     ns.disableLog("kill");
 
+    const startedAt = Date.now();
     let status = initialStatus(ns);
     status.dashboard = restartDashboardForOwnership(ns, status.dashboard);
     writeStatus(ns, status);
@@ -76,7 +77,7 @@ export async function main(ns) {
             status.dashboard = ensureDashboard(ns, status.dashboard);
             status.deployment = readDeploymentObservation(ns, status.deployment);
             writeStatus(ns, status);
-            publishWatcherHealth(ns, status);
+            publishWatcherHealth(ns, status, startedAt);
             nextHeartbeatAt = Date.now() + HEARTBEAT_MS;
         }
 
@@ -423,10 +424,11 @@ function readJson(ns, path) {
     try { return JSON.parse(ns.read(path)); } catch { return null; }
 }
 
-function publishWatcherHealth(ns, status) {
+function publishWatcherHealth(ns, status, startedAt) {
     const health = status.health === "healthy" ? "healthy" : status.health === "degraded" ? "degraded" : "healthy";
     publishTelemetry(ns, serviceHealth(ns, "update-watcher", {
         lifecycle: "persistent",
+        startedAt,
         health,
         phase: status.phase,
         reason: status.error,
