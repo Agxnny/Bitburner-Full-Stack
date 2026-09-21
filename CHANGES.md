@@ -23,8 +23,8 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r50 Explicit managed-file retirement and standalone dashboard scrub
-**Status:** r50 published — awaiting runtime validation
+### r50/r51 Explicit managed-file retirement and standalone dashboard scrub
+**Status:** r50 transition exposed bootstrap compatibility gap; r51 recovery release in implementation
 
 **Goal:** Add a fail-closed deployment contract for explicitly deprecated managed files, then use it to retire the standalone System Health and Update Watcher dashboard scripts without retiring their persistent backend services.
 
@@ -46,9 +46,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - r50 retires only `src/ui/system-health-dashboard.jsx` and `src/ui/update-dashboard.jsx`. `health-collector.js` and `update-watcher.js` remain persistent backend services. Validation Dashboard remains the UI.
 - No M3 canonical-state runtime work is mixed into this deployment hygiene release.
 
-**Validation:** Static repository review confirms both backend owners contain zero references to the retired standalone dashboard paths/relaunch helpers; puller/helper source has balanced structural braces; r50 manifest removes both UI files from active files/runtime dependencies and explicitly lists both under `retireFiles`; retirement reconciliation is ordered after persistent runtime reconciliation and blocks deletion while any matching process remains. Immutable r50 releaseRef is `8e679fa2c3e9f8bd02ba9215a09793a01be1a980`; descriptor publication was last. Runtime deployment remains pending. Acceptance requires both old dashboard tails/processes closed, both files absent from home, backend Health Collector/Update Watcher still healthy, Validation Dashboard healthy, and retirement print/report evidence naming both files.
+**Validation:** r50 runtime FAIL for the retirement action: deployment committed cleanly but printed `retired 0`, and both legacy standalone dashboard windows remained. The screenshot also showed Health at 6 services immediately after deployment. Root cause: r50 was launched by the already-running r49 puller. Although r50 staged the new helper and new puller, the r49 puller did not know the new `retireFiles` manifest field and therefore did not serialize retirement instructions into `data/deployment-pending.txt`; the r50 helper correctly received an empty retirement plan. This is a bootstrap-transition compatibility issue, not a failure of the r50 stop/verify/delete implementation. The r50 puller is now installed locally and understands `retireFiles`, so r51 will repeat the explicit retirement declarations as the compatibility/recovery release. Static repository review confirms both backend owners contain zero references to the retired standalone dashboard paths/relaunch helpers; puller/helper source has balanced structural braces; r50 manifest removes both UI files from active files/runtime dependencies and explicitly lists both under `retireFiles`; retirement reconciliation is ordered after persistent runtime reconciliation and blocks deletion while any matching process remains. Immutable r50 releaseRef is `8e679fa2c3e9f8bd02ba9215a09793a01be1a980`; descriptor publication was last. Runtime deployment remains pending. Acceptance requires both old dashboard tails/processes closed, both files absent from home, backend Health Collector/Update Watcher still healthy, Validation Dashboard healthy, and retirement print/report evidence naming both files.
 
-**Next step:** Install r50 through the integrated Validation Dashboard updater. Verify the retirement audit names both obsolete UI files, both old standalone UI processes are gone, the files are absent, and all seven reporting services return healthy.
+**Next step:** Publish r51 with the same explicit retirement declarations. Install r51 through the integrated Validation Dashboard updater and verify per-file STOPPED/VERIFIED/DELETED output, both legacy windows/files absent, and all seven reporting services healthy.
 
 ## Recently completed
 
