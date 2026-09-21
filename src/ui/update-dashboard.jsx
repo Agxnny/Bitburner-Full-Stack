@@ -80,7 +80,7 @@ function readSnapshot(ns) {
 }
 
 function UpdateDashboard({ bridge }) {
-    const windowRef = useDashboardWindow(WINDOW_MEMORY_KEY, bridge, { minWidth: 620, minHeight: 126, maxWidth: 1120, maxHeight: 260, widthProbeSelector: "[data-dashboard-width-probe]", widthProbeExtra: 2, layoutGroup: LAYOUT_GROUP, layoutOrder: 10, layoutGap: 6 });
+    const windowRef = useDashboardWindow(WINDOW_MEMORY_KEY, bridge, { minWidth: 620, minHeight: 126, maxWidth: 1120, maxHeight: 260, layoutGroup: LAYOUT_GROUP, layoutOrder: 10, layoutGap: 6 });
     const [view, setView] = React.useState(() => ({ snapshot: bridge.snapshot, feedback: bridge.feedback }));
 
     React.useEffect(() => {
@@ -156,6 +156,7 @@ function Shell({ rootRef, children }) {
         <div ref={rootRef} style={{
             fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
             minWidth: "620px",
+            boxSizing: "border-box",
             padding: "10px",
             background: COLORS.page,
             color: COLORS.text,
