@@ -14,14 +14,14 @@
 - Persistent runtime protection
 - Update telemetry
 
-## M2 — Telemetry and Dashboard Foundation
+## M2 — Telemetry and Dashboard Foundation — COMPLETE (runtime validated through v0.5.0-r49)
 - Structured logging/events
 - Health/status model
 - React dashboard shell
 - Validation panel framework
 - Production dashboard shell
 
-## M3 — Canonical State
+## M3 — Canonical State — ACTIVE (design)
 - Collectors and state schema
 - Freshness metadata
 - Raw vs derived state
