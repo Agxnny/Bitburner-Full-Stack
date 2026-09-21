@@ -218,3 +218,15 @@ Registered validation tests may intentionally disrupt managed runtime only when 
 The test runner must capture the exact processes it intends to mutate and arm restoration before the first mutation. It owns restoration on success, assertion failure, timeout, and script death, and may restart only processes it actually stopped. Restoration failure is a failed validation condition requiring recovery attention.
 
 Emergency-focus validation crosses the real production threshold; it does not lower, mock, or bypass the threshold. React records presentation facts only through the in-memory dashboard bridge. The Netscript-owning dashboard main loop persists those facts for the test runner, preserving FIX-002.
+
+
+## D-030 — M2 closes at r49; M3 begins with canonical-state design
+**Status:** Locked
+
+M2 Telemetry / Dashboard Foundation is complete and runtime validated through v0.5.0-r49. Closeout evidence covers structured telemetry/events, aggregate health and bounded incidents, seven reporting services, five isolated observation producers, shared dashboard presentation infrastructure, Validation Dashboard execution/evidence workflows, ordinary-attention non-focus behavior, controlled emergency focus/acknowledgement, and automatic restoration to healthy state.
+
+The M2 observation snapshots are intentionally non-canonical. M3 must introduce an explicit canonical-state owner and versioned consumer contract; it must not make `data/observations/*.json` canonical merely by naming or direct reuse.
+
+Standalone compact Health and Update Watcher presentation may coexist with the Validation Dashboard during M3. Their consolidation is presentation work and is not a prerequisite for canonical state.
+
+The bounded post-install updater convergence/stale transient command feedback observed during M2 is deferred presentation polish rather than a milestone correctness blocker because release installation, persistent runtime reconciliation, and eventual terminal updater state are independently validated. Any future correctness regression in deployment identity or terminal state reopens the relevant deployment issue, not M2 state architecture.
