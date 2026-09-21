@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r37 System Health current-instance uptime
-**Status:** r37 presented — r36 action-state sizing FAIL; do not install yet
+**Status:** r37 installed — service uptime PASS; updater action-state sizing remains open
 
 **Goal:** Show how long each currently reporting service instance has been continuously observed, making restarts/replacements visible in Service Placement without adding Netscript calls to React.
 
@@ -41,9 +41,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - React derives the live duration from snapshot `observedSince` using ordinary JS time only; it does not invoke Netscript or force per-second health snapshot writes.
 - r36 compact Update Watcher root-measured sizing is PASS. Publishing r37 also provides the pending r36 action-state Install/Later sizing test before installation.
 
-**Validation:** Current runtime shows all seven persistent reporting services healthy. Static implementation complete: Health Collector preserves `observedSince` for the same instance ID and resets it on replacement; snapshot exposes it; Service Placement renders live compact uptime using ordinary JS time. Producer telemetry schema and React/Netscript ownership are unchanged. Runtime validation: r36 compact root-measured sizing PASS, but with r37 presented the action state FAILS: the right-side Install/Later controls are clipped and the native tail does not expand. This demonstrates that complete-root measurement is reliable for the compact state but cannot discover hidden intrinsic width once the nowrap action row is constrained by the existing native viewport. r37 uptime itself remains uninstalled/unvalidated. r37 immutable manifest published at releaseRef `b74e8bbb3892647b1930641fdd8037b1d25dce43`; descriptor published last.
+**Validation:** Current runtime shows all seven persistent reporting services healthy. Static implementation complete: Health Collector preserves `observedSince` for the same instance ID and resets it on replacement; snapshot exposes it; Service Placement renders live compact uptime using ordinary JS time. Producer telemetry schema and React/Netscript ownership are unchanged. Runtime validation: r36 compact root-measured sizing PASS, but with r37 presented the action state FAILS: the right-side Install/Later controls are clipped and the native tail does not expand. This demonstrates that complete-root measurement is reliable for the compact state but cannot discover hidden intrinsic width once the nowrap action row is constrained by the existing native viewport. r37 was subsequently installed cleanly. Service Placement now shows live current-instance uptimes for all seven healthy services; uptime presentation PASS. The roughly one-minute values reflect first observation by the restarted r37 Health Collector, not guaranteed process launch time for unchanged collector PIDs. r37 immutable manifest published at releaseRef `b74e8bbb3892647b1930641fdd8037b1d25dce43`; descriptor published last.
 
-**Next step:** Do not install r37 yet. Compact root-measured sizing passes, but the r36 action state clips the Install/Later controls because the rendered root is itself constrained by the current native width: `root.scrollWidth` does not expose the nowrap row's hidden intrinsic demand. Keep root sizing for compact state, but introduce an explicit two-state updater width contract (compact vs action) rather than restoring the synthetic child-width probe. Publish a superseding revision containing the sizing correction plus the r37 uptime feature, then re-test action state before installation.
+**Next step:** Preserve the validated r37 uptime feature. Implement the Update Watcher as an explicit two-width control bar: proven compact width when no update is presented, wider action width while Install/Later are rendered. Use the next revision to re-test action-state expansion from installed r37 before installation.
 
 ## Recently completed
 
