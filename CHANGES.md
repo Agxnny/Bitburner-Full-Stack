@@ -23,29 +23,31 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Measured content-viewport dashboard sizing
-**Status:** Implementation complete — runtime validation pending
+### Dashboard layout coordinator + selectable anchor
+**Status:** Approved — implementation
 
-**Goal:** Replace r23/r24 root-only sizing with the DOM model proven by r25/r26 so production dashboards dynamically fit content without clipping or column-reverse black space.
+**Goal:** Coordinate dashboard window placement so dynamically growing/shrinking dashboards reflow as a group, with an operator-selectable anchor dashboard.
 
 **Files / areas touched:**
+- shared dashboard layout coordinator
 - `src/ui/dashboard-window-memory.js`
-- current dashboard size profiles
-- `src/ui/README.md`
-- deployment manifest/version
+- Update Watcher and System Health dashboard headers
+- UI docs / decisions / deployment release
 
 **Decisions / constraints:**
-- r26 identified the intermediate MUI Paper/log viewport as flex column-reverse with hidden/scroll overflow; resizeTail itself maps exactly to `.react-resizable`.
-- Discover the content viewport structurally from the root→resizable ancestor chain; do not bind to generated MUI class names.
-- Measure native overhead as resizable dimensions minus content-viewport client dimensions, then request rendered content requirement plus measured overhead.
-- Width must use content scroll/bounds without allowing the current native width to become a self-reinforcing target.
-- Apply debounce/tolerance and remeasure after resize so sizing converges instead of oscillating.
-- Preserve D-021: position persists, user size does not; React measures only and main owns Netscript UI calls.
-- Keep the r26 calibration harness as a dormant diagnostic tool.
+- r27 measured content-viewport sizing is runtime validated: healthy fit, stale/degraded growth, and recovery shrink all passed without clipping/black-gap regression.
+- Layout coordination is browser-local presentation state, not canonical telemetry/state.
+- Dashboards publish current geometry into a bounded browser-local group registry; no dashboard directly inspects another dashboard's React DOM.
+- One dashboard per group is the anchor. Selecting Anchor transfers ownership immediately.
+- Anchor position is user-owned/persistent. Followers derive position from anchor + ordered dashboard heights + a small gap and do not persist independent positions while following.
+- Dynamic size changes reflow followers automatically.
+- React/browser code may calculate/publish layout intent, but only each dashboard main loop may call Netscript move/resize APIs.
+- Current group is a vertical stack: Update Watcher order 10, System Health order 20. Design must permit later dashboards/orders without pair-specific coupling.
+- Stale registry entries expire so closed dashboards do not reserve layout space.
 
-**Validation:** r25/r26 calibration completed. Shared production helper now discovers the scrollable column-reverse content viewport structurally, measures native width/height overhead at runtime, and requests content requirement plus measured overhead with observer-driven remeasurement and main-loop tolerance. Static implementation/docs/decision complete; runtime fit and convergence remain pending.
+**Validation:** r27 sizing PASS from operator screenshots. Coordinator implementation/runtime validation pending.
 
-**Next step:** Publish r27 from immutable manifest commit `e8dbe8f5d72c1ae9ba04096582c356e4769dd38d`, install normally, then validate Update Watcher compact fit and System Health healthy → stale growth → recovery shrink with position preserved.
+**Next step:** Implement shared coordinator and Anchor controls, publish r28, then validate anchor transfer, drag-follow, dynamic growth reflow, recovery shrink, restart persistence, and stale-member expiry.
 
 ## Recently completed
 
