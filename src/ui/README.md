@@ -43,9 +43,12 @@ It displays only:
 - watcher heartbeat age / online state
 - the watcher polling interval
 - an approval message and controls when a newer revision is presented
+- explicit installation state: in progress, clean completion, degraded completion, or failure
 - concise command/error feedback when needed
 
-Detailed discovery, deployment, runtime-unit, and validation telemetry remains in structured runtime files for future Validation Dashboard surfaces; it is not shown in this compact operator widget.
+The compact completion indicator is derived from the watcher's existing deployment observation/report; the dashboard does not create a second deployment-status authority. A terminal clean report replaces stale transient command text such as `Installing rN.` with a green `Install clean` state and the completed revision. Degraded or failed terminal reports remain visibly red.
+
+Detailed discovery, runtime-unit, and validation telemetry remains in structured runtime files for future Validation Dashboard surfaces; it is not shown in this compact operator widget.
 
 It reads:
 - `data/update-status.json` — watcher heartbeat, local release identity, presented revision, polling interval, command result, and errors
