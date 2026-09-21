@@ -1,16 +1,16 @@
 # Current State
 
 ## Current milestone
-**M1 — Reliable Deployment**
+**M2 — Telemetry / Dashboard Foundation (design next)**
 
 ## Status
-M1 implementation is functionally complete except for explicit persistent-unit retirement. Core bootstrap safety, persistent updater lifecycle behavior, redundant discovery, commit-pinned release content, exact-revision human approval, and single-deployment concurrency protection are runtime-validated in Bitburner v3.0.1. Transition release `v0.4.0-r12` installed successfully and its puller passed a same-revision dry run using the new release contract. Controlled r13 was detected within one normal watcher interval, r14 installed successfully using normal canonical source paths behind an immutable `releaseRef`, and r15 runtime validation confirmed shared dashboard window position/size memory restores correctly after watcher-driven relaunch.
+**M1 — Reliable Deployment is complete and runtime validated through v0.4.0-r20.** Bootstrap safety, persistent updater lifecycle behavior, redundant discovery, commit-pinned release content, exact-revision human approval, single-deployment concurrency protection, explicit persistent-unit retirement, dashboard geometry memory, and operator-visible deployment completion status have all been exercised in Bitburner v3.0.1.
 
-Controlled no-op releases r16 and r17 validated the remaining approval boundaries. A stale r16 approval was rejected after r17 became current without implicitly authorizing r17. An r17 approval was then rejected while deployment infrastructure was intentionally held active by the existing self-update helper in a harmless wait state. After that helper was removed, a normal r17 approval installed successfully and the ordinary deployment path completed correctly.
+Controlled r16/r17 testing validated stale exact-revision rejection and concurrent-deployment rejection, followed by a successful normal r17 install. r18 introduced the harmless persistent retirement fixture; r19 explicitly retired only that fixture while the update watcher/dashboard remained healthy. r20 then installed normally and the updater settled on a green `Install clean` state with `Last installation completed successfully (r20).`
 
-Close-out review determined that full rollback and per-file cryptographic hashes are future hardening rather than M1 blockers. Explicit persistent-unit retirement remains the final M1 blocker because persistent processes may not be terminated merely because they disappear from a later manifest; retirement requires a positive manifest-authorized lifecycle action.
+Full transactional rollback and per-file cryptographic hashes remain documented future hardening rather than M1 blockers. FIX-004's historical ledger-drift root cause remains unproven and must not be invented.
 
-The repository uses `CHANGES.md` as the lightweight in-progress work record. It must be updated during meaningful implementation steps and before handoffs/context switches. Feature behavior changes must update that feature's own documentation in the same work item.
+The next milestone is M2 Telemetry / Dashboard Foundation. M2 is not yet implemented; design must establish ownership, dependencies, interfaces, and done criteria before repository implementation begins.
 
 ## Completed
 - Repository foundation, project rules, architecture, roadmap, decisions, fixes, references, and working-change documentation established.
@@ -33,28 +33,30 @@ The repository uses `CHANGES.md` as the lightweight in-progress work record. It 
 - Exact-revision stale approval protection is runtime validated using controlled no-op releases r16/r17.
 - Duplicate/concurrent deployment rejection is runtime validated using the production watcher command path while the helper was held in a non-mutating wait state.
 - Final normal r17 deployment succeeded after the validation helper was removed.
+- Explicit persistent-unit retirement runtime validated across r18/r19: positive retirement authorization stopped only the declared fixture and preserved the watcher/dashboard.
+- r20 runtime validated operator-visible deployment completion: green `Install clean` and completed revision replace stale install-progress feedback.
 - `CHANGES.md` is required for preserving in-progress work between implementation steps, chats, and handoffs.
 - Project rules require each feature/subsystem's own documentation to be updated whenever its behavior, interface, configuration, lifecycle, telemetry, validation procedure, or operator workflow changes.
 
 ## Active feature
-**M1 — Reliable Deployment / explicit persistent-unit retirement**
+**M2 — Telemetry / Dashboard Foundation / design**
 
-Relevant current files:
+Relevant starting surfaces:
 - `CHANGES.md`
 - `PROJECT_RULES.md`
 - `CURRENT_STATE.md`
-- `src/bootstrap/git-pull.js`
-- `src/bootstrap/git-pull-self-update.js`
-- `deployment/README.md`
+- `ARCHITECTURE.md`
 - `DECISIONS.md`
-- release manifests used for validation
+- `ROADMAP.md`
+- `src/ui/README.md`
+- relevant `FIXES.md` entries
 
 ## Exact next step
-1. Design an explicit manifest retirement contract for previously persistent runtime units.
-2. Define puller validation and helper reconciliation semantics so retirement is positive authorization rather than inferred from disappearance.
-3. Implement and runtime-validate controlled retirement without weakening the existing persistent-process safety rules.
-4. Update deployment feature docs, decisions if needed, CHANGES, and CURRENT_STATE.
-5. Close M1 only after explicit retirement is validated.
+1. Read the locked M2 roadmap/architecture constraints and current UI telemetry conventions.
+2. Define M2 ownership and canonical telemetry boundaries.
+3. Define producer/consumer interfaces, freshness/error metadata, and Production vs Validation Dashboard responsibilities.
+4. Define M2 runtime validation and done criteria.
+5. Record the approved design before implementation.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
@@ -93,7 +95,6 @@ Relevant current files:
 - FIX-004's historical ledger-drift root cause remains unproven; current deployment recovery behavior is validated, but the historical root cause must not be invented.
 - Full rollback for partially activated non-persistent deployment is deferred as future hardening. M1 stages and validates before activation and protects running persistent units from failed/partial updates, but does not claim full transactional rollback of all non-persistent file writes.
 - Cryptographic per-file manifest hashing is deferred as defense in depth. Production release content is already immutable through commit-pinned `releaseRef` identity.
-- Explicit persistent-unit retirement remains the final M1 blocker.
 - Continuous general persistent-service supervision remains future Supervisor work.
 
 ## Do not work on yet
