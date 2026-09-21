@@ -23,28 +23,31 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r41 incident expiry + whole-second Health freshness
-**Status:** r41 installed — runtime PASS
+### r42 Validation Dashboard foundation
+**Status:** Implementation
 
-**Goal:** Automatically remove old retained warning/error incidents and make System Health's "updated … ago" presentation use whole seconds only.
+**Goal:** Establish the full Validation Dashboard as the engineering/test hub, with modular tabs for Overview, Validating, Validated, Health, Updater, and Data. Migrate Health and Updater presentation into tabs while keeping their backend services independent.
 
 **Files / areas touched:**
-- `src/core/health-collector.js`
-- `src/ui/system-health-dashboard.jsx`
-- `src/core/README.md`
-- deployment r41 metadata
+- `src/ui/validation-dashboard*.jsx` and shared validation UI modules
+- Update Watcher / Health Collector presentation lifecycle
+- deployment r42 metadata
+- `src/ui/README.md`, `DECISIONS.md`, `CURRENT_STATE.md`
 
 **Decisions / constraints:**
-- Retained warning/error incidents expire after 10 minutes from their incident timestamp. Active service health is independent and remains visible even if its historical incident ages out.
-- Expiry applies on collector startup and continuously during the collector loop, so old persisted incidents disappear without requiring a new incident.
-- Existing unique identity rule (service + incident code) remains: newer occurrences replace older occurrences.
-- Recovery/info bounded-history behavior remains unchanged.
-- System Health freshness display floors to whole seconds; values below one second display `0s`, never milliseconds.
-- Do not alter process uptime, collector behavior, updater sizing, or dashboard geometry.
+- One persistent Validation Dashboard process/window; tabs are presentation boundaries, not service boundaries.
+- React remains Netscript-free; dashboard `main()` exclusively owns Netscript reads/writes and native tail operations.
+- Navigation is never changed for ordinary notifications. Tab badges represent unread attention; underlying active state remains separate.
+- Critical/emergency events may force focus once per incident/escalation. Acknowledgement suppresses repeat focus stealing for that incident while the condition remains visibly active.
+- Validation work is separated into `Validating` (active work) and `Validated` (completed evidence). Regressions return affected work to Validating.
+- Update availability uses an Updater notification badge rather than automatically switching tabs.
+- Health Collector, Update Watcher, and observation collectors remain independent backend services; UI consolidation does not consolidate service ownership.
+- Existing standalone Health/Updater dashboards remain source references during migration but are not the target long-term presentation surfaces.
+- Shared dark grey-blue visual language from D-018 remains authoritative.
 
-**Validation:** r40 process uptime is runtime PASS. Static r41 implementation adds a 10-minute TTL only to retained warning/error incidents, prunes on startup and continuously, and leaves active health/recovery history independent. System Health freshness now floors to whole seconds (`0s` below one second) and never renders milliseconds. Runtime validation PASS: after r41 installation, the expired infrastructure/update-watcher warning rows are gone, all seven services remain HEALTHY, System Health freshness displays whole seconds (`updated 1s ago`), and producer-owned uptime is preserved for unchanged collectors/update-watcher while the changed Health Collector correctly restarted. r41 immutable manifest published at releaseRef `ea2a0b728194f3868edbc9796a499c5735bfb02c`; descriptor published last. Existing historical infrastructure/update-watcher warnings provide direct expiry validation.
+**Validation:** Design approved in chat. Repository implementation and static review are in progress. Runtime validation is still required before standalone dashboard presentation is considered retired.
 
-**Next step:** r41 health cleanup is complete. Proceed to the next M2 closeout item / milestone review before beginning M3 canonical state.
+**Next step:** Implement the tabbed shell, Health/Updater/Data views, notification/escalation model, validation work/archive views, deployment integration, and documentation; publish r42 for runtime validation.
 
 ## Recently completed
 
