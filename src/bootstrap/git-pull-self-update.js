@@ -12,6 +12,10 @@ const PENDING_STATE_PATH = "data/deployment-pending.txt";
 const REPORT_PATH = "data/git-pull-report.json";
 const TRANSITION_REVISION = 12;
 const TRANSITION_SOURCE_PREFIX = "deployment/releases/r12-src/";
+const DASHBOARD_SCRIPTS = [
+    "src/ui/update-dashboard.jsx",
+    "src/ui/system-health-dashboard.jsx",
+];
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -73,14 +77,15 @@ export async function main(ns) {
     ns.write(REPORT_PATH, JSON.stringify(report, null, 2), "w");
 
     const runtimeResults = await reconcileRuntime(ns, runtimePlan);
-    report.runtime.units = runtimeResults;
-    const runtimeFailed = runtimeResults.some((item) => item.outcome === "failed");
+    const dashboardResults = await refreshDashboards(ns);
+    report.runtime.units = [...runtimeResults, ...dashboardResults];
+    const runtimeFailed = report.runtime.units.some((item) => item.outcome === "failed");
     report.runtime.status = runtimeFailed ? "degraded" : "healthy";
     report.status = runtimeFailed ? "committed-runtime-degraded" : "committed";
     report.clean = !runtimeFailed;
     report.success = !runtimeFailed;
     report.error = runtimeFailed
-        ? runtimeResults.filter((item) => item.outcome === "failed").map((item) => `${item.id}: ${item.error}`).join("; ")
+        ? report.runtime.units.filter((item) => item.outcome === "failed").map((item) => `${item.id}: ${item.error}`).join("; ")
         : null;
     report.finishedAt = Date.now();
     ns.write(REPORT_PATH, JSON.stringify(report, null, 2), "w");
@@ -164,6 +169,33 @@ async function reconcileRuntime(ns, runtimePlan) {
         results.push(result(unit, unit.changed ? "restarted" : "relaunched", pid, null));
     }
 
+    return results;
+}
+
+async function refreshDashboards(ns) {
+    const results = [];
+    for (const script of DASHBOARD_SCRIPTS) {
+        const matches = ns.ps("home").filter((process) => process.filename === script);
+        for (const process of matches) {
+            ns.ui.closeTail(process.pid);
+            if (!ns.kill(process.pid)) {
+                results.push({ id: `dashboard:${script}`, script, changed: true, retired: false, outcome: "failed", pid: null, error: "Could not stop dashboard for deployment refresh.", handledAt: Date.now() });
+                continue;
+            }
+        }
+        if (matches.length > 0) await ns.sleep(100);
+        const pid = ns.run(script, 1);
+        results.push({
+            id: `dashboard:${script}`,
+            script,
+            changed: true,
+            retired: false,
+            outcome: pid > 0 ? "refreshed" : "failed",
+            pid: pid || null,
+            error: pid > 0 ? null : "Could not relaunch dashboard after deployment.",
+            handledAt: Date.now(),
+        });
+    }
     return results;
 }
 
