@@ -1,11 +1,14 @@
 import { TESTS } from "../validation/test-registry.js";
-import { V, panel, sectionTitle } from "./validation-theme.js";\nimport { outstandingTestIds } from "../validation/validation-state.js";
+import { V, panel, sectionTitle } from "./validation-theme.js";
+import { outstandingTestIds } from "../validation/validation-state.js";
 
 export function ValidationTestsTab({snapshot,bridge}){
     const running=snapshot.testRun;
     const [confirming,setConfirming]=React.useState(null);
     const result=snapshot.testResult;
-    const evidence=snapshot.evidence?.records??[];\n    const outstanding=new Set(outstandingTestIds(snapshot.validationPlan,snapshot.validationLedger));\n    const visibleTests=TESTS.filter((test)=>outstanding.has(test.id));
+    const evidence=snapshot.evidence?.records??[];
+    const outstanding=new Set(outstandingTestIds(snapshot.validationPlan,snapshot.validationLedger));
+    const visibleTests=TESTS.filter((test)=>outstanding.has(test.id));
     function send(intent,message){if(bridge.pendingIntent){bridge.feedback="Another dashboard command is already queued.";return;}bridge.pendingIntent=intent;bridge.feedback=message;}
     function run(test){if(test.manual)return;if(test.risk==="DISRUPTIVE"){setConfirming(test);return;}send({type:"run-validation-test",testId:test.id},`Starting ${test.title}…`);}
     function confirmedRun(){const test=confirming;if(!test)return;setConfirming(null);send({type:"run-validation-test",testId:test.id},`Starting ${test.title}…`);}
@@ -15,7 +18,7 @@ export function ValidationTestsTab({snapshot,bridge}){
             <div style={sectionTitle}>REGISTERED TESTS</div>
             <div style={{marginTop:8,color:V.muted,fontSize:12}}>Repository-registered tests only. Automated and operator-confirmed evidence remain explicitly distinguished.</div>
             <div style={{display:"grid",gap:8,marginTop:12}}>
-                {visibleTests.length?visibleTests.map((test)=><TestCard key={test.id} test={test} running={running} latest={latestFor(evidence,test.id)} onRun={()=>run(test)} onConfirm={()=>confirm(test)}/>)}
+                {visibleTests.length?visibleTests.map((test)=><TestCard key={test.id} test={test} running={running} latest={latestFor(evidence,test.id)} onRun={()=>run(test)} onConfirm={()=>confirm(test)}/>):<div style={{color:V.muted,fontSize:12}}>No outstanding tests in the current validation plan.</div>}
             </div>
         </section>
         <section style={{...panel,padding:14}}>
