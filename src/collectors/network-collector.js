@@ -2,7 +2,7 @@ import { writeObservation } from "../core/observation-store.js";
 import { runCollector } from "./collector-runtime.js";
 const DOMAIN = "network";
 export async function main(ns) {
-    await runCollector(ns, { service: "network-collector", domain: DOMAIN, intervalMs: 5_000 }, async () => {
+    await runCollector(ns, { service: "network-collector", domain: DOMAIN, intervalMs: 5_000, minimumIntervalMs: 1_000 }, async () => {
         const seen = new Set(["home"]), queue = ["home"], topology = {}, servers = [];
         while (queue.length) {
             const host = queue.shift();
