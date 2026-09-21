@@ -72,7 +72,7 @@ It writes only:
 
 The dashboard never calls `git-pull.js` directly. `src/bootstrap/update-watcher.js` owns command validation and delegates approved execution to the puller.
 
-The Update Watcher status row is also the dashboard's intrinsic width probe. Its nowrap child widths, padding, and gaps determine the requested content width, allowing the tail to grow when Install/Later controls appear and shrink back when they disappear; the normal compact width remains the minimum.
+The Update Watcher status row is also the dashboard's intrinsic width probe. Its nowrap child widths, padding, and gaps determine the requested content width, allowing the tail to grow when Install/Later controls appear and shrink back when they disappear; the normal compact width remains the minimum. The shared window helper observes React content mutations as well as box resizes, because adding/removing controls can change intrinsic width without changing the currently constrained DOM box. A content mutation therefore schedules a fresh measurement and native `resizeTail` request.
 
 ### Lifecycle ownership
 
