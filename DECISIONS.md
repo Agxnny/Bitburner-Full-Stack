@@ -148,3 +148,13 @@ Calibration in r25/r26 established that `ns.ui.resizeTail()` maps to the native 
 Production sizing must discover that content viewport structurally from the dashboard root-to-resizable ancestor chain rather than depending on generated MUI class names. Native overhead is measured at runtime as resizable dimensions minus content-viewport client dimensions; requested native size is rendered dashboard content plus that measured overhead, subject to dashboard bounds and viewport clamping.
 
 Resize observation and main-loop tolerance provide convergence after content or tab changes. Fixed guessed chrome offsets are not part of the production sizing contract.
+
+
+## D-023 — Dashboard layout groups use one selectable anchor
+**Status:** Locked
+
+Dashboard windows coordinate placement through browser-local presentation state rather than direct cross-dashboard DOM inspection or canonical telemetry. Each active dashboard publishes short-lived geometry under a stable ID and group; stale members expire automatically.
+
+Each layout group has one operator-selectable anchor. The anchor's position is user-owned and persistent. Other active members are followers whose positions are derived from the anchor, configured ordering, current measured sizes, and group gap. Dynamic dashboard growth/shrink therefore reflows followers without changing telemetry/service lifecycle.
+
+React/browser code may publish geometry, select the anchor, and calculate desired positions. Only each dashboard's Netscript main loop may apply native tail movement/resizing. Current `operations` layout is a vertical stack; future layout modes may extend the coordinator without adding pair-specific dashboard coupling.
