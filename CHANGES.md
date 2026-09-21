@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Validation Dashboard compact responsive navigation
-**Status:** Implementation in progress
+**Status:** Implemented and published as v0.6.0-r58; runtime validation pending
 
 **Goal:** Make the Validation Dashboard materially usable at narrower tail widths by replacing stretched navigation tabs with compact icon+text controls that wrap to two rows when space requires it.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Preserve all seven existing navigation destinations, labels, badges, emergency focus behavior, and text size. Use lightweight text glyph icons with no new dependency. Wide layouts may remain one row; narrower layouts wrap naturally into a compact 4+3 arrangement. This is a bounded UI change before resuming M3 cadence control.
 
-**Validation:** Repository implementation and release packaging pending. Runtime validation requires resizing the installed dashboard and confirming one-row wide layout, two-row narrow layout, icon+text readability, badges, and navigation.
+**Validation:** Repository implementation complete. Navigation now uses compact icon+text controls, natural wrapping, a 640px dashboard minimum, and preserves labels/badges/emergency behavior. r58 is published. Runtime validation requires resizing the installed dashboard and confirming one-row wide layout, two-row narrow layout, icon+text readability, badges, and navigation.
 
-**Exact next step:** Implement compact responsive tabs, publish the next immutable release, install it, and runtime-check resizing/navigation before resuming M3 cadence-control work.
+**Exact next step:** Install v0.6.0-r58 and runtime-check wide/narrow resizing plus all seven navigation targets before resuming M3 cadence-control work.
 
 ## Recently completed
 
