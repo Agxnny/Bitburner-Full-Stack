@@ -230,3 +230,13 @@ The M2 observation snapshots are intentionally non-canonical. M3 must introduce 
 Standalone compact Health and Update Watcher presentation may coexist with the Validation Dashboard during M3. Their consolidation is presentation work and is not a prerequisite for canonical state.
 
 The bounded post-install updater convergence/stale transient command feedback observed during M2 is deferred presentation polish rather than a milestone correctness blocker because release installation, persistent runtime reconciliation, and eventual terminal updater state are independently validated. Any future correctness regression in deployment identity or terminal state reopens the relevant deployment issue, not M2 state architecture.
+
+
+## D-031 — Managed file retirement requires explicit stop-verify-delete authorization
+**Status:** Locked
+
+A managed file is never deleted merely because it disappears from a later manifest. Deletion requires an explicit one-release `retireFiles` declaration in the immutable release manifest. Retirement paths are restricted to managed source space, may not target protected runtime data or bootstrap puller/helper files, and may not also be active file targets in the same release.
+
+Retirement reconciliation runs only after newly deployed ownership code and persistent runtime reconciliation have removed any relaunch source. For each retirement path the helper discovers matching processes, closes their tails, requests termination, waits, and verifies that no process with that script path remains. If stop or verification fails, the file is preserved and deployment runtime status is degraded. Only a verified-stopped path may be deleted; deletion is followed by an explicit absence check.
+
+Every retirement produces operator-visible terminal lines and a structured `report.retirement.files` record including prior existence, matching/stopped PIDs, final status, and failure reason. Already-absent files are reported as such rather than claimed as deleted. Retirement declarations are one-release instructions; immutable manifests and deployment reports are the audit history.
