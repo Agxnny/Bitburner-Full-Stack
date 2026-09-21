@@ -23,28 +23,25 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r45 Quiet validation runners and durable evidence
-**Status:** r46 published — awaiting quiet-run runtime validation
+### r47 Validation dashboard tail lifecycle cleanup
+**Status:** Implementation
 
-**Goal:** Complete the first Tests workflow refinement: dashboard-owned automated tests run quietly, while automated and operator-confirmed validation evidence is durably recorded and visible from Tests/Validated rather than relying on terminal/tail output or chat history.
+**Goal:** Preserve the now-proven quiet Tests execution while fixing deployment replacement of the persistent Validation Dashboard so its previous native tail is explicitly closed before the process is killed/restarted.
 
 **Files / areas touched:**
-- `src/ui/validation-dashboard.jsx`, `src/ui/validation-tests-tab.jsx`, `src/ui/validation-work-tab.jsx`
-- `src/validation/test-registry.js` and validation evidence helpers
-- `src/validation/tests/dashboard-smoke-test.js`
-- deployment r45 metadata and Validation Dashboard documentation
+- `src/bootstrap/git-pull-self-update.js`
+- deployment r47 metadata
+- `FIXES.md` / deployment lifecycle documentation
 
 **Decisions / constraints:**
-- Tests remains the sole normal operator surface for validation execution/results; test runner logs are suppressed unless a future explicit debug workflow requests them.
-- Test execution remains registry-controlled and fail-closed; no arbitrary scripts/arguments.
-- Automated results and operator-confirmed observations share a bounded validation evidence store, but evidence kind remains explicit.
-- Manual confirmation records what the operator observed; it does not pretend the system automatically asserted visual/navigation behavior.
-- Existing r44 updater-notification evidence may be recorded through the new manual-confirmation workflow after r45 installation.
-- No updater convergence fix is mixed into r45.
+- Reuse the established FIX-005 invariant: managed UI process replacement must close its tail before kill.
+- Fix this in generic persistent runtime reconciliation, not as another special-case dashboard list entry.
+- Only processes being intentionally stopped/replaced are tail-closed; non-UI processes tolerate `closeTail(pid)` as a no-visible-tail cleanup.
+- Do not mix updater convergence or emergency-focus work into this release.
 
-**Validation:** r44 proved the full dashboard-run smoke path with nine passing assertions, but exposed runner tail/log noise. r44 also proved genuine updater notification without focus stealing and integrated installation. r45 now suppresses runner Netscript logging, records automated results into a bounded durable evidence store, and adds explicit operator-confirmed evidence for registry entries marked manual. Static source review complete. Immutable r45 manifest includes the new evidence store and all changed validation modules; Validation Dashboard runtime dependencies include the evidence store. Immutable releaseRef is `219673877f4f50a7eeea2a148153274a7be70255`; descriptor publication was last. Runtime screenshot confirms the smoke test still PASSes and durable automated evidence renders correctly. The green `run: ...` line still appears. The line is emitted by the Validation Dashboard process when it calls `ns.run()`, not by the child runner; disabling logs inside the runner cannot suppress a parent `run` API log. r46 suppresses the dashboard owner's `run` log specifically while preserving test evidence. Immutable r46 releaseRef is `fcedc0ec939a92d0289f78e5da58ea7efe0b86b9`; descriptor publication was last.
+**Validation:** r46 runtime screenshot proves quiet test execution PASS: 9/9 smoke assertions render and the previous green parent `run:` line is absent. Operator reports that installs restart the Validation Dashboard process but leave the old Validation Dashboard native tail window open. Repository inspection shows `reconcileRuntime()` stops changed persistent units via `ns.kill()` only, while the older special-case `refreshDashboards()` correctly calls `ns.ui.closeTail(pid)` first. This matches the already-documented FIX-005 lifecycle invariant.
 
-**Next step:** Add `run` to the Validation Dashboard's disabled Netscript logs, publish r46, then re-run `m2.dashboard.smoke` from Tests. Confirm the green parent `run:` line is gone while PASS/evidence still render. Then record the updater observation with `Confirm Observed Pass`.
+**Next step:** Update persistent runtime stop handling to close a process tail before kill, publish r47, then install r47 through the integrated Updater and verify exactly one Validation Dashboard window remains after replacement.
 
 ## Recently completed
 
