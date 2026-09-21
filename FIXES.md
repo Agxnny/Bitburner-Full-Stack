@@ -262,3 +262,35 @@ Process termination and tail-window cleanup are separate Bitburner lifecycle act
 #### Related
 - FIX-005 — Replaced dashboard process left its old tail window open.
 - D-015 — Post-update helper reconciles persistent runtime units.
+
+
+---
+
+### FIX-009 — New manifest retirement field was invisible to the pre-feature puller
+**Date:** 2026-09-21  
+**Status:** Recovery pending r51 runtime validation  
+**Subsystem:** M1 deployment / managed-file retirement transition  
+**Affected files:**
+- `src/bootstrap/git-pull.js`
+- `src/bootstrap/git-pull-self-update.js`
+- `deployment/releases/r50-manifest.json`
+- `deployment/releases/r51-manifest.json`
+
+#### Symptoms
+r50 installed successfully and the new backend owners stopped relaunching the standalone Health and Update Watcher dashboards, but deployment printed `retired 0` and both already-running legacy dashboard windows remained.
+
+#### Root cause
+The r50 deployment transaction itself was executed by the installed r49 `git-pull.js`. r50 contained the new retirement-aware puller and helper, but the puller self-refresh is intentionally deferred until after staging. The r49 puller did not parse or serialize the newly introduced `retireFiles` manifest field into `data/deployment-pending.txt`. The newly staged r50 helper therefore received no retirement plan and correctly performed zero retirements.
+
+#### Fix
+Use r50 as the bootstrap transition that installs the retirement-aware puller, then repeat the explicit retirement declarations in r51. The locally installed r50 puller can serialize the r51 retirement plan, allowing the r50/r51 helper path to execute stop → verify stopped → delete → verify absent.
+
+#### Verification
+r50 runtime observation confirms the compatibility gap. r51 must print per-file retirement actions for both legacy dashboard scripts, remove both files only after their processes are verified stopped, close both legacy tails, and finish with healthy backend services.
+
+#### Prevention / notes
+Any release that introduces a new manifest field whose semantics must be acted on by the currently running puller requires a compatibility transition. New helper behavior alone is insufficient when the old puller is responsible for constructing pending state. Design future deployment-schema changes against the N-1 puller or use a deliberate two-release transition.
+
+#### Related
+- D-012 — Puller self-update uses post-exit helper.
+- D-031 — Managed file retirement requires explicit stop-verify-delete authorization.
