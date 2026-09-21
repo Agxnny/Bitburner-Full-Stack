@@ -6,6 +6,13 @@ export const TESTS = [
         validates:["Durable collection-control owner","Bounded consumer cadence leases","Automatic cadence lease expiry and baseline fallback"],
     },
     {
+        id:"m3.cadence.restart", subsystem:"Collection Control", title:"Cadence owner restart recovery", risk:"DISRUPTIVE",
+        runner:"src/validation/tests/cadence-restart-test.js",
+        description:"Creates a live cadence lease, restarts only collection-control, verifies durable lease recovery and bounded acceleration, then proves normal expiry returns to baseline.",
+        validates:["Cadence lease restart recovery"],
+        confirmation:"Temporarily restarts only the collection-control service while a short player cadence lease is active. Collectors remain running and the test waits for automatic lease expiry.",
+    },
+    {
         id:"m3.canonical.state", subsystem:"Canonical State", title:"Canonical state contract", risk:"SAFE",
         runner:"src/validation/tests/canonical-state-test.js",
         description:"Checks canonical service health, five durable domains, observation timestamp preservation, positive revisions, and the absence of a universal freshness label.",
