@@ -4,7 +4,7 @@
 **M3 — Canonical State**
 
 ## Status
-**M3 canonical-state slice is installed at r52; v0.6.0-r53 is published to replace hard-coded validation lifecycle with a deployed validation plan plus protected runtime proof ledger. r53 awaits runtime validation.** It introduces the shared wall-time contract, centralized port registry, versioned observation transport, a persistent single-writer canonical-state service, durable data/state domain snapshots, factual availability/timestamps, and Validation Dashboard canonical-state evidence. Freshness is consumer-defined from observedAt rather than stored as a universal producer judgement. Consumer cadence-request handling is intentionally deferred until this state path is runtime-proven.
+**M3 canonical-state first slice and its plan/ledger validation lifecycle are runtime validated through v0.6.0-r55.** It introduces the shared wall-time contract, centralized port registry, versioned observation transport, a persistent single-writer canonical-state service, durable data/state domain snapshots, factual availability/timestamps, and Validation Dashboard canonical-state evidence. Freshness is consumer-defined from observedAt rather than stored as a universal producer judgement. Consumer cadence-request handling is intentionally deferred until this state path is runtime-proven.
 
 **M1 — Reliable Deployment is complete and runtime validated through v0.4.0-r20.** Bootstrap safety, persistent updater lifecycle behavior, redundant discovery, commit-pinned release content, exact-revision human approval, single-deployment concurrency protection, explicit persistent-unit retirement, dashboard geometry memory, and operator-visible deployment completion status have all been exercised in Bitburner v3.0.1.
 
@@ -44,9 +44,9 @@ M2 first vertical slice is runtime validated through v0.5.0-r22: shared cross-ho
 - r29 four-side dashboard docking runtime validated: followers snap to top/bottom/left/right of the selected anchor and anchor transfer preserves the physical relationship. Update-available width growth remains pending validation against the next presented release.
 
 ## Active feature
-**M3 — Canonical State design / information-contract handoff**
+**M3 — Canonical State — next slice pending**
 
-No M3 runtime implementation has started. The approved framing is deliberately thin: M2 already owns collection; M3 defines the stable communication contract between those observations and future consumers.
+The first M3 runtime slice is complete and runtime-proven through r55: M2 observations feed a persistent single-writer canonical owner, canonical state survives service restart through durable reconciliation, factual observation timestamps are preserved, revisions do not roll back, and freshness remains consumer-defined. The next planned M3 slice is consumer cadence-request handling; implementation has not started.
 
 ### M3 handoff boundary
 - Producers already exist: player, network, market, infrastructure, and capabilities observation collectors.
@@ -64,14 +64,8 @@ No M3 runtime implementation has started. The approved framing is deliberately t
 M2 is complete through r49. Deployment hygiene is complete through r51. The obsolete standalone System Health and Update Watcher UI scripts were explicitly retired with stop → verify stopped → delete → verify absent and auditable terminal/report output. Their backend Health Collector and Update Watcher services remain. Validation Dashboard is the sole UI surface.
 
 ## Exact next step
-1. Read PROJECT_RULES, CHANGES, CURRENT_STATE, ARCHITECTURE, DECISIONS, ROADMAP, relevant FIXES, and REFERENCES.
-2. Design a documented port reservation/allocation map; do not allocate ports ad hoc.
-3. Design command/event message envelopes, validation, correlation/idempotence conventions, bounded queues, backpressure, overflow, and restart behavior.
-4. Design canonical latest-state file/envelope layout, domain boundaries, single-writer ownership, freshness metadata, and stale/unavailable semantics.
-5. Define how the existing M2 observation files feed the canonical owner without becoming canonical merely by reuse.
-6. Define consumer interfaces so M4+ code never depends directly on collector storage.
-7. Define Validation Dashboard M3 state/transport health surfaces and registered tests/evidence.
-8. Review and lock the design in DECISIONS/ARCHITECTURE before writing M3 runtime code.
+1. Investigate the reported M1 update-discovery regression where new releases can require 2–3 watcher polling cycles despite redundant cache-busted discovery; treat this as a bounded reliability fix before starting the next M3 slice.
+2. After that fix is validated, resume M3 with the already-deferred consumer cadence-request/control-plane design and implementation.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
