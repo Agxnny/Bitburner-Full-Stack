@@ -175,7 +175,7 @@ function Shell({ rootRef, children }) {
 
 function Header({ children }) {
     return (
-        <div data-dashboard-width-probe style={{
+        <div style={{
             display: "flex",
             alignItems: "center",
             gap: "10px",
@@ -194,7 +194,7 @@ function Header({ children }) {
 
 function StatusRow({ children }) {
     return (
-        <div style={{
+        <div data-dashboard-width-probe style={{
             display: "flex",
             alignItems: "center",
             gap: "14px",
