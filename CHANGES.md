@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r50 Explicit managed-file retirement and standalone dashboard scrub
-**Status:** Implementation
+**Status:** Implementation complete — preparing r50 publication
 
 **Goal:** Add a fail-closed deployment contract for explicitly deprecated managed files, then use it to retire the standalone System Health and Update Watcher dashboard scripts without retiring their persistent backend services.
 
@@ -46,9 +46,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - r50 retires only `src/ui/system-health-dashboard.jsx` and `src/ui/update-dashboard.jsx`. `health-collector.js` and `update-watcher.js` remain persistent backend services. Validation Dashboard remains the UI.
 - No M3 canonical-state runtime work is mixed into this deployment hygiene release.
 
-**Validation:** Pending static review and r50 runtime deployment. Acceptance requires both old dashboard tails/processes closed, both files absent from home, backend Health Collector/Update Watcher still healthy, Validation Dashboard healthy, and retirement print/report evidence naming both files.
+**Validation:** Static repository review confirms both backend owners contain zero references to the retired standalone dashboard paths/relaunch helpers; puller/helper source has balanced structural braces; r50 manifest removes both UI files from active files/runtime dependencies and explicitly lists both under `retireFiles`; retirement reconciliation is ordered after persistent runtime reconciliation and blocks deletion while any matching process remains. Runtime deployment remains pending. Acceptance requires both old dashboard tails/processes closed, both files absent from home, backend Health Collector/Update Watcher still healthy, Validation Dashboard healthy, and retirement print/report evidence naming both files.
 
-**Next step:** Implement manifest validation/planning, helper-side stop-before-delete retirement, remove standalone relaunch ownership, publish r50, then validate through the integrated Validation Dashboard updater.
+**Next step:** Publish r50 descriptor last, install through the integrated Validation Dashboard updater, and validate the printed/structured retirement audit plus final 7/7 health.
 
 ## Recently completed
 
