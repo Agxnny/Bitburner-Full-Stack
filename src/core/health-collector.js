@@ -127,6 +127,7 @@ function ingestHealth(services, record, now) {
     const next = {
         ...record,
         receivedAt: now,
+        observedSince: previousInstance?.observedSince ?? now,
         effectiveHealth: record.health,
         effectiveReason: record.reason,
     };
@@ -165,6 +166,7 @@ function writeSnapshot(ns, services, invalidRecords, now) {
         reason: entry.effectiveReason,
         heartbeatAt: entry.heartbeatAt,
         receivedAt: entry.receivedAt,
+        observedSince: entry.observedSince,
         staleAfterMs: entry.staleAfterMs,
     })).sort((a, b) => a.service.localeCompare(b.service) || a.instanceId.localeCompare(b.instanceId));
 
