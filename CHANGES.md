@@ -23,29 +23,28 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Dashboard dynamic sizing correction + deployment refresh
-**Status:** Implementation complete — r24 publication
+### Dashboard geometry calibration harness
+**Status:** Approved — implementation
 
-**Goal:** Correct r23 dashboard sizing so tails fit rendered content without excess top/outer blank space, keep the updater compact, and ensure every successful deployment refreshes dashboard presentation code without unnecessarily restarting unchanged telemetry services.
+**Goal:** Build a dedicated diagnostic dashboard that requests known native tail dimensions and reports measured DOM geometry so we can derive the actual resizeTail/content relationship instead of guessing chrome offsets.
 
 **Files / areas touched:**
-- `src/ui/dashboard-window-memory.js`
-- current dashboard size profiles
-- dashboard lifecycle/reconciliation ownership in bootstrap/core services
-- UI feature docs and deployment release
+- new `src/ui/dashboard-geometry-calibration.jsx`
+- UI feature documentation
+- deployment manifest/version
 
 **Decisions / constraints:**
-- Preserve D-021: user position persists; user size does not.
-- Dynamic size must measure the native tail content offset correctly; r23's fixed chrome-height estimate is producing excess blank area.
-- Update Watcher remains intentionally ultra-compact and gets a tighter size profile.
-- A successful deployment must refresh all dashboard processes so presentation code/layout is current even when the underlying telemetry producer did not otherwise need restart.
-- Do not restart unchanged telemetry/core services solely to refresh a dashboard.
-- Dashboard refresh must close the old native tail before killing the old process to avoid zombie logs.
-- Future dashboard registry/orchestrator may generalize this; this change only establishes the safe deployment-refresh contract for current dashboards.
+- Calibration is diagnostic only; it does not replace the production dynamic-sizing helper yet.
+- The main Netscript loop requests an exact known native tail size.
+- React only measures DOM geometry and publishes measurements through ordinary in-memory state; it never calls Netscript.
+- Report requested size, root size/scroll size, nearest native resizable bounds, frame bounds, root offsets relative to native bounds, and derived width/height deltas.
+- Include multiple selectable known target sizes so we can determine whether the offset is fixed or size-dependent.
+- Position remains movable/persistent only if useful; calibration results themselves are visible in the diagnostic window for screenshot-based validation.
+- Do not alter production dashboard sizing again until calibration evidence is collected.
 
-**Validation:** r23 runtime screenshot confirmed the defects. Implementation now removes the fixed native-chrome size allowance, tightens current dashboard bounds, preserves position-only persistence, and refreshes both dashboard processes after runtime reconciliation without requiring unchanged telemetry/core services to restart. Runtime validation remains pending.
+**Validation:** r24 proved production sizing still has a native-tail/content coordinate mismatch. Calibration harness not yet runtime validated.
 
-**Next step:** Publish r24 from immutable manifest commit `ed1e12939a6fc8da7c9aae4f7f63788c532303d1`, install normally, then validate healthy sizing/no black top gap, stale grow/shrink, position persistence, and dashboard PID refresh after install.
+**Next step:** Implement calibration dashboard, deploy it in r25, collect screenshots at known target sizes, then use the measured deltas to correct the shared production sizing helper.
 
 ## Recently completed
 
