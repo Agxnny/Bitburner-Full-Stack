@@ -48,6 +48,20 @@ Each dashboard exposes the shared compact `Anchor` control. Selecting it transfe
 
 Layout registry and anchor choice are browser-local presentation state, not telemetry or canonical game state. React/browser code may publish geometry and calculate desired placement, but only each dashboard's Netscript `main()` loop calls `ns.ui.moveTail()` / `ns.ui.resizeTail()`.
 
+## Validation Dashboard foundation
+
+`validation-dashboard.jsx` is the M2 engineering/test hub. It is a single React application with modular Overview, Validating, Validated, Health, Updater, and Data tabs. Health and update presentation consume the same backend telemetry/command contracts as the compact standalone dashboards; backend services remain independent.
+
+The shell owns attention behavior. Ordinary events never steal navigation focus. Unread update availability appears as an Updater badge and is marked read when that tab is opened without resolving the underlying update. Health issues may badge Health. A widespread failure (aggregate failed health or at least half of four-or-more reporting services unhealthy) is an emergency: the shell may focus Health once for a new failure signature and shows an acknowledgement banner. Acknowledgement suppresses repeated focus stealing for that signature but does not hide the failure.
+
+Validation work is deliberately split. Validating is the active work queue; Validated is the compact evidence archive. Completed groups leave the active workspace, while future regressions are expected to return affected groups to Validating. The initial catalog seeds already proven M1/M2 evidence and the remaining M2 dashboard/collector closeout work.
+
+The Data tab reads replaceable M2 observation snapshots and explicitly labels them non-canonical. It must not turn observation files into a competing state authority before M3.
+
+The dashboard uses stable key `validation-dashboard`, a large application-style width, and the shared content/native-viewport sizing helper. React reads only the in-memory bridge and browser-local presentation state; `main()` alone reads Netscript files, writes update commands, and applies native tail geometry.
+
+During the r42 migration/validation release, the existing compact Health and Updater windows remain available for parity comparison. They are retired only after the integrated tabs are runtime validated.
+
 ## M1 update dashboard slice
 
 `update-dashboard.jsx` is the first narrow dashboard slice. Its production-facing view is intentionally minimal rather than diagnostic.
