@@ -34,7 +34,9 @@ All dashboard tails use `dashboard-window-memory.js` with a stable dashboard-spe
 
 This allows dashboards to grow and shrink as content changes. Future tabbed dashboards use the same mechanism, so changing tabs may request a different content size without introducing Netscript calls inside React.
 
-Position and requested size are clamped to the viewport. Presentation memory remains best-effort and must never block dashboard startup. The React/Netscript ownership rule remains unchanged.
+Position and requested size are clamped to the viewport. Dynamic size is based on the rendered tail content itself rather than a fixed native-chrome allowance; dashboard-specific min/max profiles provide only bounds. Presentation memory remains best-effort and must never block dashboard startup. The React/Netscript ownership rule remains unchanged.
+
+After every successful deployment, dashboard presentation processes are explicitly refreshed: the old native tails are closed before their processes are killed, then the dashboards are relaunched from the newly deployed files. This refresh does not by itself restart unchanged telemetry/core services. Future orchestration may replace the explicit dashboard list with a registry, but the lifecycle contract remains presentation refresh independent of service restart.
 
 ## M1 update dashboard slice
 
