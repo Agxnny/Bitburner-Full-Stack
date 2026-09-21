@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M1 update discovery freshness regression
-**Status:** Corrected and published as v0.6.0-r56; runtime validation pending
+**Status:** Complete; runtime validated with r56 detecting r57 on the first complete discovery cycle
 
 **Goal:** Restore the M1 guarantee that a newly published valid release is normally discovered within one watcher polling interval using redundant cache-busted Raw + GitHub API discovery.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** Repository inspection identified a cadence mismatch rather than a failed cache-buster alone: the watcher labels 30 seconds as its poll interval, but the independent GitHub Contents API source is intentionally attempted only every 75 seconds. Raw is cache-busted every 30 seconds, but GitHub community evidence documents residual Raw propagation/cache latency even with unique query strings. Therefore a fresh release can legitimately require 2–3 displayed watcher cycles before the API source sees it. GitHub's Contents API remains the supported file-content endpoint. The fix will make one displayed discovery cycle mean one redundant Raw+API discovery attempt, while keeping the API cadence conservative enough for unauthenticated rate limits.
 
-**Exact next step:** Install v0.6.0-r56. Detection of r56 itself is still performed by the old r55 watcher and therefore is not proof of the fix. After r56 is confirmed installed and its watcher shows a 65-second poll interval, publish a harmless r57 validation release and verify r56 discovers it on the first complete redundant discovery cycle.
+**Exact next step:** Install the already-presented harmless r57 validation release normally, then resume the deferred M3 consumer cadence-request/control-plane slice.
 
 ## Recently completed
 
