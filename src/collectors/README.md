@@ -10,7 +10,7 @@ Current domains are:
 - `player` — player money, city, HP, skills/experience, multipliers, factions/jobs and basic access facts.
 - `network` — discovered topology plus observational server metadata.
 - `market` — stock capability state and, when TIX is available, symbols/prices/bid/ask/spread/position; 4S forecast/volatility only when 4S TIX access exists.
-- `infrastructure` — home compute, purchased servers and Hacknet node observations.
+- `infrastructure` — home compute, owned cloud servers via the Bitburner v3 `ns.cloud` API, and Hacknet node observations.
 - `capabilities` — safe probes for optional mechanics such as Gang, Corporation, Bladeburner and Sleeves.
 
 Market price history is the only initial time-series store: `data/observations/market-history.json`, bounded to 240 samples. Other domains replace their latest snapshot.
