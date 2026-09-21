@@ -288,3 +288,9 @@ For each domain, the fastest active valid lease wins, bounded by the collector's
 The stock-symbol ↔ organization ↔ server relationship belongs to canonical state, not the future authority registry or stock trader. The canonical owner derives it only from canonical market and network inputs. Stock organization comes from `ns.stock.getOrganization(symbol)`; server organization comes from `ns.getServer(host).organizationName`. Only exact non-empty organization-name equality creates an association. Unmatched resources remain explicit and are never guessed or filled from a static table.
 
 The derived state's provenance includes both source revisions/timestamps and its observation time is the older input timestamp. Association does not imply authority, exclusivity, or action compatibility; those are separate authority-policy decisions.
+
+
+## D-037 — Diagnostics has one durable evidence-backed incident owner
+**Status:** Locked
+
+Use one persistent diagnostics service to own explanatory incident state. Producers report structured evidence; diagnostics may correlate existing health/deployment facts, while the Validation Dashboard only presents the resulting durable state. Findings are explicitly classified OBSERVED, CORRELATED, or INFERRED and retain supporting evidence/confidence. The system must not present an inferred root cause as observed fact. Stable incident identities deduplicate repeated symptoms, and explicit resolution preserves evidence history.
