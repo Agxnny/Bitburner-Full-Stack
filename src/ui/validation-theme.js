@@ -7,6 +7,6 @@ export const sectionTitle = { color:"#b8d2f3", fontSize:11, fontWeight:800, lett
 export function tone(status) {
     if (["healthy","pass","validated","online"].includes(String(status).toLowerCase())) return V.green;
     if (["failed","fail","emergency"].includes(String(status).toLowerCase())) return V.red;
-    if (["degraded","blocked","attention","warning"].includes(String(status).toLowerCase())) return V.amber;
+    if (["degraded","blocked","attention","warning","stale","missing"].includes(String(status).toLowerCase())) return V.amber;
     return V.blue;
 }
