@@ -66,9 +66,9 @@ function HealthDashboard({ bridge }) {
             </div>)}
         </Section> : null}
         <Section title="SERVICE PLACEMENT">
-            {health.services.map((s) => <div key={s.instanceId} style={{display:"grid",gridTemplateColumns:"150px 90px 70px 1fr",gap:10,padding:"4px 0",fontSize:12}}>
+            {health.services.map((s) => <div key={s.instanceId} style={{display:"grid",gridTemplateColumns:"150px 90px 70px 90px 1fr",gap:10,padding:"4px 0",fontSize:12}}>
                 <span style={{color:C.text}}>{s.service}</span><span style={{color:C.muted}}>{s.host}</span>
-                <span style={{color:C.muted}}>pid {s.pid}</span><span style={{color:healthColor(s.health)}}>{s.health.toUpperCase()}</span>
+                <span style={{color:C.muted}}>pid {s.pid}</span><span style={{color:C.muted}}>{uptime(s.observedSince)}</span><span style={{color:healthColor(s.health)}}>{s.health.toUpperCase()}</span>
             </div>)}
         </Section>
     </Shell>;
@@ -93,5 +93,14 @@ function Shell({rootRef,children}) {
 function concise(value){ if(typeof value!=="string")return value; return value.split(/\r?\n/)[0].trim(); }
 function healthColor(value){ return value==="healthy"?C.green:value==="failed"?C.red:C.amber; }
 function age(at){ if(!Number.isFinite(at))return "—"; const ms=Math.max(0,Date.now()-at); return ms<1000?`${Math.floor(ms)}ms`:ms<60000?`${Math.floor(ms/1000)}s`:`${Math.floor(ms/60000)}m`; }
+function uptime(at){
+    if(!Number.isFinite(at))return "—";
+    const total=Math.max(0,Math.floor((Date.now()-at)/1000));
+    const days=Math.floor(total/86400), hours=Math.floor((total%86400)/3600), minutes=Math.floor((total%3600)/60), seconds=total%60;
+    if(days>0)return `${days}d ${String(hours).padStart(2,"0")}h`;
+    if(hours>0)return `${hours}h ${String(minutes).padStart(2,"0")}m`;
+    if(minutes>0)return `${minutes}m ${String(seconds).padStart(2,"0")}s`;
+    return `${seconds}s`;
+}
 function readSnapshot(ns){ return {health:readJson(ns,HEALTH_PATH),incidents:readJson(ns,INCIDENTS_PATH)}; }
 function readJson(ns,path){ if(!ns.fileExists(path,"home"))return null; try{return JSON.parse(ns.read(path));}catch{return null;} }
