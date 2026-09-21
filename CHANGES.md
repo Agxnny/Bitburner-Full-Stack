@@ -23,27 +23,27 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r36 unify Update Watcher with root-measured dashboard sizing
-**Status:** r36 installed — compact updater sizing PASS; collector count regression observed
+### r37 System Health current-instance uptime
+**Status:** Approved — implementation
 
-**Goal:** Remove the updater-only synthetic width model and use the same rendered-root sizing path that is already stable for System Health.
+**Goal:** Show how long each currently reporting service instance has been continuously observed, making restarts/replacements visible in Service Placement without adding Netscript calls to React.
 
 **Files / areas touched:**
-- `src/ui/update-dashboard.jsx`
-- `src/ui/dashboard-window-memory.js`
-- `src/ui/README.md`
-- deployment r36 metadata
+- `src/core/health-collector.js`
+- `src/ui/system-health-dashboard.jsx`
+- `src/core/README.md`
+- deployment r37 metadata
 
 **Decisions / constraints:**
-- Install/Later remain conditionally rendered only while an update is presented; no permanent reserved action panel.
-- Update Watcher no longer supplies a status-row width probe or probe compensation. Its complete rendered React root is the width authority, matching System Health.
-- Normalize the updater Shell box model so its minimum width includes padding rather than competing with the hook minimum.
-- Remove shared width-probe machinery once no dashboard uses it; keep content mutation/resize observation so action-state appearance/disappearance triggers grow/shrink.
-- Layout coordinator, countdown, heartbeat formatting, height behavior, and System Health sizing remain unchanged.
+- Uptime means current telemetry instance lifetime as observed by Health Collector, not historical service lifetime.
+- Health Collector records `observedSince` on first sight of an instance and preserves it across later heartbeats for that same instance.
+- Replacement instance/PID receives a new `observedSince`, so displayed uptime resets naturally.
+- React derives the live duration from snapshot `observedSince` using ordinary JS time only; it does not invoke Netscript or force per-second health snapshot writes.
+- r36 compact Update Watcher root-measured sizing is PASS. Publishing r37 also provides the pending r36 action-state Install/Later sizing test before installation.
 
-**Validation:** r35 runtime: System Health rollback PASS; Update Watcher probe-based crop FAIL. r36 static implementation removes all `widthProbe`/`intrinsicRowWidth` machinery and the updater probe marker; Update Watcher now uses the same complete-root width path as System Health. Updater Shell is `border-box`, so its 620px minimum includes its 20px horizontal padding. Countdown/docking code is unchanged. Runtime validation: compact Update Watcher right-edge sizing PASS on r36; rounded card edge is fully visible and countdown remains functional. System Health sizing remains correct. New issue observed: System Health reports 6 services and `capabilities-collector` is missing from Service Placement, despite seven services being healthy on r35. Action-state Install/Later expansion remains pending. r36 immutable manifest published at releaseRef `5fafb084563c162402b0d11f1d80e391fa149059`; descriptor published last.
+**Validation:** Current runtime shows all seven persistent reporting services healthy. Static implementation pending.
 
-**Next step:** Investigate why System Health now reports six services and `capabilities-collector` is absent from Service Placement before using another revision to test the updater action state. Preserve the r36 root-measured updater sizing, which passes in compact state; the next presented revision can validate Install/Later expansion once the missing collector is understood.
+**Next step:** Implement observed-instance lifetime in the health snapshot and Service Placement UI, update core docs, publish r37, then inspect r36's presented-r37 Update Watcher before installing.
 
 ## Recently completed
 
