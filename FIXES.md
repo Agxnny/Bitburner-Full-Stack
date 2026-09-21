@@ -233,3 +233,32 @@ For Bitburner v3 work, verify the exact current namespace as well as the method 
 
 #### Related
 - D-025 — M2 game observations use isolated domain collectors.
+
+
+---
+
+### FIX-008 — Persistent runtime replacement left Validation Dashboard tail open
+**Date:** 2026-09-21  
+**Status:** Resolved in r47; runtime verification pending  
+**Subsystem:** M1 deployment runtime reconciliation / M2 Validation Dashboard  
+**Affected files:**
+- `src/bootstrap/git-pull-self-update.js`
+
+#### Symptoms
+Deployments that changed the persistent Validation Dashboard restarted its process successfully, but the previous Validation Dashboard native tail window remained open. Repeated updates could therefore leave stale dashboard windows behind.
+
+#### Root cause
+The generic persistent-unit reconciliation path stopped changed processes with `ns.kill(pid)` but did not close their native tail first. The older special-case dashboard refresh path already followed the required order from FIX-005: `ns.ui.closeTail(pid)` before process termination.
+
+#### Fix
+Generic persistent process replacement now closes the process tail before issuing the kill request. This applies the existing managed-UI lifecycle invariant to persistent runtime units, including the Validation Dashboard, instead of adding another dashboard-specific exception.
+
+#### Verification
+Repository inspection confirms changed/retired persistent units now use close-tail-before-kill. Runtime verification is pending r47 installation: replacing the Validation Dashboard must leave exactly one current Validation Dashboard window.
+
+#### Prevention / notes
+Process termination and tail-window cleanup are separate Bitburner lifecycle actions. Any deployment path that intentionally replaces a managed process must close its tail before killing it; this is harmless for managed processes without an open tail.
+
+#### Related
+- FIX-005 — Replaced dashboard process left its old tail window open.
+- D-015 — Post-update helper reconciles persistent runtime units.
