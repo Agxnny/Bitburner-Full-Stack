@@ -124,3 +124,19 @@ Updater/watch infrastructure is assigned the final restart order so the system d
 ## Anti-duplication principle
 
 If a new system needs shared state, ownership, resource allocation, budgeting, scheduling, execution, messaging, or telemetry, it must use the existing core abstraction unless a documented architectural decision proves the abstraction insufficient.
+
+
+## M3 design handoff — communication contract (not yet implemented)
+
+M3 is intentionally a thin boundary between the M2 observation producers and future consumers. The next design session must not treat it as a second collector framework or as controller intelligence.
+
+The design starting point is:
+- **State:** durable/latest-state canonical interfaces/files, single writer and many readers. Consumers must be able to restart and read current truth without replaying transient messages.
+- **Commands/events:** bounded ports/queues with an explicit reservation map and versioned envelopes. Commands mean “do this”; events mean “this happened.”
+- **Process arguments:** startup configuration/identity only.
+- **Telemetry/history:** diagnostic and validation evidence, not operational authority.
+- **React bridge:** UI-local presentation bridge only; never a cross-process bus.
+
+Before implementation, lock port allocation, message envelope fields and validation, correlation/idempotence conventions, queue/backpressure/overflow behavior, canonical state envelopes/domain boundaries, freshness/stale/unavailable semantics, startup/restart behavior, and Validation Dashboard transport/state tests.
+
+The existing `data/observations/*` files remain M2 inputs. M3 may ingest them behind an interface but must not make them canonical merely by reusing their storage paths. Future M4+ consumers should depend on M3 contracts rather than collector file layouts.
