@@ -1,5 +1,11 @@
 export const TESTS = [
     {
+        id:"m3.resource.associations", subsystem:"Canonical State", title:"Stock/server resource associations", risk:"SAFE",
+        runner:"src/validation/tests/resource-associations-test.js",
+        description:"Validates canonical stock-symbol ↔ organization ↔ server associations derived only from exact matches in canonical market and network state, including provenance and explicit unmatched resources.",
+        validates:["Canonical stock organization server associations","Association source provenance and timestamp bound","Exact-match associations with explicit unmatched resources"],
+    },
+    {
         id:"m3.cadence.control", subsystem:"Collection Control", title:"Consumer cadence lease", risk:"SAFE",
         runner:"src/validation/tests/cadence-control-test.js",
         description:"Requests an intentionally over-fast short player cadence lease, verifies minimum-floor clamping and faster observations, then proves expiry restores baseline cadence.",
