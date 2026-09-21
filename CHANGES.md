@@ -23,28 +23,27 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Dashboard geometry calibration harness
-**Status:** Implementation complete — runtime measurement pending
+### Dashboard DOM-chain calibration
+**Status:** Approved — implementation
 
-**Goal:** Build a dedicated diagnostic dashboard that requests known native tail dimensions and reports measured DOM geometry so we can derive the actual resizeTail/content relationship instead of guessing chrome offsets.
+**Goal:** Extend the r25 calibration harness to identify the exact native log/content ancestor responsible for size-dependent vertical placement before changing production dynamic sizing again.
 
 **Files / areas touched:**
-- new `src/ui/dashboard-geometry-calibration.jsx`
-- UI feature documentation
+- `src/ui/dashboard-geometry-calibration.jsx`
+- `src/ui/README.md`
 - deployment manifest/version
 
 **Decisions / constraints:**
-- Calibration is diagnostic only; it does not replace the production dynamic-sizing helper yet.
-- The main Netscript loop requests an exact known native tail size.
-- React only measures DOM geometry and publishes measurements through ordinary in-memory state; it never calls Netscript.
-- Report requested size, root size/scroll size, nearest native resizable bounds, frame bounds, root offsets relative to native bounds, and derived width/height deltas.
-- Include multiple selectable known target sizes so we can determine whether the offset is fixed or size-dependent.
-- Position remains movable/persistent only if useful; calibration results themselves are visible in the diagnostic window for screenshot-based validation.
-- Do not alter production dashboard sizing again until calibration evidence is collected.
+- Keep the same exact 600×300, 720×420, and 840×540 resizeTail targets for comparable evidence.
+- Enumerate every DOM ancestor from the React root through `.react-resizable`.
+- For each ancestor report tag/class, bounding box, client/scroll dimensions, scrollTop/scrollLeft, display, position, overflow, flex direction/grow/shrink, align/justify, and root offset.
+- Include explicit top/bottom content markers so rendered content extent can be separated from ancestor positioning.
+- React performs DOM inspection only; Netscript main remains the sole resizeTail owner.
+- Production dashboard sizing remains unchanged in r26.
 
-**Validation:** r24 proved production sizing still has a native-tail/content coordinate mismatch. Calibration harness now implements three exact native targets and reports root/resizable/frame bounds, offsets, scroll size, and requested-minus-measured deltas. Runtime measurements are pending.
+**Validation:** r25 proved resizeTail exactly matches the `.react-resizable` dimensions, while React-root Y offset changes materially with target height. The responsible intermediate container is not yet identified.
 
-**Next step:** Publish r25 from immutable manifest commit `c82b95131dd8460ee92b2292285ef31749edf6c0`, run the calibration dashboard, capture settled measurements at 600×300, 720×420, and 840×540, then correct production sizing from the measured relationship.
+**Next step:** Implement and publish r26 calibration, capture the ancestor-chain measurements at all three target sizes, then derive the production sizing correction from evidence.
 
 ## Recently completed
 
