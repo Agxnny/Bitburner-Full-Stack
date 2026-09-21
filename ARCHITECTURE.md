@@ -105,7 +105,7 @@ The first M1 dashboard slice is `src/ui/update-dashboard.jsx`. It reads protecte
 
 The deployment descriptor is a small mutable discovery pointer. Production descriptors identify semantic version, monotonic revision, revision-specific manifest path, and an immutable Git commit SHA `releaseRef`.
 
-Discovery is deliberately redundant. `src/bootstrap/update-watcher.js` checks cache-busted GitHub Raw every 30 seconds and the public GitHub Contents API every 75 seconds, choosing the highest valid revision. Equal revisions must agree on version, manifest, and `releaseRef`. Approval forces a fresh API check before the watcher delegates to the puller. Discovery-source health and selected-source telemetry are published for validation.
+Discovery is deliberately redundant. A normal watcher discovery cycle runs every 65 seconds and samples both cache-busted GitHub Raw and the public GitHub Contents API together, choosing the highest valid revision. The interval keeps unauthenticated Contents API discovery below its public hourly ceiling while ensuring the operator-visible poll cadence never claims a complete redundant check when only Raw was sampled. Equal revisions must agree on version, manifest, and `releaseRef`. Approval forces another complete discovery check before the watcher delegates to the puller. Per-source attempt/success time, revision, error, and selected-source telemetry are published for validation.
 
 The puller independently performs both descriptor checks before enforcing `--expect-revision N`. This keeps human approval revision-bound even when one branch-view source is stale.
 
