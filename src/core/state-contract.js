@@ -1,7 +1,8 @@
 import { wallNow } from "./time.js";
 
 export const CANONICAL_STATE_ROOT = "data/state";
-export const CANONICAL_DOMAINS = Object.freeze(["player", "network", "market", "infrastructure", "capabilities"]);
+export const OBSERVATION_DOMAINS = Object.freeze(["player", "network", "market", "infrastructure", "capabilities"]);
+export const CANONICAL_DOMAINS = Object.freeze([...OBSERVATION_DOMAINS, "associations"]);
 
 export function canonicalStatePath(domain) {
     return `${CANONICAL_STATE_ROOT}/${domain}.json`;
