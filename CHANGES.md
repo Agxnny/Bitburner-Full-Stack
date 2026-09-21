@@ -23,18 +23,18 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 collection cadence control
-**Status:** Complete; SAFE and disruptive runtime validated through v0.6.0-r63
+### M3 canonical resource associations
+**Status:** Implementation in progress
 
-**Goal:** Add a single durable collection-control owner so consumers can request bounded, expiring collector cadence leases without owning collector configuration or canonical state.
+**Goal:** Add a derived canonical resource-association domain that records factual stock-symbol ↔ organization ↔ server relationships for later authority, HWGW isolation, and stock-manipulation coordination.
 
-**Files / areas:** collection-control contract/service, collector runtime/configuration, port 3 control transport, telemetry/health, M3 validation plan/registry/tests, architecture/decisions, immutable deployment release.
+**Files / areas:** canonical state contract/service, market + network canonical inputs, Validation Dashboard plan/registry/test, M3 architecture/decision docs, canonical-state feature documentation, immutable deployment release.
 
-**Decisions / constraints:** Collector baseline cadence remains the fallback. Each domain declares a minimum safe interval. Consumers request owner/domain/interval/expiry leases; fastest active valid request wins, clamped to the domain floor. Port 3 is transport only; durable control state is authority. Expired leases are removed automatically. Collectors consume resolved cadence and never arbitrate competing requests. Market port 5 remains reserved for later dedicated market control.
+**Decisions / constraints:** Associations are canonical facts, not authority. Do not create a second resource registry. Derive associations only from already-canonical market and network facts: market supplies stock symbol→organization through the official Stock API; network supplies server→organization through getServer(). Exact organization-name equality creates a link. Unmatched stocks/servers remain explicitly visible and are never guessed. Derived observedAt is bounded by the older of its two source observations; source revisions/timestamps are recorded as provenance. If either source is unavailable, association state is unavailable rather than inferred.
 
-**Validation:** r62 SAFE `m3.cadence.control` PASS, 6/6 assertions. r63 DISRUPTIVE `m3.cadence.restart` PASS: collection-control restarted from pid 253 to pid 270 while a live durable lease was active; the lease recovered at the 500ms floor, post-restart observations measured 501/513ms, the lease expired normally back to the 2000ms baseline, and the post-expiry observation measured 2009ms. The dashboard reports no outstanding tests in the current validation plan.
+**Validation:** Pending. SAFE proof will verify source provenance, exact organization equality for every emitted association, uniqueness, no invented stock/server identifiers, and explicit unmatched sets.
 
-**Exact next step:** Close the cadence-control slice and select/design the next M3 canonical-state work item.
+**Exact next step:** Implement the derived canonical association domain and SAFE validation, package the next immutable release, then runtime validate before beginning generic authority.
 
 ## Recently completed
 
