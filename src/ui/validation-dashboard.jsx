@@ -4,6 +4,7 @@ import { readValidationLedger, readValidationPlan, recordValidationResult, requi
 import { ValidationOverviewTab } from "./validation-overview-tab.jsx";
 import { ValidationWorkTab } from "./validation-work-tab.jsx";
 import { ValidationHealthTab } from "./validation-health-tab.jsx";
+import { ValidationDiagnosticsTab } from "./validation-diagnostics-tab.jsx";
 import { ValidationUpdaterTab } from "./validation-updater-tab.jsx";
 import { ValidationDataTab } from "./validation-data-tab.jsx";
 import { ValidationTestsTab } from "./validation-tests-tab.jsx";
@@ -17,13 +18,13 @@ const COMMAND_PATH="data/update-command.json";
 const TEST_RESULT_PATH="data/validation/latest-result.json";
 const TEST_UI_PATH="data/validation/ui-state.json";
 const PATHS={
-    health:"data/telemetry/health.json", incidents:"data/telemetry/incidents.json", update:"data/update-status.json",
+    health:"data/telemetry/health.json", incidents:"data/telemetry/incidents.json", diagnostics:"data/diagnostics/incidents.json", update:"data/update-status.json",
     player:"data/observations/player.json", network:"data/observations/network.json", market:"data/observations/market.json",
     infrastructure:"data/observations/infrastructure.json", capabilities:"data/observations/capabilities.json",
     statePlayer:"data/state/player.json", stateNetwork:"data/state/network.json", stateMarket:"data/state/market.json",
     stateInfrastructure:"data/state/infrastructure.json", stateCapabilities:"data/state/capabilities.json",
 };
-const TABS=[["overview","⌂","Overview"],["validating","⚗","Validating"],["tests","☷","Tests"],["validated","✓","Validated"],["health","♡","Health"],["updater","⇩","Updater"],["data","▤","Data"]];
+const TABS=[["overview","⌂","Overview"],["validating","⚗","Validating"],["tests","☷","Tests"],["validated","✓","Validated"],["health","♡","Health"],["diagnostics","!","Diagnostics"],["updater","⇩","Updater"],["data","▤","Data"]];
 
 /** @param {NS} ns */
 export async function main(ns){
@@ -71,7 +72,7 @@ function readSnapshot(ns){
     const test=findRunningTest(ns);
     const observations={}; for(const d of ["player","network","market","infrastructure","capabilities"])observations[d]=readJson(ns,PATHS[d]);
     const canonical={}; for(const d of ["player","network","market","infrastructure","capabilities"])canonical[d]=readJson(ns,PATHS[`state${d[0].toUpperCase()}${d.slice(1)}`]);
-    return {capturedAt:Date.now(),health:readJson(ns,PATHS.health),incidents:readJson(ns,PATHS.incidents),update:readJson(ns,PATHS.update),observations,canonical,validationPlan:readValidationPlan(ns),validationLedger:readValidationLedger(ns),testRun:test,testResult:readJson(ns,TEST_RESULT_PATH),evidence:readEvidence(ns)};
+    return {capturedAt:Date.now(),health:readJson(ns,PATHS.health),incidents:readJson(ns,PATHS.incidents),diagnostics:readJson(ns,PATHS.diagnostics),update:readJson(ns,PATHS.update),observations,canonical,validationPlan:readValidationPlan(ns),validationLedger:readValidationLedger(ns),testRun:test,testResult:readJson(ns,TEST_RESULT_PATH),evidence:readEvidence(ns)};
 }
 function findRunningTest(ns){
     for(const test of TESTS_RUNNABLE()){
@@ -81,7 +82,7 @@ function findRunningTest(ns){
     }
     return null;
 }
-function TESTS_RUNNABLE(){return ["m3.resource.associations","m3.cadence.control","m3.cadence.restart","m3.canonical.state","m3.canonical.restart","m2.dashboard.smoke","m2.dashboard.emergency-focus"].map(findTest).filter((x)=>x?.runner);}
+function TESTS_RUNNABLE(){return ["m3.diagnostics.intelligence","m3.resource.associations","m3.cadence.control","m3.cadence.restart","m3.canonical.state","m3.canonical.restart","m2.dashboard.smoke","m2.dashboard.emergency-focus"].map(findTest).filter((x)=>x?.runner);}
 function writeUiState(ns,bridge){ns.write(TEST_UI_PATH,JSON.stringify({schemaVersion:1,updatedAt:Date.now(),emergency:bridge.emergencyUi},null,2),"w");}
 function ValidationDashboard({bridge}){
     const rootRef=useDashboardWindow(WINDOW_KEY,bridge,{minWidth:700,minHeight:680,maxWidth:1320,maxHeight:950});
@@ -115,7 +116,8 @@ function ValidationDashboard({bridge}){
     function navigate(next){setTab(next);if(next==="updater"&&Number.isSafeInteger(updateRevision)){setSeenUpdate(updateRevision);writeLocal("seen-update",String(updateRevision));}}
     const updateUnread=Number.isSafeInteger(updateRevision)&&updateRevision!==seenUpdate?1:0;
     const summary=validationSummaryFrom(snapshot.validationPlan,snapshot.validationLedger);
-    const badges={validating:summary.validatingGroups,health:unhealthy.length,updater:updateUnread};
+    const diagnosticCount=snapshot?.diagnostics?.activeCount??0;
+    const badges={validating:summary.validatingGroups,health:unhealthy.length,diagnostics:diagnosticCount,updater:updateUnread};
 
     return <div ref={rootRef} style={{boxSizing:"border-box",minWidth:680,minHeight:660,padding:10,background:V.page,color:V.text,fontFamily:'Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif'}}>
         <div style={{border:`1px solid ${V.border}`,borderRadius:10,overflow:"hidden",background:V.surface,boxShadow:"0 10px 30px rgba(0,0,0,.28)"}}>
@@ -130,6 +132,7 @@ function ValidationDashboard({bridge}){
                 {tab==="tests"?<ValidationTestsTab snapshot={snapshot} bridge={bridge} tick={tick}/>:null}
                 {tab==="validated"?<ValidationWorkTab mode="validated" snapshot={snapshot}/>:null}
                 {tab==="health"?<ValidationHealthTab snapshot={snapshot} tick={tick}/>:null}
+                {tab==="diagnostics"?<ValidationDiagnosticsTab snapshot={snapshot} tick={tick}/>:null}
                 {tab==="updater"?<ValidationUpdaterTab snapshot={snapshot} bridge={bridge} tick={tick}/>:null}
                 {tab==="data"?<ValidationDataTab snapshot={snapshot} tick={tick}/>:null}
             </main>
