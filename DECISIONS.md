@@ -272,3 +272,11 @@ Supersedes only the split-cadence polling detail in D-017. Release discovery rem
 A normal discovery cycle runs every 65 seconds and samples cache-busted Raw plus the Contents API together. This keeps normal unauthenticated Contents requests below GitHub's 60-requests-per-hour public ceiling while leaving small headroom, and removes the misleading former 30-second cycle / 75-second API split that could make a healthy release appear only after 2–3 displayed cycles. Approval still performs a fresh complete discovery check before deployment.
 
 Raw may remain eventually consistent even with a unique query parameter. Therefore the cache-buster is retained as a useful cache-avoidance mechanism, not treated as a freshness guarantee; the API source is part of every complete normal cycle.
+
+
+## D-035 — Collection cadence is controlled by expiring leases with one durable owner
+**Status:** Locked
+
+M3 collection cadence control is owned by the persistent `collection-control` service, separately from canonical game-state ownership. Consumer requests are leases containing stable identity, owner, domain, requested interval, and expiry. Port 3 transports commands only. The durable collection-cadence state is authoritative and survives service restart.
+
+For each domain, the fastest active valid lease wins, bounded by the collector's minimum safe interval and its normal baseline. Expiry or explicit release removes authority automatically; no active lease means baseline cadence. Collectors consume resolved cadence but do not inspect or arbitrate competing leases. Market port 5 remains reserved for later market-specific high-frequency control.
