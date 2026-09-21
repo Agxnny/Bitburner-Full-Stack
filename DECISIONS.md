@@ -208,3 +208,13 @@ Tests should prefer real production interfaces and real observable conditions. S
 Validation evidence distinguishes automated assertions from operator-confirmed observations. Both may be durable evidence, but their provenance must remain visible and must not be collapsed into an undifferentiated PASS.
 
 Dashboard-owned automated runners suppress ordinary Netscript log output; the Tests workspace is their normal operator surface. Detailed latest automated results may be stored separately from the bounded evidence history. Operator confirmation is available only for registry entries explicitly marked observational/manual and records the documented observation without claiming machine verification.
+
+
+## D-029 — Disruptive validation owns bounded mutation and restoration
+**Status:** Locked
+
+Registered validation tests may intentionally disrupt managed runtime only when their registry risk is explicit and the Tests UI requires operator confirmation before dispatch. A disruptive test must use a fixed repository-owned target set and may not accept arbitrary process/script targets from React.
+
+The test runner must capture the exact processes it intends to mutate and arm restoration before the first mutation. It owns restoration on success, assertion failure, timeout, and script death, and may restart only processes it actually stopped. Restoration failure is a failed validation condition requiring recovery attention.
+
+Emergency-focus validation crosses the real production threshold; it does not lower, mock, or bypass the threshold. React records presentation facts only through the in-memory dashboard bridge. The Netscript-owning dashboard main loop persists those facts for the test runner, preserving FIX-002.
