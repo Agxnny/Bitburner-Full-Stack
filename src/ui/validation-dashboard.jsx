@@ -20,6 +20,8 @@ const PATHS={
     health:"data/telemetry/health.json", incidents:"data/telemetry/incidents.json", update:"data/update-status.json",
     player:"data/observations/player.json", network:"data/observations/network.json", market:"data/observations/market.json",
     infrastructure:"data/observations/infrastructure.json", capabilities:"data/observations/capabilities.json",
+    statePlayer:"data/state/player.json", stateNetwork:"data/state/network.json", stateMarket:"data/state/market.json",
+    stateInfrastructure:"data/state/infrastructure.json", stateCapabilities:"data/state/capabilities.json",
 };
 const TABS=[["overview","Overview"],["validating","Validating"],["tests","Tests"],["validated","Validated"],["health","Health"],["updater","Updater"],["data","Data"]];
 
@@ -66,7 +68,8 @@ function confirmValidationTest(ns,testId){
 function readSnapshot(ns){
     const test=findRunningTest(ns);
     const observations={}; for(const d of ["player","network","market","infrastructure","capabilities"])observations[d]=readJson(ns,PATHS[d]);
-    return {capturedAt:Date.now(),health:readJson(ns,PATHS.health),incidents:readJson(ns,PATHS.incidents),update:readJson(ns,PATHS.update),observations,testRun:test,testResult:readJson(ns,TEST_RESULT_PATH),evidence:readEvidence(ns)};
+    const canonical={}; for(const d of ["player","network","market","infrastructure","capabilities"])canonical[d]=readJson(ns,PATHS[`state${d[0].toUpperCase()}${d.slice(1)}`]);
+    return {capturedAt:Date.now(),health:readJson(ns,PATHS.health),incidents:readJson(ns,PATHS.incidents),update:readJson(ns,PATHS.update),observations,canonical,testRun:test,testResult:readJson(ns,TEST_RESULT_PATH),evidence:readEvidence(ns)};
 }
 function findRunningTest(ns){
     for(const test of TESTS_RUNNABLE()){
@@ -131,7 +134,7 @@ function ValidationDashboard({bridge}){
         </div>
     </div>;
 }
-function Header({snapshot}){const local=snapshot?.update?.local;const version=local?.version&&Number.isSafeInteger(local.revision)?`${local.version}-r${local.revision}`:"—";const online=snapshot?.health?.overall==="healthy";return <header style={{display:"flex",alignItems:"center",height:46,padding:"0 14px",borderBottom:`1px solid ${V.divider}`,background:V.raised}}><strong style={{letterSpacing:".08em",color:"#b8d2f3"}}>FULL STACK — VALIDATION DASHBOARD</strong><span style={{marginLeft:"auto",color:V.muted,fontSize:12}}>{version}　|　M2 — Telemetry Foundation　</span><span style={{color:online?V.green:V.amber,fontSize:12,fontWeight:800}}>● {online?"Online":"Attention"}</span></header>;}
+function Header({snapshot}){const local=snapshot?.update?.local;const version=local?.version&&Number.isSafeInteger(local.revision)?`${local.version}-r${local.revision}`:"—";const online=snapshot?.health?.overall==="healthy";return <header style={{display:"flex",alignItems:"center",height:46,padding:"0 14px",borderBottom:`1px solid ${V.divider}`,background:V.raised}}><strong style={{letterSpacing:".08em",color:"#b8d2f3"}}>FULL STACK — VALIDATION DASHBOARD</strong><span style={{marginLeft:"auto",color:V.muted,fontSize:12}}>{version}　|　M3 — Canonical State　</span><span style={{color:online?V.green:V.amber,fontSize:12,fontWeight:800}}>● {online?"Online":"Attention"}</span></header>;}
 function Emergency({count,onAck}){return <div style={{display:"flex",alignItems:"center",gap:10,padding:"9px 14px",background:"rgba(255,93,104,.12)",borderBottom:`1px solid ${V.red}`,color:V.red,fontWeight:800}}>● EMERGENCY — {count} persistent services unavailable or unhealthy <button onClick={onAck} style={{marginLeft:"auto",border:`1px solid ${V.red}`,borderRadius:5,background:"transparent",color:V.text,padding:"5px 9px",cursor:"pointer"}}>Acknowledge</button></div>;}
 function Tab({children,active,badge,danger,onClick}){const color=danger?V.red:active?V.green:V.blue;return <button onClick={onClick} style={{height:38,border:`1px solid ${active?color:V.border}`,borderRadius:6,background:active?"#10251f":V.page,color:active?color:"#b8d2f3",fontWeight:750,cursor:"pointer",boxShadow:active?`inset 0 0 14px ${color}22`:"none"}}>{children}{badge>0?<span style={{display:"inline-grid",placeItems:"center",minWidth:18,height:18,marginLeft:8,padding:"0 4px",borderRadius:9,background:danger?V.red:V.blue,color:"white",fontSize:10}}>{badge}</span>:null}</button>;}
 function readJson(ns,path){if(!ns.fileExists(path,"home"))return null;try{return JSON.parse(ns.read(path));}catch{return null;}}
