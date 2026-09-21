@@ -75,8 +75,8 @@ export function useDashboardWindow(key, bridge, options = {}) {
             const probe = widthProbeSelector ? root.querySelector(widthProbeSelector) : null;
             const rootCss = getComputedStyle(root);
             const horizontalChrome = parseFloat(rootCss.paddingLeft || "0") + parseFloat(rootCss.paddingRight || "0");
-            const probeWidth = probe ? Math.ceil(probe.scrollWidth + horizontalChrome) : 0;
-            const contentWidth = Math.max(root.scrollWidth, Math.ceil(rootRect.width), probeWidth);
+            const probeWidth = probe ? Math.ceil(intrinsicRowWidth(probe) + horizontalChrome) : 0;
+            const contentWidth = probe ? probeWidth : Math.max(root.scrollWidth, Math.ceil(rootRect.width));
             const contentHeight = Math.max(root.scrollHeight, Math.ceil(rootRect.height));
             const vw = Math.max(minWidth, window.innerWidth || minWidth);
             const vh = Math.max(minHeight, window.innerHeight || minHeight);
@@ -213,6 +213,14 @@ function clampPosition(value) {
     const vw = Math.max(TITLE_VISIBLE_WIDTH, window.innerWidth || TITLE_VISIBLE_WIDTH);
     const vh = Math.max(TITLE_VISIBLE_HEIGHT, window.innerHeight || TITLE_VISIBLE_HEIGHT);
     return { schemaVersion:SCHEMA_VERSION, x:clamp(value.x,0,Math.max(0,vw-TITLE_VISIBLE_WIDTH)), y:clamp(value.y,0,Math.max(0,vh-TITLE_VISIBLE_HEIGHT)), savedAt:Number.isFinite(value.savedAt)?value.savedAt:Date.now() };
+}
+function intrinsicRowWidth(element) {
+    const css = getComputedStyle(element);
+    const padding = parseFloat(css.paddingLeft || "0") + parseFloat(css.paddingRight || "0");
+    const gap = parseFloat(css.columnGap || css.gap || "0");
+    const children = [...element.children];
+    const childWidth = children.reduce((sum, child) => sum + child.getBoundingClientRect().width, 0);
+    return Math.ceil(padding + childWidth + Math.max(0, children.length - 1) * gap);
 }
 function storageKey(key) { return `${STORAGE_PREFIX}${key}`; }
 function clamp(value,min,max) { return Math.min(max,Math.max(min,Number(value))); }
