@@ -100,6 +100,32 @@
           "validationVersion": 1
         }
       ]
+    },
+    {
+      "id": "m3-diagnostics",
+      "milestone": "M3",
+      "title": "Diagnostics & Incident Intelligence",
+      "revision": 67,
+      "requirements": [
+        {
+          "id": "diagnostic-owner",
+          "title": "Durable diagnostics owner and structured evidence",
+          "testId": "m3.diagnostics.intelligence",
+          "validationVersion": 1
+        },
+        {
+          "id": "diagnostic-explanation",
+          "title": "Evidence classification and bounded explanation",
+          "testId": "m3.diagnostics.intelligence",
+          "validationVersion": 1
+        },
+        {
+          "id": "diagnostic-dedup",
+          "title": "Incident deduplication and explicit resolution",
+          "testId": "m3.diagnostics.intelligence",
+          "validationVersion": 1
+        }
+      ]
     }
   ]
 }
