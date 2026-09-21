@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "version": "v0.4.0",
+  "revision": 20,
+  "files": [
+    {"source": "src/bootstrap/git-pull.js", "target": "src/bootstrap/git-pull.js"},
+    {"source": "src/bootstrap/git-pull-self-update.js", "target": "src/bootstrap/git-pull-self-update.js"},
+    {"source": "src/bootstrap/update-watcher.js", "target": "src/bootstrap/update-watcher.js"},
+    {"source": "src/ui/update-dashboard.jsx", "target": "src/ui/update-dashboard.jsx"},
+    {"source": "src/ui/dashboard-window-memory.js", "target": "src/ui/dashboard-window-memory.js"}
+  ],
+  "runtimeUnits": [
+    {
+      "id": "update-watcher",
+      "lifecycle": "persistent",
+      "script": "src/bootstrap/update-watcher.js",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/bootstrap/update-watcher.js",
+        "src/ui/update-dashboard.jsx",
+        "src/ui/dashboard-window-memory.js"
+      ],
+      "restartOrder": 1000
+    }
+  ]
+}
