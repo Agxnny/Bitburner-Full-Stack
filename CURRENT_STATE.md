@@ -42,18 +42,21 @@ M2 first vertical slice is runtime validated through v0.5.0-r22: shared cross-ho
 - r29 four-side dashboard docking runtime validated: followers snap to top/bottom/left/right of the selected anchor and anchor transfer preserves the physical relationship. Update-available width growth remains pending validation against the next presented release.
 
 ## Active feature
-**Pre-M3 deployment hygiene — explicit managed-file retirement (r50)**
+**M3 — Canonical State design**
 
 M2 is complete and runtime validated through v0.5.0-r49. Its closeout evidence covers the seven-service telemetry/health model, stale/degraded/recovery behavior, isolated observation collectors, dashboard geometry/layout, Validation Dashboard smoke test, genuine updater-attention behavior, explicit automated/operator-confirmed evidence provenance, managed-tail replacement cleanup, and controlled emergency focus/recovery returning to 7/7 healthy.
 
 The five files under `data/observations/` remain replaceable M2 observations, not canonical state. M3 must define a single state authority and explicit raw/derived/freshness/reconciliation interfaces rather than promoting those files by convention.
 
 ## Exact next step
-1. Install r50 through the Validation Dashboard Updater.
-2. Observe retirement print/report evidence for `src/ui/system-health-dashboard.jsx` and `src/ui/update-dashboard.jsx`.
-3. Confirm both standalone tails/processes are gone and both files are absent from home.
-4. Confirm Health Collector, Update Watcher, Validation Dashboard, and the five observation collectors remain healthy (7/7).
-5. Record runtime PASS, then resume the already-open M3 Canonical State design.
+1. Design the canonical-state owner and dependency direction from M2 observations/telemetry.
+2. Define versioned state schemas, raw-versus-derived boundaries, freshness metadata, and stale/unavailable semantics.
+3. Define reconciliation: what divergence can be corrected, what is observation-only, and what must fail closed.
+4. Define consumer interfaces so later Supervisor, resource manager, scheduler, controllers, and dashboards depend on state contracts rather than storage details.
+5. Define Validation Dashboard state-health views and registered M3 tests/evidence.
+6. Lock the design in DECISIONS/ARCHITECTURE before implementing the first M3 vertical slice.
+
+Pre-M3 deployment hygiene is complete through r51: explicit managed-file retirement was runtime validated by stopping, verifying, deleting, and verifying absence of both legacy standalone dashboard scripts. Only the Validation Dashboard remains as the UI surface; Health Collector and Update Watcher remain backend services.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
