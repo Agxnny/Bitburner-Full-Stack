@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r49 Emergency validation registry hotfix
-**Status:** Implementation
+**Status:** r49 published — awaiting startup validation
 
 **Goal:** Repair the r48 startup crash before any disruptive validation is allowed to run. r48 installed a sparse `TESTS` array entry because the registry edit emitted `},,`; `findTest()` then dereferenced the resulting `undefined` element during Validation Dashboard startup.
 
@@ -37,9 +37,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Remove the accidental sparse array entry and make `findTest()` defensively tolerate malformed/sparse registry entries so a future registry defect fails closed instead of crashing the persistent dashboard.
 - The r48 disruptive test did not start; no collectors were intentionally stopped by this failure.
 
-**Validation:** Operator runtime on r48 produced `TypeError: Cannot read properties of undefined (reading 'id')` from `findTest()` during `TESTS_RUNNABLE()`. Repository inspection confirms the exact source is the accidental `},,` between `m2.updater.notification` and `m2.dashboard.emergency-focus`.
+**Validation:** Operator runtime on r48 produced `TypeError: Cannot read properties of undefined (reading 'id')` from `findTest()` during `TESTS_RUNNABLE()`. Repository inspection confirmed the exact source was the accidental `},,` between `m2.updater.notification` and `m2.dashboard.emergency-focus`. r49 removes the sparse entry and changes lookup to `test?.id`, so malformed/sparse entries no longer crash lookup. Immutable r49 releaseRef is `7f2e28ce3b3668c66dc64bc7fbcbe4813d24f8fb`; descriptor publication was last.
 
-**Next step:** Fix registry syntax/lookup defensively, publish r49, install it, and verify the Validation Dashboard opens normally before attempting the DISRUPTIVE confirmation flow.
+**Next step:** Install r49 and verify the Validation Dashboard opens normally and Tests renders all three registered entries. Do not start the DISRUPTIVE test until that startup gate passes.
 
 ### r48 Controlled emergency-focus validation
 **Status:** Superseded by r49 startup hotfix; disruptive runtime test not started
