@@ -330,7 +330,7 @@ Validation over independently changing runtime files must not assume a multi-fil
 
 ### FIX-011 — Watcher poll cadence overstated redundant discovery freshness
 **Date:** 2026-09-22  
-**Status:** Corrected; runtime validation pending  
+**Status:** Resolved and runtime validated in r56/r57  
 **Subsystem:** M1 Reliable Deployment / release discovery  
 **Affected files:**
 - `src/bootstrap/update-watcher.js`
@@ -347,7 +347,7 @@ The displayed 30-second poll was not actually a complete redundant discovery cyc
 A normal watcher discovery cycle is now 65 seconds and samples both Raw and Contents API together. The unique Raw cache-buster remains, but is no longer treated as a freshness guarantee. The 65-second cadence keeps normal unauthenticated Contents API traffic below GitHub's 60 requests/hour public ceiling with small headroom. Approval still forces a fresh complete check.
 
 #### Verification
-Repository inspection confirms every normal `checkRemote` invocation now fetches both sources and the published `pollIntervalMs` matches that complete-cycle cadence. Runtime proof requires installing the corrective release and then publishing a later harmless revision to verify first-cycle detection.
+Repository inspection confirms every normal `checkRemote` invocation now fetches both sources and the published `pollIntervalMs` matches that complete-cycle cadence. After r56 installed cleanly, harmless r57 was published specifically as a discovery probe. The installed r56 watcher presented r57 on its first normal 65-second complete discovery cycle, validating the corrected cadence and redundant discovery behavior.
 
 #### Prevention / notes
 Operator-visible polling cadence must describe the cadence of the reliability guarantee, not merely the fastest partial source. If redundant sources intentionally run at different frequencies, UI/telemetry must expose those as separate cadences rather than calling the faster partial check the update poll.
