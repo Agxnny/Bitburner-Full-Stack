@@ -4,7 +4,7 @@ export async function runCollector(ns, config, collect) {
     const startedAt = Date.now();
     let lastFailure = null;
     while (true) {
-        const startedAt = Date.now();
+        const cycleStartedAt = Date.now();
         try {
             const result = await collect();
             publishTelemetry(ns, serviceHealth(ns, config.service, {
@@ -23,6 +23,6 @@ export async function runCollector(ns, config, collect) {
             if (message !== lastFailure) publishTelemetry(ns, serviceEvent(ns, config.service, "warning", "COLLECTION_FAILED", message));
             lastFailure = message;
         }
-        await ns.sleep(Math.max(100, config.intervalMs - (Date.now() - startedAt)));
+        await ns.sleep(Math.max(100, config.intervalMs - (Date.now() - cycleStartedAt)));
     }
 }
