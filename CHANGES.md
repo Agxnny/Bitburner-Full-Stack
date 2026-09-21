@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Dashboard DOM-chain calibration
-**Status:** Approved — implementation
+**Status:** Implementation complete — runtime measurement pending
 
 **Goal:** Extend the r25 calibration harness to identify the exact native log/content ancestor responsible for size-dependent vertical placement before changing production dynamic sizing again.
 
@@ -41,9 +41,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - React performs DOM inspection only; Netscript main remains the sole resizeTail owner.
 - Production dashboard sizing remains unchanged in r26.
 
-**Validation:** r25 proved resizeTail exactly matches the `.react-resizable` dimensions, while React-root Y offset changes materially with target height. The responsible intermediate container is not yet identified.
+**Validation:** r25 proved resizeTail exactly matches the `.react-resizable` dimensions, while React-root Y offset changes materially with target height. r26 now reports the full root→resizable ancestor chain, layout/overflow/scroll metrics, and explicit content markers. Runtime evidence is pending.
 
-**Next step:** Implement and publish r26 calibration, capture the ancestor-chain measurements at all three target sizes, then derive the production sizing correction from evidence.
+**Next step:** Publish r26 from immutable manifest commit `9c4bccc6a367e0f53cb83562b7dda82707f4da73`, run the calibration dashboard, capture all three settled target measurements, then derive and implement the production sizing correction.
 
 ## Recently completed
 
