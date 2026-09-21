@@ -23,24 +23,32 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M1 Reliable Deployment close-out
-**Status:** Complete — milestone handoff
+### M2 telemetry foundation + System Health Watcher
+**Status:** Approved — implementation
 
-**Goal:** Close M1 after runtime validation of deployment reliability, persistent-unit retirement, and operator-visible deployment completion status.
+**Goal:** Establish the first M2 vertical slice: shared structured service-health/event telemetry, central protected runtime storage, service instance/location tracking, bounded incident history, and a lightweight System Health Watcher dashboard.
 
 **Files / areas touched:**
-- `CURRENT_STATE.md`
-- `CHANGES.md`
-- deployment and UI feature documentation already updated with validated behavior
+- new shared telemetry module under `src/core/`
+- new persistent telemetry/health collector under `src/core/`
+- new compact System Health Watcher under `src/ui/`
+- `src/bootstrap/update-watcher.js` as the first real registered producer
+- telemetry/UI feature documentation
+- deployment manifest/version and milestone state
 
 **Decisions / constraints:**
-- Full transactional rollback and per-file hashes remain documented future hardening, not M1 blockers.
-- FIX-004 remains historical/investigating; do not invent a root cause.
-- Do not begin a later subsystem until M2 is designed from the locked architecture and roadmap.
+- Telemetry is not canonical game state; M3 remains the owner of canonical observed game state.
+- One central health collector on `home` owns the aggregate health snapshot and bounded incident history.
+- Producers report stable service ID plus per-process instance identity, hostname, PID, lifecycle, heartbeat/freshness, health, and reason.
+- Transport must work when future services run on different hosts; service placement must not assume `home`.
+- The health dashboard is an alarm/status surface, not the full Validation Dashboard.
+- Healthy state stays quiet; stale/degraded/failed services remain visible, and recent incidents are bounded.
+- M4 remains responsible for desired placement, launch/restart policy, and reconciliation; M2 only reports observed runtime placement.
+- Preserve the React/Netscript ownership rule and shared dashboard geometry memory.
 
-**Validation:** r20 installed normally and the update dashboard settled on `v0.4.0-r20`, green `Install clean`, and `Last installation completed successfully (r20).` r19 had already runtime-validated explicit retirement by removing only the authorized validation fixture while preserving the watcher/dashboard.
+**Validation:** Design approved in chat. Runtime implementation not yet validated.
 
-**Next step:** Begin M2 — Telemetry/Dashboard Foundation design. No M2 implementation mutation until ownership, interfaces, dependencies, and done criteria are defined.
+**Next step:** Implement the telemetry transport/store, health collector, update-watcher producer integration, compact health dashboard, docs, and publish the next release for runtime validation.
 
 ## Recently completed
 
