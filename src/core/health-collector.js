@@ -8,7 +8,6 @@ import {
 } from "./telemetry.js";
 
 const SCRIPT_PATH = "src/core/health-collector.js";
-const DASHBOARD_PATH = "src/ui/system-health-dashboard.jsx";
 const LOOP_MS = 500;
 const SELF_HEARTBEAT_MS = 5_000;
 const INCIDENT_LIMIT = 40;
@@ -33,7 +32,6 @@ export async function main(ns) {
     let incidents = pruneExpiredIncidents(readIncidents(ns), Date.now());
     let invalidRecords = 0;
     let nextSelfAt = 0;
-    ensureDashboard(ns);
 
     while (true) {
         const now = Date.now();
@@ -94,7 +92,6 @@ export async function main(ns) {
             writeSnapshot(ns, services, invalidRecords, now);
             ns.write(INCIDENTS_PATH, JSON.stringify({ schemaVersion: 1, updatedAt: now, incidents }, null, 2), "w");
         }
-        ensureDashboard(ns);
         await ns.sleep(LOOP_MS);
     }
 }
@@ -237,7 +234,3 @@ function readIncidents(ns) {
     } catch { return []; }
 }
 
-function ensureDashboard(ns) {
-    const running = ns.ps("home").some((p) => p.filename === DASHBOARD_PATH);
-    if (!running) ns.run(DASHBOARD_PATH, 1);
-}
