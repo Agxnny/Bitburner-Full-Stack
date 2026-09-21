@@ -65,8 +65,7 @@ The first M3 runtime slice is complete and runtime-proven through r55: M2 observ
 M2 is complete through r49. Deployment hygiene is complete through r51. The obsolete standalone System Health and Update Watcher UI scripts were explicitly retired with stop → verify stopped → delete → verify absent and auditable terminal/report output. Their backend Health Collector and Update Watcher services remain. Validation Dashboard is the sole UI surface.
 
 ## Exact next step
-1. Install the already-presented harmless r57 validation release normally; r56 has already runtime-proven first-cycle redundant discovery by detecting r57 on its first 65-second cycle.
-2. Resume M3 with the already-deferred consumer cadence-request/control-plane design and implementation.
+1. Resume M3 with the already-deferred consumer cadence-request/control-plane design and implementation.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
@@ -116,3 +115,5 @@ Do not begin hacking, stocks, purchased servers, progression, or other domain au
 
 ## Handoff instructions
 A fresh development chat should read `PROJECT_RULES.md`, `CHANGES.md`, this file, `ARCHITECTURE.md`, `DECISIONS.md`, `ROADMAP.md`, and relevant `FIXES.md` entries before making code changes. Verify Bitburner API assumptions against `REFERENCES.md` and current official documentation/source.
+
+- r60 runtime validated the compact Validation Dashboard layout: auto-sized narrow window, 4+3 icon/text navigation, and full Overview height without cropping.
