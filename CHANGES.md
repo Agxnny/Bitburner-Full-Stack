@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r38 deterministic Update Watcher two-state sizing
-**Status:** Implementation complete — publication pending
+**Status:** Published as v0.5.0-r38 — pre-install action-state validation pending
 
 **Goal:** Finish M2 Update Watcher sizing by giving its two real UI states explicit width contracts while preserving the validated r37 service uptime feature.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Preferred width changes are presentation state only; React does not call Netscript. The dashboard main loop remains the sole `resizeTail()` owner.
 - Remove no additional shared sizing behavior. Preserve countdown, docking, viewport-aware height, r37 uptime, and all collector/runtime behavior.
 
-**Validation:** r36/r37 compact root-measured updater state PASS. r36 with r37 presented action state FAIL because constrained root measurement cannot discover the hidden nowrap action-row demand. r37 service uptime PASS with seven healthy services. r38 static implementation adds only an optional bridge preferred native width; Update Watcher selects 620px compact / 900px action, while System Health and all other dashboards retain rendered-root sizing. React/Netscript ownership and coordinator logic are unchanged. Runtime validation pending.
+**Validation:** r36/r37 compact root-measured updater state PASS. r36 with r37 presented action state FAIL because constrained root measurement cannot discover the hidden nowrap action-row demand. r37 service uptime PASS with seven healthy services. r38 static implementation adds only an optional bridge preferred native width; Update Watcher selects 620px compact / 900px action, while System Health and all other dashboards retain rendered-root sizing. React/Netscript ownership and coordinator logic are unchanged. Runtime validation pending. r38 immutable manifest published at releaseRef `96411b6358a3bbd9738a8785d6e0134970b57a9c`; descriptor published last.
 
-**Next step:** Publish immutable r38 and descriptor last. Do not install until installed r37 presents r38 and the complete action row, including Install/Later and rounded right edge, is visually confirmed.
+**Next step:** Do not install r38 yet. Inspect installed r37 while r38 is presented. The Update Watcher should switch to the explicit 900px action width and show the complete update badge, Install/Later controls, countdown, and rounded right card edge. If that passes, install r38 and confirm it returns to the 620px compact state.
 
 ## Recently completed
 
