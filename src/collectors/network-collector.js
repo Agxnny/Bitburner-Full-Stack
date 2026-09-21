@@ -20,7 +20,7 @@ export async function main(ns) {
                 backdoorInstalled: s.backdoorInstalled, isOnline: s.isOnline ?? true,
             });
         }
-        writeObservation(ns, DOMAIN, "network-collector", "available", { topology, servers }, { freshForMs: 15_000 });
+        writeObservation(ns, DOMAIN, "network-collector", "available", { topology, servers });
         return { status: "available" };
     });
 }
