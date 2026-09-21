@@ -23,32 +23,29 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M2 telemetry foundation + System Health Watcher
-**Status:** Runtime validated — first M2 vertical slice complete
+### Shared dynamic dashboard sizing
+**Status:** Approved — implementation
 
-**Goal:** Establish the first M2 vertical slice: shared structured service-health/event telemetry, central protected runtime storage, service instance/location tracking, bounded incident history, and a lightweight System Health Watcher dashboard.
+**Goal:** Replace persisted user-defined dashboard size with content-owned dynamic sizing while preserving remembered user position.
 
 **Files / areas touched:**
-- new shared telemetry module under `src/core/`
-- new persistent telemetry/health collector under `src/core/`
-- new compact System Health Watcher under `src/ui/`
-- `src/bootstrap/update-watcher.js` as the first real registered producer
-- telemetry/UI feature documentation
-- deployment manifest/version and milestone state
+- `src/ui/dashboard-window-memory.js` shared presentation helper
+- update dashboard and System Health Watcher integration
+- `src/ui/README.md`
+- deployment manifest/version
 
 **Decisions / constraints:**
-- Telemetry is not canonical game state; M3 remains the owner of canonical observed game state.
-- One central health collector on `home` owns the aggregate health snapshot and bounded incident history.
-- Producers report stable service ID plus per-process instance identity, hostname, PID, lifecycle, heartbeat/freshness, health, and reason.
-- Transport must work when future services run on different hosts; service placement must not assume `home`.
-- The health dashboard is an alarm/status surface, not the full Validation Dashboard.
-- Healthy state stays quiet; stale/degraded/failed services remain visible, and recent incidents are bounded.
-- M4 remains responsible for desired placement, launch/restart policy, and reconciliation; M2 only reports observed runtime placement.
-- Preserve the React/Netscript ownership rule and shared dashboard geometry memory.
+- Position remains browser-local persistent user preference.
+- Size is no longer restored or persisted from manual resizing.
+- React may measure rendered content with ordinary DOM/ResizeObserver APIs and publish desired dimensions through an in-memory bridge.
+- Only each dashboard `main()` path may call `ns.ui.resizeTail()` / `ns.ui.moveTail()`.
+- Dynamic sizing must support content changes and future tab changes, use debounce/tolerance, min/max bounds, and viewport clamping, and avoid resize jitter.
+- Existing stored geometry must remain backward-compatible for position migration but stored width/height are ignored.
+- No unrelated M2 telemetry redesign in this change.
 
-**Validation:** r21 baseline and stale detection passed but exposed stale-instance retention after restart. r22 corrected instance supersession. Runtime r22 sequence passed end-to-end: baseline showed two healthy services; stopping update-watcher pid 19 produced DEGRADED + STALE + retained warning; restarting created pid 24, removed pid 19 from active placement, cleared the active issue, and returned aggregate health to HEALTHY while preserving stale incident history.
+**Validation:** Design approved in chat. Runtime validation pending.
 
-**Next step:** Close this vertical slice in CURRENT_STATE and design the next M2 data-collection/storage slice: structured operational events/status plus storage/freshness interfaces that M3 canonical state collectors can later use without making telemetry the canonical game-state owner.
+**Next step:** Implement shared position memory + dynamic size measurement/application, integrate both current dashboards, publish r23, and validate compact/grow/shrink behavior plus position persistence.
 
 ## Recently completed
 
