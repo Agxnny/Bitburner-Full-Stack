@@ -85,6 +85,7 @@ export async function main(ns) {
             `r${descriptor.revision}-${nonce}`,
         );
         validateManifest(manifest, descriptor);
+        const retireFiles = validateRetireFiles(manifest);
 
         const stagedFiles = [];
         const targets = new Set();
@@ -111,10 +112,14 @@ export async function main(ns) {
             stagedFiles.push({ ...file, content, action, deferredSelf });
         }
 
+        for (const retirement of retireFiles) {
+            if (targets.has(retirement.path)) throw new Error(`Retired file cannot also be an active manifest target: ${retirement.path}`);
+        }
         const runtimePlan = buildRuntimePlan(manifest, stagedFiles, targets, localState);
         report.files = stagedFiles.map(({ source, target, action, deferredSelf }) => ({ source, target, action, deferred: deferredSelf }));
         report.counts = countActions(report.files);
         report.runtime = { planned: runtimePlan.map(runtimeSummary), status: "planned", units: [] };
+        report.retirement = { planned: retireFiles.map((item) => ({ path: item.path })), status: retireFiles.length ? "planned" : "none", files: [] };
 
         if (validationFailure) throw new Error("Validation fixture unexpectedly staged successfully; activation blocked.");
 
@@ -167,6 +172,8 @@ export async function main(ns) {
             previousVersion: localState?.version ?? null,
             previousRevision: localState?.revision ?? null,
             runtimePlan,
+            retireFiles,
+            managedFiles: [...targets],
             report,
             stagedAt: Date.now(),
         };
@@ -289,6 +296,23 @@ function buildRuntimePlan(manifest, stagedFiles, targets, localState) {
     return plan;
 }
 
+function validateRetireFiles(manifest) {
+    const entries = manifest.retireFiles == null ? [] : manifest.retireFiles;
+    if (!Array.isArray(entries)) throw new Error("Manifest retireFiles must be an array.");
+    const seen = new Set();
+    return entries.map((entry) => {
+        const path = typeof entry === "string" ? entry : entry?.path;
+        if (typeof path !== "string" || !path) throw new Error("Invalid retired file path.");
+        if (!path.startsWith("src/") || path.startsWith("data/") || path.includes("..") || path.startsWith("/")) {
+            throw new Error(`Unsafe retired file path: ${path}`);
+        }
+        if (path === SELF_PATH || path === SELF_HELPER_PATH) throw new Error(`Bootstrap file cannot be retired: ${path}`);
+        if (seen.has(path)) throw new Error(`Duplicate retired file path: ${path}`);
+        seen.add(path);
+        return { path };
+    });
+}
+
 function validateRuntimeUnit(unit, targets) {
     if (!unit || typeof unit.id !== "string" || !unit.id) throw new Error("Runtime unit is missing id.");
     if (unit.lifecycle !== "persistent") throw new Error(`Unsupported runtime lifecycle for ${unit.id}.`);
@@ -343,6 +367,7 @@ function createReport(startedAt, localState, flags, descriptorPath) {
         counts: { unchanged: 0, refreshed: 0, updated: 0, added: 0 },
         files: [],
         runtime: { planned: [], status: "none", units: [] },
+        retirement: { planned: [], status: "none", files: [] },
         error: null,
     };
 }
