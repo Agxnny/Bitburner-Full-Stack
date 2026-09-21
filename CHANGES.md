@@ -23,39 +23,27 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 Canonical State — first vertical slice
-**Status:** Implementation complete for first vertical slice; v0.6.0-r52 published and awaiting runtime validation
+### Validation plan + durable runtime ledger
+**Status:** Approved; implementation starting
 
-**Goal:** Implement the smallest end-to-end M3 canonical-state path between the existing M2 observation collectors and future consumers, while preserving M2 as observation-only acquisition.
+**Goal:** Replace the hard-coded Validation Dashboard work catalog with a deployed repository plan describing what currently requires proof, while preserving runtime PASS truth in protected Bitburner data so completed validation survives later pulls.
 
-**Locked design for this implementation:**
-- M2 collectors remain factual observation producers; M3 is the single canonical-state owner.
-- Canonical latest state is durable and single-writer/many-reader. Ports are transport, never canonical truth.
-- Port 1 remains telemetry. M3 port allocation is centralized in a registry; no scattered magic port numbers.
-- Ordinary observation traffic may share an ingress lane; high-frequency domains may receive dedicated data/control lanes when justified. Market is the first intended dedicated domain.
-- Collection cadence is baseline + bounded consumer cadence leases. Shared infrastructure resolves effective cadence; individual collectors do not implement consumer policy.
-- Wall time is a shared contract. Observations carry factual timestamps. M3 does not declare observations globally fresh/stale; consumers judge freshness from observation time for their own use.
-- Availability is factual and remains distinct from freshness.
-- Historical windows are elapsed-time windows, not “last N samples”; missing observations remain visible gaps.
-- Commands, events, state, telemetry, and authority remain distinct. Lease/budget authority is future M5 work and will not be implemented in M3.
-- Queue behavior is bounded and backpressure is explicit; ports are not treated as broadcast/pub-sub.
+**Locked design:**
+- GitHub/deployment owns the validation plan: what requirements exist, which validation definition version is current, and which approved test ID proves each requirement.
+- Bitburner runtime owns a durable validation ledger under protected data. Deployment must not overwrite it.
+- The Dashboard derives Validating, Tests, and Validated by reconciling the current plan against the local ledger.
+- A PASS satisfies only the matching test ID + validationVersion. Changing a requirement version makes old evidence historical but no longer current.
+- Ordinary release/revision changes do not invalidate unchanged validation definitions.
+- Test runner paths/risk remain code-controlled by test-registry.js. The JSON plan may reference test IDs but may not provide arbitrary executable paths.
+- Evidence history remains provenance/audit detail; the ledger is the compact current passed-truth index.
+- Failed/re-run current evidence may regress a requirement back to Validating; historical records are retained.
+- Current M2 completed validation is seeded into the ledger from existing durable PASS evidence where version-compatible; the new plan focuses active work on M3.
 
-**Compatibility findings checked before implementation:**
-- Official Bitburner release history still lists v3.0.1 as the latest published release.
-- v3 exposes nextPortWrite, readPort, peek, tryWritePort, and writePort; ports are queue transport and are not durable restart state.
-- Repository port usage currently reserves Port 1 for telemetry.
+**Files / areas:** validation plan data, validation ledger/reconciliation helpers, test registry/evidence integration, Validation Dashboard work/tests/summary views, deployment manifest, docs.
 
-**Files / areas expected to change first:**
-- CHANGES.md, ARCHITECTURE.md, DECISIONS.md, ROADMAP.md
-- shared M3 contracts/port registry/time helpers under src/core/
-- src/collectors/collector-runtime.js and observation publication path
-- one first canonical domain path, then Validation Dashboard evidence before expansion
+**Validation:** Pending implementation and runtime proof.
 
-**Validation state:** Repository implementation reviewed structurally and v0.6.0-r52 published. Runtime validation is pending. Validate that the new canonical-state service starts healthy, all five data/state domain files appear, revisions advance as collectors publish, observedAt is preserved from the M2 observation, canonicalizedAt is not earlier than observedAt, and the Validation Dashboard Data tab shows canonical revisions/ages without a global fresh/stale label.
-
-**Exact next step:** Install v0.6.0-r52 through the normal updater and runtime-validate the canonical-state slice. Do not implement cadence-request handling until this state path is proven.
-
-**Risks:** High-frequency market cadence must be measured in-game rather than guessed. Port consumers must remain single-owner because queue reads are destructive. Existing M2 snapshots must not accidentally become canonical authority.
+**Exact next step:** Implement the plan/ledger contract and dashboard reconciliation, publish the next release, then verify that completed requirements move automatically and only outstanding current tests remain actionable.
 
 ## Recently completed
 
