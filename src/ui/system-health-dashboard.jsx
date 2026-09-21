@@ -1,4 +1,4 @@
-import { restoreDashboardWindow, useDashboardWindowMemory } from "./dashboard-window-memory.js";
+import { applyDashboardSize, restoreDashboardPosition, useDashboardWindow } from "./dashboard-window-memory.js";
 
 const HEALTH_PATH = "data/telemetry/health.json";
 const INCIDENTS_PATH = "data/telemetry/incidents.json";
@@ -14,22 +14,23 @@ export async function main(ns) {
     if (copies.length && copies[0].pid !== ns.pid) return;
 
     ns.disableLog("sleep");
-    const bridge = { snapshot: readSnapshot(ns) };
+    const bridge = { snapshot: readSnapshot(ns), desiredSize: null, appliedSize: null };
     ns.ui.openTail();
     ns.ui.setTailTitle("Full Stack — System Health");
     ns.clearLog();
     ns.printRaw(<HealthDashboard bridge={bridge} />);
     await ns.sleep(75);
-    await restoreDashboardWindow(ns, WINDOW_KEY);
+    await restoreDashboardPosition(ns, WINDOW_KEY);
 
     while (true) {
         bridge.snapshot = readSnapshot(ns);
+        applyDashboardSize(ns, bridge);
         await ns.sleep(REFRESH_MS);
     }
 }
 
 function HealthDashboard({ bridge }) {
-    const rootRef = useDashboardWindowMemory(WINDOW_KEY);
+    const rootRef = useDashboardWindow(WINDOW_KEY, bridge, { minWidth: 590, minHeight: 210, maxWidth: 900, maxHeight: 760 });
     const [snapshot, setSnapshot] = React.useState(bridge.snapshot);
     React.useEffect(() => {
         const timer = setInterval(() => setSnapshot(bridge.snapshot), REFRESH_MS);
