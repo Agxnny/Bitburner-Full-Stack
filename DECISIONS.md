@@ -168,3 +168,13 @@ A dashboard follower is not limited to a fixed vertical stack. The coordinator s
 A follower normally remains under automatic placement. If native window movement materially departs from the coordinator's commanded position, coordination is temporarily released for that follower. After movement settles, the coordinator compares normalized follower/anchor centers, selects the nearest side, persists that browser-local relationship, and resumes automatic placement. This makes ordinary Bitburner tail dragging the docking gesture without requiring Netscript calls from React.
 
 Anchor transfer inverts an existing physical relationship where possible (`left↔right`, `top↔bottom`). Dynamic size changes continue to reflow from the persisted side. Dock relationships are presentation state and do not enter canonical telemetry/state.
+
+
+## D-025 — M2 game observations use isolated domain collectors
+**Status:** Locked
+
+Broad game data collection is split into independent persistent domain services rather than one monolithic collector. Each collector owns only its domain snapshot and reports its own health through the shared telemetry contract. A failed or unavailable domain must not stop unrelated collection.
+
+Observation snapshots are versioned, timestamped, freshness-bounded inputs. They are not canonical shared game state; M3 remains responsible for canonical state ownership and reconciliation. Optional locked mechanics are represented as unavailable capability data when that condition is expected, while unexpected collection failures degrade only the responsible service.
+
+Collectors are read-only. Collection does not grant controller, spending, scheduling, execution, or resource authority.
