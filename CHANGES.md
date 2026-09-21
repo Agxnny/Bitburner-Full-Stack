@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r44 Validation Tests workspace
-**Status:** Implementation
+**Status:** r44 published — waiting for pre-install Updater notification evidence
 
 **Goal:** Add a dedicated Tests tab to the Validation Dashboard so approved validation scripts can be launched and observed from the dashboard rather than the terminal. Use r44 itself as the real updater-notification stimulus.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - The first registered test is a SAFE dashboard smoke test that validates current r44 shell/telemetry prerequisites. Publishing r44 itself supplies the genuine newer-release condition for the updater notification test; the test framework does not forge updater telemetry.
 - Update availability remains ordinary attention: badge only, no automatic navigation.
 
-**Validation:** r43 six-tab rendering/runtime pass is recorded. r44 implementation and static review are in progress. Runtime evidence still required for Tests execution and the genuine r44 Updater notification badge before installation.
+**Validation:** r43 six-tab rendering/runtime pass is recorded. r44 adds the seventh Tests tab, registry-controlled typed dispatch, and the SAFE `m2.dashboard.smoke` runner. Static review confirms the immutable r44 manifest includes the new UI/registry/runner files; Validation Dashboard runtime dependencies include the Tests UI and registry. Immutable releaseRef is `1e1a56619516fa9e2a203bf26f2fce1afc6bfcdc`; descriptor publication was last. Runtime evidence is still required for the genuine r44 Updater notification badge before installation and Tests execution after installation.
 
-**Next step:** Implement registry, runner, Tests UI and typed test intents; publish r44 last; operator captures the r44 Updater notification while still running r43 before pulling it.
+**Next step:** While still on installed r43, wait for Update Watcher to discover published r44 and capture the dashboard on a non-Updater tab showing the Updater unread badge. Do not open Updater before that screenshot. Then open Updater to verify the badge clears while r44 remains pending; only after that install r44.
 
 ## Recently completed
 
