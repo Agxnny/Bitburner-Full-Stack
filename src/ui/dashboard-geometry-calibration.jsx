@@ -106,7 +106,7 @@ function Ancestor({ index, item }) {
         <div style={styles.details}>
             <span>client {item.client.width}×{item.client.height}</span>
             <span>scroll {item.scroll.width}×{item.scroll.height}</span>
-            <span>scrollPos {item.scroll.left},{item.scroll.top}</span>
+            <span>scrollPos {item.scrollPosition.left},{item.scrollPosition.top}</span>
             <span>root Δ {item.rootOffset.x},{item.rootOffset.y}</span>
             <span>display {item.css.display}</span>
             <span>position {item.css.position}</span>
