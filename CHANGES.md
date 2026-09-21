@@ -23,29 +23,29 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Shared dynamic dashboard sizing
-**Status:** Implementation complete — runtime validation pending
+### Dashboard dynamic sizing correction + deployment refresh
+**Status:** Runtime defect confirmed — implementation
 
-**Goal:** Replace persisted user-defined dashboard size with content-owned dynamic sizing while preserving remembered user position.
+**Goal:** Correct r23 dashboard sizing so tails fit rendered content without excess top/outer blank space, keep the updater compact, and ensure every successful deployment refreshes dashboard presentation code without unnecessarily restarting unchanged telemetry services.
 
 **Files / areas touched:**
-- `src/ui/dashboard-window-memory.js` shared presentation helper
-- update dashboard and System Health Watcher integration
-- `src/ui/README.md`
-- deployment manifest/version
+- `src/ui/dashboard-window-memory.js`
+- current dashboard size profiles
+- dashboard lifecycle/reconciliation ownership in bootstrap/core services
+- UI feature docs and deployment release
 
 **Decisions / constraints:**
-- Position remains browser-local persistent user preference.
-- Size is no longer restored or persisted from manual resizing.
-- React may measure rendered content with ordinary DOM/ResizeObserver APIs and publish desired dimensions through an in-memory bridge.
-- Only each dashboard `main()` path may call `ns.ui.resizeTail()` / `ns.ui.moveTail()`.
-- Dynamic sizing must support content changes and future tab changes, use debounce/tolerance, min/max bounds, and viewport clamping, and avoid resize jitter.
-- Existing stored geometry must remain backward-compatible for position migration but stored width/height are ignored.
-- No unrelated M2 telemetry redesign in this change.
+- Preserve D-021: user position persists; user size does not.
+- Dynamic size must measure the native tail content offset correctly; r23's fixed chrome-height estimate is producing excess blank area.
+- Update Watcher remains intentionally ultra-compact and gets a tighter size profile.
+- A successful deployment must refresh all dashboard processes so presentation code/layout is current even when the underlying telemetry producer did not otherwise need restart.
+- Do not restart unchanged telemetry/core services solely to refresh a dashboard.
+- Dashboard refresh must close the old native tail before killing the old process to avoid zombie logs.
+- Future dashboard registry/orchestrator may generalize this; this change only establishes the safe deployment-refresh contract for current dashboards.
 
-**Validation:** Shared helper now persists/restores position only, accepts old geometry for position migration, measures content through React DOM APIs, and applies bounded/tolerant resize only from the Netscript main loop. Update and System Health dashboards are integrated. Runtime grow/shrink and position persistence remain unproven.
+**Validation:** r23 screenshot confirms position persistence/dynamic resize is active but exposes oversized Update Watcher and persistent blank area above dashboard content. Deployment-wide dashboard refresh is not yet implemented.
 
-**Next step:** Publish r23 from immutable manifest commit `65903716218cb11f8898e976df2ca4ccc4044b3e`, install normally, then validate automatic compact sizing, System Health growth/shrink across stale/recovery, and position persistence across relaunch.
+**Next step:** Correct native tail size measurement, tighten current dashboard profiles, add post-deployment dashboard refresh, publish r24, then validate healthy sizing, stale grow/shrink, position persistence, and dashboard PID refresh after install.
 
 ## Recently completed
 
