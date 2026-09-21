@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Shared dynamic dashboard sizing
-**Status:** Approved — implementation
+**Status:** Implementation complete — runtime validation pending
 
 **Goal:** Replace persisted user-defined dashboard size with content-owned dynamic sizing while preserving remembered user position.
 
@@ -43,9 +43,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Existing stored geometry must remain backward-compatible for position migration but stored width/height are ignored.
 - No unrelated M2 telemetry redesign in this change.
 
-**Validation:** Design approved in chat. Runtime validation pending.
+**Validation:** Shared helper now persists/restores position only, accepts old geometry for position migration, measures content through React DOM APIs, and applies bounded/tolerant resize only from the Netscript main loop. Update and System Health dashboards are integrated. Runtime grow/shrink and position persistence remain unproven.
 
-**Next step:** Implement shared position memory + dynamic size measurement/application, integrate both current dashboards, publish r23, and validate compact/grow/shrink behavior plus position persistence.
+**Next step:** Publish r23 from immutable manifest commit `65903716218cb11f8898e976df2ca4ccc4044b3e`, install normally, then validate automatic compact sizing, System Health growth/shrink across stale/recovery, and position persistence across relaunch.
 
 ## Recently completed
 
