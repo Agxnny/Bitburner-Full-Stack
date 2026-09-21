@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M2 telemetry foundation + System Health Watcher
-**Status:** Approved — implementation
+**Status:** Implementation complete — release publication
 
 **Goal:** Establish the first M2 vertical slice: shared structured service-health/event telemetry, central protected runtime storage, service instance/location tracking, bounded incident history, and a lightweight System Health Watcher dashboard.
 
@@ -46,9 +46,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - M4 remains responsible for desired placement, launch/restart policy, and reconciliation; M2 only reports observed runtime placement.
 - Preserve the React/Netscript ownership rule and shared dashboard geometry memory.
 
-**Validation:** Design approved in chat. Runtime implementation not yet validated.
+**Validation:** Shared telemetry contract, central collector/storage, bounded incidents, update-watcher producer integration, observed host/PID reporting, compact health dashboard, feature docs, and D-020 are implemented. Static contract review caught and corrected event identity completeness. Runtime behavior is not yet validated.
 
-**Next step:** Implement the telemetry transport/store, health collector, update-watcher producer integration, compact health dashboard, docs, and publish the next release for runtime validation.
+**Next step:** Publish v0.5.0-r21 using immutable releaseRef `e67e3eb0af1a93b217c84f26644fcb6f5b74fd24`, install normally, then validate healthy placement, stale detection, recovery, incident retention, and dashboard geometry.
 
 ## Recently completed
 
