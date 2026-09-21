@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Measured content-viewport dashboard sizing
-**Status:** Approved — implementation
+**Status:** Implementation complete — runtime validation pending
 
 **Goal:** Replace r23/r24 root-only sizing with the DOM model proven by r25/r26 so production dashboards dynamically fit content without clipping or column-reverse black space.
 
@@ -43,9 +43,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Preserve D-021: position persists, user size does not; React measures only and main owns Netscript UI calls.
 - Keep the r26 calibration harness as a dormant diagnostic tool.
 
-**Validation:** r25/r26 calibration completed. Production implementation and runtime validation pending.
+**Validation:** r25/r26 calibration completed. Shared production helper now discovers the scrollable column-reverse content viewport structurally, measures native width/height overhead at runtime, and requests content requirement plus measured overhead with observer-driven remeasurement and main-loop tolerance. Static implementation/docs/decision complete; runtime fit and convergence remain pending.
 
-**Next step:** Implement measured content-viewport sizing, publish r27, then validate Update Watcher compact fit and System Health healthy → stale growth → recovery shrink with position preserved.
+**Next step:** Publish r27 from immutable manifest commit `e8dbe8f5d72c1ae9ba04096582c356e4769dd38d`, install normally, then validate Update Watcher compact fit and System Health healthy → stale growth → recovery shrink with position preserved.
 
 ## Recently completed
 
