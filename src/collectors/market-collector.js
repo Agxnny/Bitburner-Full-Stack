@@ -9,7 +9,7 @@ export async function main(ns) {
             fourS: ns.stock.has4SData(), fourSTix: ns.stock.has4SDataTixApi(),
         };
         if (!capabilities.tix) {
-            writeObservation(ns, DOMAIN, "market-collector", "unavailable", { capabilities, symbols: [] }, { freshForMs: 20_000 });
+            writeObservation(ns, DOMAIN, "market-collector", "unavailable", { capabilities, symbols: [] });
             return { status: "unavailable", phase: "waiting-capability" };
         }
         const symbols = ns.stock.getSymbols().map((symbol) => {
@@ -25,9 +25,8 @@ export async function main(ns) {
             }
             return item;
         });
-        const now = Date.now();
-        writeObservation(ns, DOMAIN, "market-collector", "available", { capabilities, symbols }, { freshForMs: 20_000 });
-        appendBounded(ns, HISTORY, { at: now, prices: Object.fromEntries(symbols.map((x) => [x.symbol, x.price])) }, 240);
+        const { value: observation } = writeObservation(ns, DOMAIN, "market-collector", "available", { capabilities, symbols });
+        appendBounded(ns, HISTORY, { observedAt: observation.observedAt, prices: Object.fromEntries(symbols.map((x) => [x.symbol, x.price])) }, 240);
         return { status: "available" };
     });
 }
