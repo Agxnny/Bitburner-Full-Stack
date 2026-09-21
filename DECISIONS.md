@@ -262,3 +262,13 @@ The repository owns a deployed validation plan describing current validation req
 A PASS counts only for the matching test ID and validationVersion. A normal software release does not invalidate unchanged proof; incrementing the validationVersion intentionally requires new proof while retaining older evidence as history. A later FAIL for the current test/version regresses its requirements to Validating.
 
 The plan cannot authorize arbitrary execution. Runner paths, risk classification, and manual/automated behavior remain repository-code allowlisted by the validation test registry. Protected runtime ledger/evidence files are not deployment targets.
+
+
+## D-034 — Operator-visible update poll is one complete redundant discovery cycle
+**Status:** Locked
+
+Supersedes only the split-cadence polling detail in D-017. Release discovery remains redundant Raw + GitHub Contents API with highest-valid-revision selection and immutable releaseRef semantics, but the watcher must not advertise a shorter poll interval than the cadence at which both independent sources are actually sampled.
+
+A normal discovery cycle runs every 65 seconds and samples cache-busted Raw plus the Contents API together. This keeps normal unauthenticated Contents requests below GitHub's 60-requests-per-hour public ceiling while leaving small headroom, and removes the misleading former 30-second cycle / 75-second API split that could make a healthy release appear only after 2–3 displayed cycles. Approval still performs a fresh complete discovery check before deployment.
+
+Raw may remain eventually consistent even with a unique query parameter. Therefore the cache-buster is retained as a useful cache-avoidance mechanism, not treated as a freshness guarantee; the API source is part of every complete normal cycle.
