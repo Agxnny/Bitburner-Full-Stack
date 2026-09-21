@@ -13,4 +13,6 @@ export function appendEvidence(ns,record){
     const records=[...store.records,record].slice(-MAX_EVIDENCE);
     ns.write(EVIDENCE_PATH,JSON.stringify({schemaVersion:1,records},null,2),"w");
 }
-export function evidenceRecord({testId,validationVersion=null,status,kind,summary,assertions=[],at=Date.now()}){\n    return {schemaVersion:1,id:`${testId}-${at}`,testId,validationVersion,status,kind,summary,assertions,at};\n}
+export function evidenceRecord({testId,validationVersion=null,status,kind,summary,assertions=[],at=Date.now()}){
+    return {schemaVersion:1,id:`${testId}-${at}`,testId,validationVersion,status,kind,summary,assertions,at};
+}
