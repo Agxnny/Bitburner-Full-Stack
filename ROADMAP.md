@@ -21,7 +21,7 @@
 - Validation panel framework
 - Production dashboard shell
 
-## M3 — Canonical State — ACTIVE (first vertical slice runtime validated through v0.6.0-r55)
+## M3 — Canonical State — ACTIVE (canonical-state and collection-cadence slices runtime validated through v0.6.0-r63)
 - Define port reservation/allocation and command/event transport rules
 - Define canonical latest-state interfaces, ownership, factual timestamps, and consumer freshness contracts
 - Reuse M2 collectors as producers; do not duplicate collection
