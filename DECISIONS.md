@@ -158,3 +158,13 @@ Dashboard windows coordinate placement through browser-local presentation state 
 Each layout group has one operator-selectable anchor. The anchor's position is user-owned and persistent. Other active members are followers whose positions are derived from the anchor, configured ordering, current measured sizes, and group gap. Dynamic dashboard growth/shrink therefore reflows followers without changing telemetry/service lifecycle.
 
 React/browser code may publish geometry, select the anchor, and calculate desired positions. Only each dashboard's Netscript main loop may apply native tail movement/resizing. Current `operations` layout is a vertical stack; future layout modes may extend the coordinator without adding pair-specific dashboard coupling.
+
+
+## D-024 — Followers select and persist a dock side by native drag
+**Status:** Locked
+
+A dashboard follower is not limited to a fixed vertical stack. The coordinator supports `top`, `bottom`, `left`, and `right` docking relative to the current anchor, with same-side followers ordered deterministically.
+
+A follower normally remains under automatic placement. If native window movement materially departs from the coordinator's commanded position, coordination is temporarily released for that follower. After movement settles, the coordinator compares normalized follower/anchor centers, selects the nearest side, persists that browser-local relationship, and resumes automatic placement. This makes ordinary Bitburner tail dragging the docking gesture without requiring Netscript calls from React.
+
+Anchor transfer inverts an existing physical relationship where possible (`left↔right`, `top↔bottom`). Dynamic size changes continue to reflow from the persisted side. Dock relationships are presentation state and do not enter canonical telemetry/state.
