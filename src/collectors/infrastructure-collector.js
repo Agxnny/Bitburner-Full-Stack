@@ -37,7 +37,7 @@ export async function main(ns) {
                 nodeCount: nodes.length,
                 nodes,
             },
-        }, { freshForMs: 15_000 });
+        });
 
         return { status: "available" };
     });
