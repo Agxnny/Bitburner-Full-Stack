@@ -77,7 +77,7 @@ function readSnapshot(ns) {
 }
 
 function UpdateDashboard({ bridge }) {
-    const windowRef = useDashboardWindow(WINDOW_MEMORY_KEY, bridge, { minWidth: 650, minHeight: 150, maxWidth: 980, maxHeight: 360 });
+    const windowRef = useDashboardWindow(WINDOW_MEMORY_KEY, bridge, { minWidth: 620, minHeight: 126, maxWidth: 820, maxHeight: 260 });
     const [view, setView] = React.useState(() => ({ snapshot: bridge.snapshot, feedback: bridge.feedback }));
 
     React.useEffect(() => {
