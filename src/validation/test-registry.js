@@ -1,5 +1,11 @@
 export const TESTS = [
     {
+        id:"m3.diagnostics.intelligence", subsystem:"Diagnostics", title:"Incident intelligence contract", risk:"SAFE",
+        runner:"src/validation/tests/diagnostics-intelligence-test.js",
+        description:"Publishes a synthetic structured diagnostic, verifies durable evidence/classification and deduplication, then explicitly resolves it without disrupting production services.",
+        validates:["Durable diagnostics owner and structured evidence","Evidence classification and bounded explanation","Incident deduplication and explicit resolution"],
+    },
+    {
         id:"m3.resource.associations", subsystem:"Canonical State", title:"Stock/server resource associations", risk:"SAFE",
         runner:"src/validation/tests/resource-associations-test.js",
         description:"Validates canonical stock-symbol ↔ organization ↔ server associations derived only from exact matches in canonical market and network state, including provenance and explicit unmatched resources.",
