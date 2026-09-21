@@ -1,4 +1,17 @@
-export const TESTS = [\n    {\n        id:\"m3.canonical.state\", subsystem:\"Canonical State\", title:\"Canonical state contract\", risk:\"SAFE\",\n        runner:\"src/validation/tests/canonical-state-test.js\",\n        description:\"Checks canonical service health, five durable domains, observation timestamp preservation, positive revisions, and the absence of a universal freshness label.\",\n        validates:[\"Canonical service and five domains\",\"Observation timestamp preservation\",\"Canonical revision progression\",\"Consumer-defined freshness contract\"],\n    },\n    {\n        id:\"m3.canonical.restart\", subsystem:\"Canonical State\", title:\"Canonical restart reconciliation\", risk:\"DISRUPTIVE\",\n        runner:\"src/validation/tests/canonical-restart-test.js\",\n        description:\"Restarts only the canonical-state service and verifies it reconciles all five durable M2 observations without revision rollback.\",\n        validates:[\"Restart reconciliation\"],\n        confirmation:\"Temporarily restarts the canonical-state service. Collectors remain running and durable observation snapshots are not modified.\",\n    },
+export const TESTS = [
+    {
+        id:\"m3.canonical.state\", subsystem:\"Canonical State\", title:\"Canonical state contract\", risk:\"SAFE\",
+        runner:\"src/validation/tests/canonical-state-test.js\",
+        description:\"Checks canonical service health, five durable domains, observation timestamp preservation, positive revisions, and the absence of a universal freshness label.\",
+        validates:[\"Canonical service and five domains\",\"Observation timestamp preservation\",\"Canonical revision progression\",\"Consumer-defined freshness contract\"],
+    },
+    {
+        id:\"m3.canonical.restart\", subsystem:\"Canonical State\", title:\"Canonical restart reconciliation\", risk:\"DISRUPTIVE\",
+        runner:\"src/validation/tests/canonical-restart-test.js\",
+        description:\"Restarts only the canonical-state service and verifies it reconciles all five durable M2 observations without revision rollback.\",
+        validates:[\"Restart reconciliation\"],
+        confirmation:\"Temporarily restarts the canonical-state service. Collectors remain running and durable observation snapshots are not modified.\",
+    },
     {
         id:"m2.dashboard.smoke",
         subsystem:"Dashboard",
