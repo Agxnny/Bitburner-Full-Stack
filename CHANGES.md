@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Canonical State — first vertical slice
-**Status:** Approved; implementation starting
+**Status:** Implementation complete for first vertical slice; v0.6.0-r52 published and awaiting runtime validation
 
 **Goal:** Implement the smallest end-to-end M3 canonical-state path between the existing M2 observation collectors and future consumers, while preserving M2 as observation-only acquisition.
 
@@ -51,9 +51,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - src/collectors/collector-runtime.js and observation publication path
 - one first canonical domain path, then Validation Dashboard evidence before expansion
 
-**Validation state:** Design reviewed with operator. No M3 runtime behavior has yet been validated in-game.
+**Validation state:** Repository implementation reviewed structurally and v0.6.0-r52 published. Runtime validation is pending. Validate that the new canonical-state service starts healthy, all five data/state domain files appear, revisions advance as collectors publish, observedAt is preserved from the M2 observation, canonicalizedAt is not earlier than observedAt, and the Validation Dashboard Data tab shows canonical revisions/ages without a global fresh/stale label.
 
-**Exact next step:** Record the locked M3 decisions, implement shared contracts plus one end-to-end canonical-state slice, publish a release, and hand runtime validation to the operator before expanding all domains.
+**Exact next step:** Install v0.6.0-r52 through the normal updater and runtime-validate the canonical-state slice. Do not implement cadence-request handling until this state path is proven.
 
 **Risks:** High-frequency market cadence must be measured in-game rather than guessed. Port consumers must remain single-owner because queue reads are destructive. Existing M2 snapshots must not accidentally become canonical authority.
 
