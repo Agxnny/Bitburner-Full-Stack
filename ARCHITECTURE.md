@@ -154,3 +154,8 @@ The plan never supplies executable script paths. `src/validation/test-registry.j
 ### M3 collection cadence control
 
 `src/core/collection-control-service.js` is the single durable owner of consumer cadence leases. Consumers send lease upsert/release commands through port 3; the port is transient transport and never authority. The owner persists `data/control/collection-cadence.json`, removes expired leases, and resolves each domain to the fastest active request bounded by that collector's declared minimum interval and baseline. Collectors read only the resolved durable state through `src/core/collection-control.js`; they do not arbitrate requests. With no active valid lease, collection returns automatically to its configured baseline. Port 5 remains reserved for later dedicated market control.
+
+
+### Canonical resource associations
+
+Canonical state includes a derived `associations` domain owned by `canonical-state-service`. It joins canonical market `symbol → organization` facts with canonical network `hostname → organizationName` facts using exact organization-name equality. It records source revisions/timestamps, bounds its observation time to the older source, and keeps unmatched resources explicit. It is factual state only; authority and compatibility policy consume it later. See `docs/canonical-state.md`.
