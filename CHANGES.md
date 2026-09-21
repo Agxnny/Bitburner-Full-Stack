@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r40 collector process-uptime correction
-**Status:** Implementation complete — publication pending
+**Status:** Published as v0.5.0-r40 — runtime validation pending
 
 **Goal:** Correct shared collector uptime so producer-owned `startedAt` remains the immutable process start timestamp instead of being shadowed by each collection cycle.
 
@@ -39,9 +39,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Do not change Health Collector, Update Watcher, dashboard presentation, incident retention, collector behavior, or sizing.
 - r39 runtime shows the defect clearly: shared collectors report only seconds because their per-cycle timestamp shadows process `startedAt`; Health Collector and Update Watcher already show correct process-scoped uptime.
 
-**Validation:** Static defect confirmed and corrected. The outer `startedAt` is now the only process lifetime timestamp; the loop uses `cycleStartedAt` solely for collection interval accounting. Health, incidents, dashboard, sizing, and collector collection logic are unchanged. Runtime correction pending.
+**Validation:** Static defect confirmed and corrected. The outer `startedAt` is now the only process lifetime timestamp; the loop uses `cycleStartedAt` solely for collection interval accounting. Health, incidents, dashboard, sizing, and collector collection logic are unchanged. Runtime correction pending. r40 immutable manifest published at releaseRef `b067a11d5526315684613d939901adce3f2b06e0`; descriptor published last.
 
-**Next step:** Publish immutable r40 and descriptor last, then install and confirm all five shared collector uptimes advance continuously instead of resetting each collection cycle. Incident/error expiry remains a separate subsequent change.
+**Next step:** Install r40 and confirm all five shared collector uptimes advance continuously instead of resetting each collection cycle. Health Collector and Update Watcher should continue showing process-scoped uptime. Incident/error expiry remains the next separate change.
 
 ## Recently completed
 
