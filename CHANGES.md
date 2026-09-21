@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Health incident uniqueness + r30 updater-width validation
-**Status:** Implementation
+**Status:** Published as v0.5.0-r30 — runtime validation pending
 
 **Goal:** Keep the System Health Watcher focused on the latest meaningful warning/error for each service incident type instead of accumulating repeated copies across repeated stale/failure episodes, while using r30 presentation to validate the pending Update Watcher grow/shrink behavior.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Existing incident files are normalized through the same retention rule when the collector starts, so historical duplicate warnings do not survive indefinitely.
 - r29 four-side docking/anchor behavior is runtime PASS. Update Watcher update-available grow/shrink remains pending and will be exercised when r30 is presented.
 
-**Validation:** Static implementation pending. Runtime validation will require r30 presentation before install for updater width, then r30 install and a repeated stale/recovery/stale cycle to prove only the newest unique warning remains.
+**Validation:** Static review complete. Collector now upserts warning/error retention by service + code and normalizes the existing incident file through the same rule at startup. Feature docs updated. r30 immutable manifest published at releaseRef `10ba4de7df78966cc40794d80c043df83f6db688`; descriptor published last. Runtime validation remains pending.
 
-**Next step:** Implement incident upsert/normalization, update feature docs, publish immutable r30 manifest, then hand off runtime validation.
+**Next step:** Before installing r30, capture the Update Watcher with r30 available to validate update-control width growth. Install r30 normally, confirm it shrinks afterward, then exercise stale → recovery → stale and verify Recent Incidents retains only the newest `update-watcher / SERVICE_STALE` warning.
 
 ## Recently completed
 
