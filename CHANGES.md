@@ -23,18 +23,18 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Validation Dashboard compact responsive navigation
-**Status:** Complete; runtime validated on v0.6.0-r60
+### M3 collection cadence control
+**Status:** Implementation in progress
 
-**Goal:** Make the Validation Dashboard materially usable at narrower tail widths by replacing stretched navigation tabs with compact icon+text controls that wrap to two rows when space requires it.
+**Goal:** Add a single durable collection-control owner so consumers can request bounded, expiring collector cadence leases without owning collector configuration or canonical state.
 
-**Files / areas:** `src/ui/validation-dashboard.jsx`, dashboard presentation documentation/state, next immutable deployment release.
+**Files / areas:** collection-control contract/service, collector runtime/configuration, port 3 control transport, telemetry/health, M3 validation plan/registry/tests, architecture/decisions, immutable deployment release.
 
-**Decisions / constraints:** Preserve all seven existing navigation destinations, labels, badges, emergency focus behavior, and text size. Use lightweight text glyph icons with no new dependency. Wide layouts may remain one row; narrower layouts wrap naturally into a compact 4+3 arrangement. This is a bounded UI change before resuming M3 cadence control.
+**Decisions / constraints:** Collector baseline cadence remains the fallback. Each domain declares a minimum safe interval. Consumers request owner/domain/interval/expiry leases; fastest active valid request wins, clamped to the domain floor. Port 3 is transport only; durable control state is authority. Expired leases are removed automatically. Collectors consume resolved cadence and never arbitrate competing requests. Market port 5 remains reserved for later dedicated market control.
 
-**Validation:** Repository implementation complete. Navigation now uses compact icon+text controls, natural wrapping, a 640px dashboard minimum, and preserves labels/badges/emergency behavior. r58 established compact icon+text navigation; r59 made the stacked ~720px layout the auto-sized default and runtime confirmed the intended 4+3 navigation. That narrower layout exposed the existing 860px max-height clamp cropping the taller Overview content. r60 raises the dashboard max-height to 950px while retaining viewport-bounded auto-sizing. Runtime validation on r60 confirms the default stacked dashboard opens at the intended narrow width with 4+3 icon/text navigation and the Overview content is no longer cropped.
+**Validation:** Pending. First SAFE proof will accelerate the player collector with a short lease, verify bounded faster observations, allow expiry, and verify automatic return to baseline. Service health and durable resolved state must be observable.
 
-**Exact next step:** Resume M3 with the deferred consumer cadence-request/control-plane slice.
+**Exact next step:** Implement the collection-control owner and collector consumption path, register the SAFE validation requirement, package the next immutable release, then runtime validate through the Validation Dashboard.
 
 ## Recently completed
 
