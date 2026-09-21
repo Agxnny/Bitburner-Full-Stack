@@ -23,30 +23,28 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Drag-selectable dashboard docking + updater width response
-**Status:** Implementation complete — runtime validation pending
+### Health incident uniqueness + r30 updater-width validation
+**Status:** Implementation
 
-**Goal:** Extend the validated r28 anchor coordinator so a follower can be dragged to the anchor's top/bottom/left/right side and snap there, while fixing Update Watcher width growth when update approval controls appear.
+**Goal:** Keep the System Health Watcher focused on the latest meaningful warning/error for each service incident type instead of accumulating repeated copies across repeated stale/failure episodes, while using r30 presentation to validate the pending Update Watcher grow/shrink behavior.
 
 **Files / areas touched:**
-- `src/ui/dashboard-layout-coordinator.js`
-- `src/ui/dashboard-window-memory.js`
-- Update Watcher sizing surface
-- UI docs / decisions / deployment release
+- `src/core/health-collector.js`
+- `src/core/README.md`
+- `src/ui/README.md`
+- deployment r30 release metadata
 
 **Decisions / constraints:**
-- Operator screenshots validate r28 anchor transfer, anchor movement, follower movement, ordering reversal, and basic vertical stack coordination.
-- Dock side is browser-local presentation state per follower/anchor relationship; supported sides are top, bottom, left, right.
-- A follower remains coordinated normally. A native manual drag that materially departs from its commanded position temporarily releases it, and after drag settle the nearest anchor side is selected and persisted.
-- Reversing the anchor preserves the physical relation where possible by using the inverse side (left↔right, top↔bottom).
-- Dynamic size changes reflow from the persisted dock side.
-- React/browser code detects drag geometry and calculates intent only; each dashboard main loop remains sole Netscript move/resize owner.
-- Update Watcher must grow only when its nowrap status-row content requires it, then shrink after approval controls disappear. Do not make its normal state permanently wider.
-- r27 measured content-viewport sizing remains the sizing authority.
+- Incident identity for warning/error retention is stable service + incident code. A newer occurrence replaces the older retained occurrence of the same identity.
+- Different incident codes for the same service remain independently visible; different services never deduplicate one another.
+- Recovery/info records remain bounded history and do not become active warnings.
+- This changes retained operational incident presentation only; it does not create canonical game state or Supervisor authority.
+- Existing incident files are normalized through the same retention rule when the collector starts, so historical duplicate warnings do not survive indefinitely.
+- r29 four-side docking/anchor behavior is runtime PASS. Update Watcher update-available grow/shrink remains pending and will be exercised when r30 is presented.
 
-**Validation:** r28 operator screenshots PASS anchor transfer, anchor movement, follower movement, ordering reversal, and basic coordinated placement. r29 implements four-side persisted docking, follower drag release/snap, inverse-side anchor transfer, and intrinsic nowrap status-row width measurement for Update Watcher. Static implementation/docs complete; runtime validation pending.
+**Validation:** Static implementation pending. Runtime validation will require r30 presentation before install for updater width, then r30 install and a repeated stale/recovery/stale cycle to prove only the newest unique warning remains.
 
-**Next step:** Publish r29 from immutable manifest commit `b0e5c69f4700b3a58369ef04e96424b6dbbc3b8b`, install normally, then validate all four dock sides, anchor reversal, dynamic size reflow, and Update Watcher update-available grow/shrink.
+**Next step:** Implement incident upsert/normalization, update feature docs, publish immutable r30 manifest, then hand off runtime validation.
 
 ## Recently completed
 
