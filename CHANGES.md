@@ -23,32 +23,25 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r39 producer-owned service instance uptime
-**Status:** r39 presented — r38 two-state action sizing PASS; r39 install pending
+### r40 collector process-uptime correction
+**Status:** Approved — implementation
 
-**Goal:** Make Service Placement uptime survive Health Collector/dashboard restarts by moving instance start ownership to each reporting service.
+**Goal:** Correct shared collector uptime so producer-owned `startedAt` remains the immutable process start timestamp instead of being shadowed by each collection cycle.
 
 **Files / areas touched:**
-- `src/core/telemetry.js`
 - `src/collectors/collector-runtime.js`
-- `src/core/health-collector.js`
-- `src/bootstrap/update-watcher.js`
-- `src/ui/system-health-dashboard.jsx`
-- `src/core/README.md`
-- deployment r39 metadata
+- deployment r40 metadata
 
 **Decisions / constraints:**
-- `startedAt` is immutable producer-owned current-process lifetime metadata.
-- Shared collector runtime captures one `startedAt` before its loop and includes it in every collector health record.
-- Update Watcher and Health Collector capture their own process `startedAt` once and publish it with their health.
-- Health Collector passes producer `startedAt` through; it no longer invents uptime from first observation.
-- Dashboard derives live uptime from `startedAt` using ordinary JS only.
-- A deployment that restarts a service correctly resets that service's uptime; a Health/dashboard-only restart does not reset other unchanged processes.
-- r38 installed cleanly; compact updater state and r37 uptime presentation remain validated. Action-state 900px width still requires the next presented release to observe before installation.
+- This revision is timer-only. Incident/error expiry is explicitly deferred to the next separate change.
+- Keep the outer process `startedAt` captured once before the collector loop.
+- Rename the inner per-cycle timestamp to `cycleStartedAt`; it is used only for interval/sleep accounting.
+- Do not change Health Collector, Update Watcher, dashboard presentation, incident retention, collector behavior, or sizing.
+- r39 runtime shows the defect clearly: shared collectors report only seconds because their per-cycle timestamp shadows process `startedAt`; Health Collector and Update Watcher already show correct process-scoped uptime.
 
-**Validation:** Current r38 runtime screenshot shows seven healthy services and clean compact updater state. Static r39 implementation complete: all five shared-runtime collectors, Update Watcher, and Health Collector capture one process `startedAt`; telemetry validates and transports it; Health snapshot passes it through; dashboard reads only `startedAt`. No `observedSince` references remain in runtime/UI files. Runtime validation: r38 presenting r39 confirms the explicit 900px Update Watcher action state PASS — update badge, Install clean, heartbeat, countdown, Install, Later, and the full rounded right card edge are all visible with no clipping. Compact 620px state was already PASS, so the two-state sizing contract is now validated in both states. r39 producer-owned uptime remains pending installation. r39 immutable manifest published at releaseRef `4193e31c5dce57cc2ea2af4f64d2901d7dfe9368`; descriptor published last.
+**Validation:** Static defect confirmed in `collector-runtime.js`: an inner `const startedAt = Date.now()` shadows the outer process timestamp. Runtime correction pending.
 
-**Next step:** Install r39 normally. Confirm the Update Watcher returns to the 620px compact state and System Health remains correctly sized. Then validate producer-owned uptime: unchanged service processes should retain lifetime across dashboard/Health-only restarts, while genuinely restarted services reset.
+**Next step:** Apply only the shadowing correction, publish r40, then install and confirm all shared collector uptimes advance continuously instead of resetting each collection cycle.
 
 ## Recently completed
 
