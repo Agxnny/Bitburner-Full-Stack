@@ -23,20 +23,18 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 canonical resource associations
-**Status:** Complete; corrected deployment and SAFE runtime validated through v0.6.0-r66
+### M3 diagnostics / incident intelligence
+**Status:** Implementation started
 
-**Goal:** Add a derived canonical resource-association domain that records factual stock-symbol ↔ organization ↔ server relationships for later authority, HWGW isolation, and stock-manipulation coordination.
+**Goal:** Add one durable diagnostics owner that turns structured runtime/deployment/health failures into evidence-backed incidents and concise Validation Dashboard explanations, so operators can distinguish observed symptoms, correlated evidence, and bounded inference without manually reconstructing failures.
 
-**Files / areas:** canonical state contract/service, market + network canonical inputs, Validation Dashboard plan/registry/test, M3 architecture/decision docs, canonical-state feature documentation, immutable deployment release.
+**Files / areas:** telemetry/error contract, diagnostics service/state, health/deployment correlation, Validation Dashboard diagnostics presentation, validation plan/tests, architecture/decisions, diagnostics feature documentation, immutable deployment release.
 
-**Decisions / constraints:** Associations are canonical facts, not authority. Do not create a second resource registry. Derive associations only from already-canonical market and network facts: market supplies stock symbol→organization through the official Stock API; network supplies server→organization through getServer(). Exact organization-name equality creates a link. Unmatched stocks/servers remain explicitly visible and are never guessed. Derived observedAt is bounded by the older of its two source observations; source revisions/timestamps are recorded as provenance. If either source is unavailable, association state is unavailable rather than inferred.
+**Decisions / constraints:** Diagnostics explains evidence; it does not invent root causes. Findings are classified as OBSERVED, CORRELATED, or INFERRED and carry confidence/evidence. Repeated failures deduplicate into durable incidents with occurrence counts. Telemetry remains transport; diagnostics durable state is the diagnostic truth. Existing canonical/health/deployment owners remain unchanged. Diagnostics must correlate deployment runtime reconciliation failures with changed runtime units/files when available. Dashboard remains a consumer.
 
-**Validation:** r64 and r65 runtime installs exposed the same canonical-state restart failure. Immutable r65 inspection proved the first repair had not removed the literal escape sequence. The exact r66 releaseRef was then verified to contain a real newline, the startup derivation call, and observed-domain-only reconciliation. r64 initially exposed: the generated service source contained a literal `\\n` between domain declarations, so the changed persistent service could not restart and health correctly reported the previous canonical-state instance stale. This is an implementation/publication defect, not an association validation result. Official v3.0.1-compatible API behavior was rechecked: Stock.getOrganization returns the organization associated with a symbol, while Server.organizationName exposes the organization owning a server. r64 derives associations only from those canonical facts. SAFE `m3.resource.associations` is registered to verify source provenance/timestamp bounds, exact organization equality, unique/source-backed links, explicit unmatched sets, and real runtime association coverage. Runtime proof is pending.
+**Validation:** Pending. First SAFE validation will exercise a synthetic structured diagnostic event and verify durable correlation/explanation/deduplication without disrupting production services. A later disruptive fixture will validate service/startup failure correlation if needed.
 
-**Runtime proof:** r66 installed CLEAN and restored canonical-state health. SAFE `m3.resource.associations` PASS, 7/7 assertions: canonical association state available; network/market source provenance and older timestamp preserved; every emitted link uses exact organization equality; no invented resources; no duplicate pairs; unmatched resources explicit and source-backed; live state exposed 33 stock/server association pairs, 1 unmatched stock, and 37 unmatched organization servers. No outstanding tests remain in the current validation plan.
-
-**Exact next step:** Close canonical resource associations and design the generic authority registry against this canonical relationship data.
+**Exact next step:** Implement the diagnostics contract/service and dashboard consumer, then publish the next immutable release for SAFE runtime validation.
 
 ## Recently completed
 
