@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r39 producer-owned service instance uptime
-**Status:** Implementation complete — publication pending
+**Status:** Published as v0.5.0-r39 — pre-install validation pending
 
 **Goal:** Make Service Placement uptime survive Health Collector/dashboard restarts by moving instance start ownership to each reporting service.
 
@@ -46,9 +46,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - A deployment that restarts a service correctly resets that service's uptime; a Health/dashboard-only restart does not reset other unchanged processes.
 - r38 installed cleanly; compact updater state and r37 uptime presentation remain validated. Action-state 900px width still requires the next presented release to observe before installation.
 
-**Validation:** Current r38 runtime screenshot shows seven healthy services and clean compact updater state. Static r39 implementation complete: all five shared-runtime collectors, Update Watcher, and Health Collector capture one process `startedAt`; telemetry validates and transports it; Health snapshot passes it through; dashboard reads only `startedAt`. No `observedSince` references remain in runtime/UI files. Runtime validation pending.
+**Validation:** Current r38 runtime screenshot shows seven healthy services and clean compact updater state. Static r39 implementation complete: all five shared-runtime collectors, Update Watcher, and Health Collector capture one process `startedAt`; telemetry validates and transports it; Health snapshot passes it through; dashboard reads only `startedAt`. No `observedSince` references remain in runtime/UI files. Runtime validation pending. r39 immutable manifest published at releaseRef `4193e31c5dce57cc2ea2af4f64d2901d7dfe9368`; descriptor published last.
 
-**Next step:** Publish immutable r39 and descriptor last. Before installation, inspect r38 presenting r39 to validate the 900px action width. Then install r39 and confirm process uptimes reset only for services actually restarted by deployment and survive a dashboard-only restart.
+**Next step:** Do not install r39 until r38 presents it. First validate the explicit 900px action state shows the full Install/Later row and right rounded edge. Then install r39; verify uptime is based on producer process lifetime and, on a later dashboard-only restart, unchanged service uptimes continue rather than resetting.
 
 ## Recently completed
 
