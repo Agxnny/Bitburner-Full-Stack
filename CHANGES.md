@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 collection cadence control
-**Status:** SAFE runtime validated on r62; disruptive restart/recovery test published in v0.6.0-r63
+**Status:** Complete; SAFE and disruptive runtime validated through v0.6.0-r63
 
 **Goal:** Add a single durable collection-control owner so consumers can request bounded, expiring collector cadence leases without owning collector configuration or canonical state.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Collector baseline cadence remains the fallback. Each domain declares a minimum safe interval. Consumers request owner/domain/interval/expiry leases; fastest active valid request wins, clamped to the domain floor. Port 3 is transport only; durable control state is authority. Expired leases are removed automatically. Collectors consume resolved cadence and never arbitrate competing requests. Market port 5 remains reserved for later dedicated market control.
 
-**Validation:** r62 SAFE `m3.cadence.control` PASS, 6/6 assertions. Collection-control healthy; lease published; 100ms request clamped to 500ms; accelerated player observations measured at 502/515/501ms; lease expired automatically and resolved back to 2000ms; restored observations measured at 2000/2009ms. The r61 failure is retained as evidence of the corrected validation timing race.
+**Validation:** r62 SAFE `m3.cadence.control` PASS, 6/6 assertions. r63 DISRUPTIVE `m3.cadence.restart` PASS: collection-control restarted from pid 253 to pid 270 while a live durable lease was active; the lease recovered at the 500ms floor, post-restart observations measured 501/513ms, the lease expired normally back to the 2000ms baseline, and the post-expiry observation measured 2009ms. The dashboard reports no outstanding tests in the current validation plan.
 
-**Exact next step:** Install v0.6.0-r63 and run the DISRUPTIVE `Cadence owner restart recovery` test from the Validation Dashboard. Confirm it recovers the live durable lease after restarting only collection-control, observes bounded acceleration, then expires back to baseline.
+**Exact next step:** Close the cadence-control slice and select/design the next M3 canonical-state work item.
 
 ## Recently completed
 
