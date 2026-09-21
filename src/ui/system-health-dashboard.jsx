@@ -68,7 +68,7 @@ function HealthDashboard({ bridge }) {
         <Section title="SERVICE PLACEMENT">
             {health.services.map((s) => <div key={s.instanceId} style={{display:"grid",gridTemplateColumns:"150px 90px 70px 90px 1fr",gap:10,padding:"4px 0",fontSize:12}}>
                 <span style={{color:C.text}}>{s.service}</span><span style={{color:C.muted}}>{s.host}</span>
-                <span style={{color:C.muted}}>pid {s.pid}</span><span style={{color:C.muted}}>{uptime(s.observedSince)}</span><span style={{color:healthColor(s.health)}}>{s.health.toUpperCase()}</span>
+                <span style={{color:C.muted}}>pid {s.pid}</span><span style={{color:C.muted}}>{uptime(s.startedAt)}</span><span style={{color:healthColor(s.health)}}>{s.health.toUpperCase()}</span>
             </div>)}
         </Section>
     </Shell>;
