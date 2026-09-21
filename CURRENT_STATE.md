@@ -37,6 +37,7 @@ M2 first vertical slice is runtime validated through v0.5.0-r22: shared cross-ho
 - Final normal r17 deployment succeeded after the validation helper was removed.
 - Explicit persistent-unit retirement runtime validated across r18/r19: positive retirement authorization stopped only the declared fixture and preserved the watcher/dashboard.
 - r20 runtime validated operator-visible deployment completion: green `Install clean` and completed revision replace stale install-progress feedback.
+- r56/r57 runtime validated corrected redundant discovery cadence: every normal 65-second watcher cycle samples both cache-busted Raw and GitHub Contents API, and r57 was detected on the first cycle after publication.
 - `CHANGES.md` is required for preserving in-progress work between implementation steps, chats, and handoffs.
 - Project rules require each feature/subsystem's own documentation to be updated whenever its behavior, interface, configuration, lifecycle, telemetry, validation procedure, or operator workflow changes.
 - M2 r21/r22 health vertical slice runtime validated: healthy placement, stale detection, degraded aggregate state, retained incidents, replacement-instance supersession, and recovery to healthy with only the current PID active.
@@ -64,8 +65,8 @@ The first M3 runtime slice is complete and runtime-proven through r55: M2 observ
 M2 is complete through r49. Deployment hygiene is complete through r51. The obsolete standalone System Health and Update Watcher UI scripts were explicitly retired with stop → verify stopped → delete → verify absent and auditable terminal/report output. Their backend Health Collector and Update Watcher services remain. Validation Dashboard is the sole UI surface.
 
 ## Exact next step
-1. Investigate the reported M1 update-discovery regression where new releases can require 2–3 watcher polling cycles despite redundant cache-busted discovery; treat this as a bounded reliability fix before starting the next M3 slice.
-2. After that fix is validated, resume M3 with the already-deferred consumer cadence-request/control-plane design and implementation.
+1. Install the already-presented harmless r57 validation release normally; r56 has already runtime-proven first-cycle redundant discovery by detecting r57 on its first 65-second cycle.
+2. Resume M3 with the already-deferred consumer cadence-request/control-plane design and implementation.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
