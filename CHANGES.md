@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 canonical resource associations
-**Status:** r64 and r65 committed but runtime reconciliation degraded; corrected source published as v0.6.0-r66, runtime validation pending
+**Status:** Complete; corrected deployment and SAFE runtime validated through v0.6.0-r66
 
 **Goal:** Add a derived canonical resource-association domain that records factual stock-symbol ↔ organization ↔ server relationships for later authority, HWGW isolation, and stock-manipulation coordination.
 
@@ -34,7 +34,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** r64 and r65 runtime installs exposed the same canonical-state restart failure. Immutable r65 inspection proved the first repair had not removed the literal escape sequence. The exact r66 releaseRef was then verified to contain a real newline, the startup derivation call, and observed-domain-only reconciliation. r64 initially exposed: the generated service source contained a literal `\\n` between domain declarations, so the changed persistent service could not restart and health correctly reported the previous canonical-state instance stale. This is an implementation/publication defect, not an association validation result. Official v3.0.1-compatible API behavior was rechecked: Stock.getOrganization returns the organization associated with a symbol, while Server.organizationName exposes the organization owning a server. r64 derives associations only from those canonical facts. SAFE `m3.resource.associations` is registered to verify source provenance/timestamp bounds, exact organization equality, unique/source-backed links, explicit unmatched sets, and real runtime association coverage. Runtime proof is pending.
 
-**Exact next step:** Install v0.6.0-r66 and first verify CLEAN runtime reconciliation plus a new HEALTHY canonical-state PID. Only then run SAFE `Stock/server resource associations`.
+**Runtime proof:** r66 installed CLEAN and restored canonical-state health. SAFE `m3.resource.associations` PASS, 7/7 assertions: canonical association state available; network/market source provenance and older timestamp preserved; every emitted link uses exact organization equality; no invented resources; no duplicate pairs; unmatched resources explicit and source-backed; live state exposed 33 stock/server association pairs, 1 unmatched stock, and 37 unmatched organization servers. No outstanding tests remain in the current validation plan.
+
+**Exact next step:** Close canonical resource associations and design the generic authority registry against this canonical relationship data.
 
 ## Recently completed
 
