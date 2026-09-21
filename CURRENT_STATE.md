@@ -1,7 +1,7 @@
 # Current State
 
 ## Current milestone
-**M2 — Telemetry / Dashboard Foundation (design next)**
+**M2 — Telemetry / Dashboard Foundation**
 
 ## Status
 **M1 — Reliable Deployment is complete and runtime validated through v0.4.0-r20.** Bootstrap safety, persistent updater lifecycle behavior, redundant discovery, commit-pinned release content, exact-revision human approval, single-deployment concurrency protection, explicit persistent-unit retirement, dashboard geometry memory, and operator-visible deployment completion status have all been exercised in Bitburner v3.0.1.
@@ -10,7 +10,7 @@ Controlled r16/r17 testing validated stale exact-revision rejection and concurre
 
 Full transactional rollback and per-file cryptographic hashes remain documented future hardening rather than M1 blockers. FIX-004's historical ledger-drift root cause remains unproven and must not be invented.
 
-The next milestone is M2 Telemetry / Dashboard Foundation. M2 is not yet implemented; design must establish ownership, dependencies, interfaces, and done criteria before repository implementation begins.
+M2 implementation has begun with the first vertical slice: a shared cross-host telemetry contract, central health collector/storage owner, observed service placement reporting, bounded incident history, and compact System Health Watcher. The update watcher is the first external real producer. Runtime validation is pending r21.
 
 ## Completed
 - Repository foundation, project rules, architecture, roadmap, decisions, fixes, references, and working-change documentation established.
@@ -39,7 +39,7 @@ The next milestone is M2 Telemetry / Dashboard Foundation. M2 is not yet impleme
 - Project rules require each feature/subsystem's own documentation to be updated whenever its behavior, interface, configuration, lifecycle, telemetry, validation procedure, or operator workflow changes.
 
 ## Active feature
-**M2 — Telemetry / Dashboard Foundation / design**
+**M2 — Telemetry / Dashboard Foundation / first vertical slice**
 
 Relevant starting surfaces:
 - `CHANGES.md`
@@ -52,11 +52,11 @@ Relevant starting surfaces:
 - relevant `FIXES.md` entries
 
 ## Exact next step
-1. Read the locked M2 roadmap/architecture constraints and current UI telemetry conventions.
-2. Define M2 ownership and canonical telemetry boundaries.
-3. Define producer/consumer interfaces, freshness/error metadata, and Production vs Validation Dashboard responsibilities.
-4. Define M2 runtime validation and done criteria.
-5. Record the approved design before implementation.
+1. Install r21 normally through the validated updater.
+2. Confirm health collector and update watcher both appear healthy with actual host/PID in the System Health Watcher.
+3. Stop the update watcher long enough to prove stale detection, then restart it and prove recovery.
+4. Confirm recent incident retention and health-dashboard geometry restoration.
+5. Fix any runtime defect before expanding M2 into broader structured events/status and dashboard shells.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
