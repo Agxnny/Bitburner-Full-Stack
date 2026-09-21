@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 collection cadence control
-**Status:** SAFE runtime validated on v0.6.0-r62; disruptive restart/recovery validation next
+**Status:** SAFE runtime validated on r62; disruptive restart/recovery test published in v0.6.0-r63
 
 **Goal:** Add a single durable collection-control owner so consumers can request bounded, expiring collector cadence leases without owning collector configuration or canonical state.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** r62 SAFE `m3.cadence.control` PASS, 6/6 assertions. Collection-control healthy; lease published; 100ms request clamped to 500ms; accelerated player observations measured at 502/515/501ms; lease expired automatically and resolved back to 2000ms; restored observations measured at 2000/2009ms. The r61 failure is retained as evidence of the corrected validation timing race.
 
-**Exact next step:** Add a disruptive collection-control restart test proving a live unexpired lease survives owner restart from durable state, remains bounded/resolved, and still expires back to baseline without stale authority.
+**Exact next step:** Install v0.6.0-r63 and run the DISRUPTIVE `Cadence owner restart recovery` test from the Validation Dashboard. Confirm it recovers the live durable lease after restarting only collection-control, observes bounded acceleration, then expires back to baseline.
 
 ## Recently completed
 
