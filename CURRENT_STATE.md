@@ -39,6 +39,7 @@ M2 first vertical slice is runtime validated through v0.5.0-r22: shared cross-ho
 - Project rules require each feature/subsystem's own documentation to be updated whenever its behavior, interface, configuration, lifecycle, telemetry, validation procedure, or operator workflow changes.
 - M2 r21/r22 health vertical slice runtime validated: healthy placement, stale detection, degraded aggregate state, retained incidents, replacement-instance supersession, and recovery to healthy with only the current PID active.
 - r27 measured content-viewport dashboard sizing runtime validated: both production dashboards fit healthy content; System Health grew for stale/degraded Active Issues and shrank after recovery without clipping, black-gap regression, or manual resizing.
+- r29 four-side dashboard docking runtime validated: followers snap to top/bottom/left/right of the selected anchor and anchor transfer preserves the physical relationship. Update-available width growth remains pending validation against the next presented release.
 
 ## Active feature
 **M2 — Telemetry / Dashboard Foundation / first vertical slice**
