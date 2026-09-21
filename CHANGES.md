@@ -23,35 +23,36 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M1 explicit persistent-unit retirement
-**Status:** Runtime validation — r18 passed, r19 publication in progress
+### M1 update-dashboard deployment completion status
+**Status:** Approved design — implementation
 
-**Goal:** Add and runtime-validate an explicit retirement contract for persistent runtime units so a service is stopped only when a newer validated manifest positively authorizes retirement.
+**Goal:** Make the ultra-compact update watcher clearly show when an installation has finished and whether the committed deployment was clean, instead of leaving transient `Installing rN.` feedback visible after completion.
 
 **Files / areas touched:**
-- `src/bootstrap/git-pull.js`
-- `src/bootstrap/git-pull-self-update.js`
-- `src/bootstrap/validation/retirement-fixture.js`
-- `deployment/README.md`
-- `deployment/releases/r18-manifest.json`
-- `deployment/releases/r19-manifest.json` after r18 validation
+- `src/ui/update-dashboard.jsx`
+- `src/ui/README.md`
+- `deployment/releases/r20-manifest.json`
 - `deployment/version.json`
 - `CURRENT_STATE.md`
 
 **Decisions / constraints:**
-- Manifest schema remains version 1; retirement is the additive optional `retireRuntimeUnits` array of persistent unit IDs.
-- A retirement ID must exist in the previously committed `runtimeUnits` ledger and must not also appear in the new manifest's active `runtimeUnits`.
-- Retirement reuses the previously committed unit invocation metadata, so the retiring release does not need to redeploy the retired script merely to stop it.
-- The puller validates retirement only after release metadata and files are staged; disappearance alone remains non-authoritative.
-- The helper stops matching retired processes, verifies they are gone, never relaunches them, reports `retired`/`already-stopped`, and excludes them from the newly committed runtime ledger.
-- r18 introduces a harmless persistent `retirement-validation-fixture`; r19 will explicitly retire it. The real update watcher remains an active persistent unit throughout.
-- No unrelated deployment refactor or schema redesign.
+- Reuse the watcher's existing canonical deployment observation/report; do not create a second deployment-status authority.
+- The dashboard derives operator states from deployment report status, `success`, `clean`, finished revision, and whether deployment infrastructure is still running.
+- Successful completion is explicit and green; degraded/failed completion is explicit and red; active deployment remains an in-progress state.
+- Transient command feedback must not override a terminal deployment result.
+- Preserve the approved ultra-compact grey-blue visual language, React/Netscript ownership boundary, and dashboard geometry memory.
 
-**Validation:** r18 installed successfully through the normal dashboard path. Runtime inspection confirmed both `src/bootstrap/update-watcher.js` and `src/bootstrap/validation/retirement-fixture.js` are running, proving the retirement-aware deployment path can introduce the controlled persistent fixture without disrupting the watcher. Retirement itself remains to be proven by r19.
+**Validation:** r19 retirement validation passed: after normal r19 installation, `src/bootstrap/validation/retirement-fixture.js` was gone while `src/bootstrap/update-watcher.js` and its dashboard remained running. This proves explicit retirement stopped only the authorized fixture. The new dashboard completion indicator is not yet runtime validated.
 
-**Next step:** Create and publish r19 with the fixture omitted from active `runtimeUnits` and explicitly listed in `retireRuntimeUnits`. After r19 is presented, install it normally and verify the fixture stops, the watcher remains healthy, and the committed runtime ledger no longer contains the fixture.
+**Next step:** Implement the dashboard status indicator, update feature documentation, publish r20, then install r20 normally and confirm the dashboard reports a clean completed installation.
 
 ## Recently completed
+
+### M1 explicit persistent-unit retirement
+**Status:** Runtime validated
+
+r18 introduced the retirement-aware puller/helper and launched the harmless persistent retirement fixture alongside the update watcher. r19 then explicitly retired only that fixture. Runtime `ps home` after r19 showed the watcher and dashboard still healthy while the fixture was gone, validating positive manifest-authorized persistent-unit retirement.
+
 
 ### M1 deployment reliability validation through r17
 **Status:** Runtime validated
