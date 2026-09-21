@@ -3,7 +3,7 @@ import { runCollector } from "./collector-runtime.js";
 const DOMAIN = "market";
 const HISTORY = "data/observations/market-history.json";
 export async function main(ns) {
-    await runCollector(ns, { service: "market-collector", domain: DOMAIN, intervalMs: 6_000 }, async () => {
+    await runCollector(ns, { service: "market-collector", domain: DOMAIN, intervalMs: 6_000, minimumIntervalMs: 1_000 }, async () => {
         const capabilities = {
             wse: ns.stock.hasWseAccount(), tix: ns.stock.hasTixApiAccess(),
             fourS: ns.stock.has4SData(), fourSTix: ns.stock.has4SDataTixApi(),
