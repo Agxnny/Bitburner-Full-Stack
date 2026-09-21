@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Health incident uniqueness + updater reactive-width correction
-**Status:** Fix implementation — r30 width validation failed before install
+**Status:** Published as v0.5.0-r31 — runtime validation pending
 
 **Goal:** Keep the System Health Watcher focused on the latest meaningful warning/error for each service incident type instead of accumulating repeated copies across repeated stale/failure episodes, while using r30 presentation to validate the pending Update Watcher grow/shrink behavior.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Existing incident files are normalized through the same retention rule when the collector starts, so historical duplicate warnings do not survive indefinitely.
 - r29 four-side docking/anchor behavior is runtime PASS. Update Watcher update-available grow/shrink remains pending and will be exercised when r30 is presented.
 
-**Validation:** Health incident implementation is statically complete but not yet installed. r30 presentation exposed a failed updater-width validation: the native tail remained at compact width and clipped the Install/Later controls. Root cause in the sizing helper is that width is remeasured on element resize, but React adding/removing status-row children can change intrinsic scroll demand without changing any observed box size, so no new desired width is published.
+**Validation:** Health incident implementation is statically complete but not yet installed. r30 presentation exposed a failed updater-width validation: the native tail remained at compact width and clipped the Install/Later controls. Root cause was missing remeasurement when React changed status-row children without changing an observed box. The shared helper now observes root child/text mutations and schedules the same debounced intrinsic-width measurement used by resize events. Docs updated. r31 immutable manifest published at releaseRef `bd766e7b32e7edf0ca17fb0f4ea65fa3a46a7b22`; descriptor published last. Runtime proof of the reactive grow path necessarily requires the corrected helper to be installed first, so final grow validation moves to the next presented revision.
 
-**Next step:** Add content-mutation-triggered remeasurement to the shared dashboard sizing helper, document the correction, supersede uninstalled r30 with immutable r31, then validate r31-presented grow behavior before install, compact shrink after install, and health incident uniqueness after install.
+**Next step:** Let the watcher replace presented r30 with r31. Validate that the existing r29 dashboard expands enough to expose the full r31 Install/Later controls only after it receives the new sizing source through installation is impossible; therefore install r31 normally, then use the next update-presented state for final reactive-width proof. Immediately after r31 install, validate compact sizing and health incident normalization/uniqueness. The r30 failed screenshot remains the regression baseline.
 
 ## Recently completed
 
