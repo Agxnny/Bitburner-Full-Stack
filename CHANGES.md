@@ -23,8 +23,26 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
+### r49 Emergency validation registry hotfix
+**Status:** Implementation
+
+**Goal:** Repair the r48 startup crash before any disruptive validation is allowed to run. r48 installed a sparse `TESTS` array entry because the registry edit emitted `},,`; `findTest()` then dereferenced the resulting `undefined` element during Validation Dashboard startup.
+
+**Files / areas touched:**
+- `src/validation/test-registry.js`
+- deployment r49 metadata
+
+**Decisions / constraints:**
+- This is a minimal hotfix. Do not change emergency-test behavior while repairing startup.
+- Remove the accidental sparse array entry and make `findTest()` defensively tolerate malformed/sparse registry entries so a future registry defect fails closed instead of crashing the persistent dashboard.
+- The r48 disruptive test did not start; no collectors were intentionally stopped by this failure.
+
+**Validation:** Operator runtime on r48 produced `TypeError: Cannot read properties of undefined (reading 'id')` from `findTest()` during `TESTS_RUNNABLE()`. Repository inspection confirms the exact source is the accidental `},,` between `m2.updater.notification` and `m2.dashboard.emergency-focus`.
+
+**Next step:** Fix registry syntax/lookup defensively, publish r49, install it, and verify the Validation Dashboard opens normally before attempting the DISRUPTIVE confirmation flow.
+
 ### r48 Controlled emergency-focus validation
-**Status:** r48 published — awaiting controlled emergency runtime validation
+**Status:** Superseded by r49 startup hotfix; disruptive runtime test not started
 
 **Goal:** Add the first DISRUPTIVE registered validation test. It must deliberately cross the real dashboard emergency threshold using only disposable M2 observation collectors, prove one-shot Health focus plus acknowledgement, restore every process it stopped, and record machine/operator evidence without terminal use.
 
