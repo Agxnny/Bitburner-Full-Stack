@@ -31,3 +31,14 @@ Before relying on any Bitburner API behavior, verify it against the current offi
 **M1 — Reliable Deployment**
 
 Reliable deployment, updater lifecycle, update UI, and validation behavior are being completed before the project advances to later control-plane milestones.
+
+
+## Explicit managed-file retirement
+
+Deployment manifests may explicitly retire obsolete managed source files with `retireFiles`. Removing a path from the normal `files` list is never deletion authorization.
+
+Retirement is fail-closed. After new ownership code is active and persistent runtime reconciliation has removed relaunch behavior, the self-update helper finds any process whose script path matches the retired file, closes its tail, requests termination, waits, and verifies the script is no longer running. A file is deleted only after that verification succeeds, and deletion is followed by an absence check. A stop/verification failure preserves the file and degrades the deployment result.
+
+The puller rejects protected/unsafe retirement paths, duplicate retirement paths, bootstrap puller/helper retirement, and a path that is simultaneously active and retired. Runtime data under `data/` remains protected.
+
+Every requested retirement is auditable in terminal output and `data/git-pull-report.json`. Results distinguish `already-absent`, successful `retired`, and `failed`, and include matching/stopped PIDs and failure reasons. Retirement declarations are release-specific instructions rather than permanent tombstones.
