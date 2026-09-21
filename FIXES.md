@@ -356,3 +356,13 @@ Operator-visible polling cadence must describe the cadence of the reliability gu
 - FIX-006 — Raw discovery lag and mutable branch sources could mix releases.
 - D-017 — Release discovery is redundant; release content is commit-pinned.
 - D-034 — Operator-visible update poll is one complete redundant discovery cycle.
+
+
+## FIX-012 — Generated source patch preserved a literal escape sequence
+**Status:** Corrected in source; runtime validation pending in r66
+
+**Symptom:** r64 and r65 both committed deployment files but persistent runtime reconciliation degraded because `canonical-state-service.js` could not launch. Health retained the previous canonical-state instance as stale.
+
+**Cause:** The repository source contained the two literal characters backslash+n between JavaScript declarations (`;\\nconst`). The first attempted r65 repair used an incorrectly escaped replacement pattern, so it changed adjacent integration logic but did not remove those literal characters. Review of the immutable r65 releaseRef confirmed the malformed source was still pinned into that release.
+
+**Fix / prevention:** Match generated escape sequences explicitly when repairing programmatically generated source and verify the exact immutable releaseRef contents before publishing the corrective release. For syntax-sensitive generated edits, inspect the exact changed source rather than relying on the mutation call succeeding.
