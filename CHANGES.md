@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r34 Update Watcher sizing and useful poll countdown
-**Status:** Approved — implementation
+**Status:** Implementation complete — publication pending
 
 **Goal:** Eliminate the remaining compact Update Watcher right-edge crop and make its polling indicator show useful time remaining until the next real remote check.
 
@@ -41,9 +41,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Remaining crop is treated as a sizing conversion/inset issue, not a heartbeat-text cause. Shared sizing adds a small explicit edge safety allowance after measured content/native overhead.
 - Preserve r31/r32-proven reactive update-available grow/shrink behavior and existing docking.
 
-**Validation:** Implementation pending. Current r33 compact watcher can still clip its right rounded edge; update-available growth is already runtime PASS.
+**Validation:** Static implementation complete. Heartbeat presentation is whole-second with reserved width; poll display is derived from watcher-owned `nextCheckAt`; shared content-width conversion adds an 8px edge-safety allowance after measured native overhead. No watcher scheduling semantics or dashboard docking logic changed. Runtime validation pending.
 
-**Next step:** Implement presentation/countdown and shared edge allowance, update UI docs, publish r34, then validate compact right edge, countdown reset, and update-available growth.
+**Next step:** Publish immutable r34 and descriptor last, then install normally and validate compact right edge, live countdown/reset at the real check boundary, and preserved update-available growth.
 
 ## Recently completed
 
