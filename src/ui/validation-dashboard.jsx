@@ -15,6 +15,7 @@ const WINDOW_KEY="validation-dashboard";
 const REFRESH_MS=1000;
 const COMMAND_PATH="data/update-command.json";
 const TEST_RESULT_PATH="data/validation/latest-result.json";
+const TEST_UI_PATH="data/validation/ui-state.json";
 const PATHS={
     health:"data/telemetry/health.json", incidents:"data/telemetry/incidents.json", update:"data/update-status.json",
     player:"data/observations/player.json", network:"data/observations/network.json", market:"data/observations/market.json",
@@ -28,13 +29,13 @@ export async function main(ns){
     const copies=ns.ps("home").filter((p)=>p.filename===SCRIPT_PATH).sort((a,b)=>a.pid-b.pid);
     if(copies.length&&copies[0].pid!==ns.pid)return;
     ns.disableLog("sleep"); ns.disableLog("run");
-    const bridge={snapshot:readSnapshot(ns),pendingIntent:null,feedback:"",desiredSize:null,appliedSize:null,desiredPosition:null,appliedPosition:null,layout:null,preferredWidth:1180};
+    const bridge={snapshot:readSnapshot(ns),pendingIntent:null,feedback:"",emergencyUi:{signature:null,focusedAt:null,acknowledgedAt:null,focusCount:0},desiredSize:null,appliedSize:null,desiredPosition:null,appliedPosition:null,layout:null,preferredWidth:1180};
     ns.ui.openTail(); ns.ui.setTailTitle("Full Stack — Validation Dashboard"); ns.clearLog();
     ns.printRaw(<ValidationDashboard bridge={bridge}/>);
     await ns.sleep(75); await restoreDashboardPosition(ns,WINDOW_KEY);
     while(true){
         if(bridge.pendingIntent){bridge.feedback=handleIntent(ns,bridge.pendingIntent);bridge.pendingIntent=null;}
-        bridge.snapshot=readSnapshot(ns); applyDashboardSize(ns,bridge); applyDashboardPosition(ns,bridge);
+        bridge.snapshot=readSnapshot(ns); writeUiState(ns,bridge); applyDashboardSize(ns,bridge); applyDashboardPosition(ns,bridge);
         await ns.sleep(REFRESH_MS);
     }
 }
@@ -50,6 +51,7 @@ function handleIntent(ns,intent){
 function runValidationTest(ns,testId){
     const test=findTest(testId);
     if(!test||!test.runner||test.manual)return "Test is not executable.";
+    const anyActive=findRunningTest(ns); if(anyActive)return `Validation test already running (pid ${anyActive.pid}).`;
     const active=ns.ps("home").find((p)=>p.filename===test.runner);
     if(active)return `Test already running (pid ${active.pid}).`;
     const pid=ns.run(test.runner,{threads:1,preventDuplicates:true},test.id);
@@ -67,13 +69,15 @@ function readSnapshot(ns){
     return {capturedAt:Date.now(),health:readJson(ns,PATHS.health),incidents:readJson(ns,PATHS.incidents),update:readJson(ns,PATHS.update),observations,testRun:test,testResult:readJson(ns,TEST_RESULT_PATH),evidence:readEvidence(ns)};
 }
 function findRunningTest(ns){
-    for(const testId of ["m2.dashboard.smoke"]){
-        const test=findTest(testId); if(!test?.runner)continue;
+    for(const test of TESTS_RUNNABLE()){
+        const testId=test.id;
         const process=ns.ps("home").find((p)=>p.filename===test.runner);
         if(process)return {testId,pid:process.pid,startedAt:Date.now()};
     }
     return null;
 }
+function TESTS_RUNNABLE(){return ["m2.dashboard.smoke","m2.dashboard.emergency-focus"].map(findTest).filter((x)=>x?.runner);}
+function writeUiState(ns,bridge){ns.write(TEST_UI_PATH,JSON.stringify({schemaVersion:1,updatedAt:Date.now(),emergency:bridge.emergencyUi},null,2),"w");}
 function ValidationDashboard({bridge}){
     const rootRef=useDashboardWindow(WINDOW_KEY,bridge,{minWidth:980,minHeight:680,maxWidth:1320,maxHeight:860});
     const [snapshot,setSnapshot]=React.useState(bridge.snapshot);
@@ -88,10 +92,18 @@ function ValidationDashboard({bridge}){
     const emergencySignature=emergency ? unhealthy.map((s)=>`${s.service}:${s.health}`).sort().join("|") : null;
     const [ack,setAck]=React.useState(()=>readLocal("emergency-ack"));
     React.useEffect(()=>{
-        if(!emergencySignature||ack===emergencySignature)return;
+        if(!emergencySignature){
+            if(ack){setAck(null);removeLocal("emergency-ack");}
+            removeLocal("emergency-focus"); bridge.emergencyUi={signature:null,focusedAt:null,acknowledgedAt:null,focusCount:bridge.emergencyUi?.focusCount??0}; return;
+        }
+        bridge.emergencyUi={...bridge.emergencyUi,signature:emergencySignature};
+        if(ack===emergencySignature)return;
         const seen=readLocal("emergency-focus");
-        if(seen!==emergencySignature){setTab("health");writeLocal("emergency-focus",emergencySignature);}
-    },[emergencySignature,ack]);
+        if(seen!==emergencySignature){
+            setTab("health"); writeLocal("emergency-focus",emergencySignature);
+            bridge.emergencyUi={...bridge.emergencyUi,signature:emergencySignature,focusedAt:Date.now(),focusCount:(bridge.emergencyUi?.focusCount??0)+1};
+        }
+    },[emergencySignature,ack,bridge]);
 
     const updateRevision=snapshot?.update?.phase==="update-available"?snapshot.update.presentedRevision:null;
     const [seenUpdate,setSeenUpdate]=React.useState(()=>Number(readLocal("seen-update")||-1));
@@ -103,7 +115,7 @@ function ValidationDashboard({bridge}){
     return <div ref={rootRef} style={{boxSizing:"border-box",minWidth:960,minHeight:660,padding:10,background:V.page,color:V.text,fontFamily:'Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif'}}>
         <div style={{border:`1px solid ${V.border}`,borderRadius:10,overflow:"hidden",background:V.surface,boxShadow:"0 10px 30px rgba(0,0,0,.28)"}}>
             <Header snapshot={snapshot}/>
-            {emergencySignature&&ack!==emergencySignature?<Emergency count={unhealthy.length} onAck={()=>{setAck(emergencySignature);writeLocal("emergency-ack",emergencySignature);}}/>:null}
+            {emergencySignature&&ack!==emergencySignature?<Emergency count={unhealthy.length} onAck={()=>{setAck(emergencySignature);writeLocal("emergency-ack",emergencySignature);bridge.emergencyUi={...bridge.emergencyUi,signature:emergencySignature,acknowledgedAt:Date.now()};}}/>:null}
             <nav style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:6,padding:"8px 10px",borderBottom:`1px solid ${V.divider}`}}>
                 {TABS.map(([id,label])=><Tab key={id} active={tab===id} badge={badges[id]??0} danger={id==="health"&&emergency} onClick={()=>navigate(id)}>{label}</Tab>)}
             </nav>
@@ -125,3 +137,4 @@ function Tab({children,active,badge,danger,onClick}){const color=danger?V.red:ac
 function readJson(ns,path){if(!ns.fileExists(path,"home"))return null;try{return JSON.parse(ns.read(path));}catch{return null;}}
 function readLocal(key){try{return localStorage.getItem(`bitburner-full-stack.validation.${key}`);}catch{return null;}}
 function writeLocal(key,value){try{localStorage.setItem(`bitburner-full-stack.validation.${key}`,value);}catch{}}
+function removeLocal(key){try{localStorage.removeItem(`bitburner-full-stack.validation.${key}`);}catch{}}
