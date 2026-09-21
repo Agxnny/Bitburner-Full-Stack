@@ -1,6 +1,6 @@
 import { applyDashboardPosition, applyDashboardSize, restoreDashboardPosition, useDashboardWindow } from "./dashboard-window-memory.js";
 import { V } from "./validation-theme.js";
-import { readValidationLedger, readValidationPlan, validationSummaryFrom } from "../validation/validation-state.js";
+import { readValidationLedger, readValidationPlan, recordValidationResult, requiredValidationVersion, validationSummaryFrom } from "../validation/validation-state.js";
 import { ValidationOverviewTab } from "./validation-overview-tab.jsx";
 import { ValidationWorkTab } from "./validation-work-tab.jsx";
 import { ValidationHealthTab } from "./validation-health-tab.jsx";
@@ -62,7 +62,8 @@ function runValidationTest(ns,testId){
 function confirmValidationTest(ns,testId){
     const test=findTest(testId);
     if(!test?.manual)return "Test is not operator-confirmable.";
-    const plan=readValidationPlan(ns); const validationVersion=requiredVersion(plan,testId);\n    const record=evidenceRecord({testId,validationVersion,status:"PASS",kind:"operator-confirmed",summary:"Operator confirmed the documented observation was completed successfully."}); appendEvidence(ns,record);
+    const plan=readValidationPlan(ns); const validationVersion=requiredValidationVersion(plan,testId)??1;
+    const record=evidenceRecord({testId,validationVersion,status:"PASS",kind:"operator-confirmed",summary:"Operator confirmed the documented observation was completed successfully."}); appendEvidence(ns,record);\n    recordValidationResult(ns,{testId,validationVersion,status:"PASS",evidenceId:record.id,kind:record.kind,summary:record.summary,at:record.at});
     return `Recorded operator-confirmed PASS for ${test.title}.`;
 }
 function readSnapshot(ns){
@@ -137,7 +138,7 @@ function ValidationDashboard({bridge}){
 function Header({snapshot}){const local=snapshot?.update?.local;const version=local?.version&&Number.isSafeInteger(local.revision)?`${local.version}-r${local.revision}`:"—";const online=snapshot?.health?.overall==="healthy";return <header style={{display:"flex",alignItems:"center",height:46,padding:"0 14px",borderBottom:`1px solid ${V.divider}`,background:V.raised}}><strong style={{letterSpacing:".08em",color:"#b8d2f3"}}>FULL STACK — VALIDATION DASHBOARD</strong><span style={{marginLeft:"auto",color:V.muted,fontSize:12}}>{version}　|　M3 — Canonical State　</span><span style={{color:online?V.green:V.amber,fontSize:12,fontWeight:800}}>● {online?"Online":"Attention"}</span></header>;}
 function Emergency({count,onAck}){return <div style={{display:"flex",alignItems:"center",gap:10,padding:"9px 14px",background:"rgba(255,93,104,.12)",borderBottom:`1px solid ${V.red}`,color:V.red,fontWeight:800}}>● EMERGENCY — {count} persistent services unavailable or unhealthy <button onClick={onAck} style={{marginLeft:"auto",border:`1px solid ${V.red}`,borderRadius:5,background:"transparent",color:V.text,padding:"5px 9px",cursor:"pointer"}}>Acknowledge</button></div>;}
 function Tab({children,active,badge,danger,onClick}){const color=danger?V.red:active?V.green:V.blue;return <button onClick={onClick} style={{height:38,border:`1px solid ${active?color:V.border}`,borderRadius:6,background:active?"#10251f":V.page,color:active?color:"#b8d2f3",fontWeight:750,cursor:"pointer",boxShadow:active?`inset 0 0 14px ${color}22`:"none"}}>{children}{badge>0?<span style={{display:"inline-grid",placeItems:"center",minWidth:18,height:18,marginLeft:8,padding:"0 4px",borderRadius:9,background:danger?V.red:V.blue,color:"white",fontSize:10}}>{badge}</span>:null}</button>;}
-function requiredVersion(plan,testId){const versions=(plan?.groups??[]).flatMap((g)=>g.requirements??[]).filter((r)=>r.testId===testId).map((r)=>r.validationVersion);return versions.length?Math.max(...versions):1;}\nfunction readJson(ns,path){if(!ns.fileExists(path,"home"))return null;try{return JSON.parse(ns.read(path));}catch{return null;}}
+function readJson(ns,path){if(!ns.fileExists(path,"home"))return null;try{return JSON.parse(ns.read(path));}catch{return null;}}
 function readLocal(key){try{return localStorage.getItem(`bitburner-full-stack.validation.${key}`);}catch{return null;}}
 function writeLocal(key,value){try{localStorage.setItem(`bitburner-full-stack.validation.${key}`,value);}catch{}}
 function removeLocal(key){try{localStorage.removeItem(`bitburner-full-stack.validation.${key}`);}catch{}}
