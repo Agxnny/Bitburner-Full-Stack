@@ -24,15 +24,17 @@ The M1 update dashboard uses the ultra-compact variant of this language. The lat
 
 Implementation should use ordinary React elements and inline/shared styles without external UI dependencies so components remain compatible with Bitburner's built-in React environment.
 
-## Shared window memory
+## Shared dashboard position and dynamic sizing
 
-All dashboard tail windows must use `dashboard-window-memory.js` with a stable dashboard-specific key. The helper remembers the native tail window's position and size in browser local storage, restores that geometry after the dashboard opens, and keeps it updated when the player drags or resizes the tail.
+All dashboard tails use `dashboard-window-memory.js` with a stable dashboard-specific key.
 
-Window memory is presentation state only. It is not canonical game/runtime state and must never block a dashboard from opening. Invalid or unavailable memory fails open to Bitburner's normal window geometry. Saved geometry is clamped to the current viewport so a resolution change cannot permanently strand a dashboard off-screen.
+**Position is user-owned persistent presentation state.** Dragging a dashboard stores its position in browser local storage and restores that position after relaunch. Existing schema-v1 geometry records are accepted for migration, but their saved width/height are ignored.
 
-React only observes DOM geometry and writes browser-local presentation memory. Netscript UI calls used to restore the window remain owned by the script `main()` path, preserving the no-concurrent-Netscript rule.
+**Size is dashboard-owned runtime state.** Manual user resizing is not persisted or restored. React measures the rendered dashboard content with ordinary DOM/`ResizeObserver` APIs and writes a debounced desired size into the dashboard's in-memory bridge. The script `main()` path is the sole owner of `ns.ui.resizeTail()` and applies the requested size with tolerance and per-dashboard min/max bounds.
 
-Runtime validation on `v0.4.0-r15` confirmed that manually moving/resizing the update dashboard, allowing the state to persist, then letting the watcher relaunch the dashboard restores the saved size and position correctly. This behavior is now the standard for future Production and Validation dashboards.
+This allows dashboards to grow and shrink as content changes. Future tabbed dashboards use the same mechanism, so changing tabs may request a different content size without introducing Netscript calls inside React.
+
+Position and requested size are clamped to the viewport. Presentation memory remains best-effort and must never block dashboard startup. The React/Netscript ownership rule remains unchanged.
 
 ## M1 update dashboard slice
 
@@ -79,6 +81,6 @@ React components, effects, timers, and button callbacks do not call Netscript AP
 
 The surface shows overall suite health, active stale/degraded/failed services, recent warning/error incidents, and observed service placement (service, host, PID, health). Healthy operation stays intentionally quiet.
 
-The dashboard uses the shared grey-blue visual language and `dashboard-window-memory.js` with the stable key `system-health`. React only renders ordinary in-memory snapshots; the script main loop owns all Netscript file reads and window restore calls.
+The dashboard uses the shared grey-blue visual language and `dashboard-window-memory.js` with the stable key `system-health`. Its height follows current content within defined bounds, so active issues/incidents can grow the tail and recovery can shrink it. React measures content only; the script main loop owns Netscript reads, position restore, and tail resizing.
 
 Desired placement and restart authority do not belong to this dashboard or to M2 telemetry. The future M4 Supervisor will compare intended service placement with this observed runtime information.
