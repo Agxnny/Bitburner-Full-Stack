@@ -37,6 +37,7 @@ export function serviceEvent(ns, service, severity, code, message, options = {})
         instanceId: options.instanceId ?? `${service}:${ns.getHostname()}:${ns.pid}`,
         host: ns.getHostname(),
         pid: ns.pid,
+        lifecycle: options.lifecycle ?? "persistent",
         severity,
         code,
         message,
