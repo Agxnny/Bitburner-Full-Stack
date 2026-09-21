@@ -42,21 +42,34 @@ M2 first vertical slice is runtime validated through v0.5.0-r22: shared cross-ho
 - r29 four-side dashboard docking runtime validated: followers snap to top/bottom/left/right of the selected anchor and anchor transfer preserves the physical relationship. Update-available width growth remains pending validation against the next presented release.
 
 ## Active feature
-**M3 — Canonical State design**
+**M3 — Canonical State design / information-contract handoff**
 
-M2 is complete and runtime validated through v0.5.0-r49. Its closeout evidence covers the seven-service telemetry/health model, stale/degraded/recovery behavior, isolated observation collectors, dashboard geometry/layout, Validation Dashboard smoke test, genuine updater-attention behavior, explicit automated/operator-confirmed evidence provenance, managed-tail replacement cleanup, and controlled emergency focus/recovery returning to 7/7 healthy.
+No M3 runtime implementation has started. The approved framing is deliberately thin: M2 already owns collection; M3 defines the stable communication contract between those observations and future consumers.
 
-The five files under `data/observations/` remain replaceable M2 observations, not canonical state. M3 must define a single state authority and explicit raw/derived/freshness/reconciliation interfaces rather than promoting those files by convention.
+### M3 handoff boundary
+- Producers already exist: player, network, market, infrastructure, and capabilities observation collectors.
+- M3 should define the information highway, not duplicate collection or make controller decisions.
+- Design default: state is durable/latest-state data exposed through canonical state interfaces/files; commands and events use bounded ports/queues.
+- A restarted consumer must be able to read current canonical state without replaying transient port history.
+- Canonical state uses single-writer/many-reader ownership. Future consumers depend on the state contract, not collector storage details.
+- Ports need an explicit reservation/allocation map before use. Message envelopes need type/kind, schema version, message/correlation ID, producer/owner, timestamp, payload, and validation/failure semantics.
+- Define queue capacity/backpressure/overflow and restart semantics before any command/event producer depends on a port.
+- Define state freshness/stale/unavailable semantics and source/observed/published metadata before consumers rely on state.
+- Direct process args remain startup configuration/identity; telemetry/history remains evidence; React bridges remain UI-local only.
+- Do not add hacking target selection, purchase decisions, scheduling policy, authority allocation, or other M4+ intelligence to M3.
+
+### Pre-M3 cleanup state
+M2 is complete through r49. Deployment hygiene is complete through r51. The obsolete standalone System Health and Update Watcher UI scripts were explicitly retired with stop → verify stopped → delete → verify absent and auditable terminal/report output. Their backend Health Collector and Update Watcher services remain. Validation Dashboard is the sole UI surface.
 
 ## Exact next step
-1. Design the canonical-state owner and dependency direction from M2 observations/telemetry.
-2. Define versioned state schemas, raw-versus-derived boundaries, freshness metadata, and stale/unavailable semantics.
-3. Define reconciliation: what divergence can be corrected, what is observation-only, and what must fail closed.
-4. Define consumer interfaces so later Supervisor, resource manager, scheduler, controllers, and dashboards depend on state contracts rather than storage details.
-5. Define Validation Dashboard state-health views and registered M3 tests/evidence.
-6. Lock the design in DECISIONS/ARCHITECTURE before implementing the first M3 vertical slice.
-
-Pre-M3 deployment hygiene is complete through r51: explicit managed-file retirement was runtime validated by stopping, verifying, deleting, and verifying absence of both legacy standalone dashboard scripts. Only the Validation Dashboard remains as the UI surface; Health Collector and Update Watcher remain backend services.
+1. Read PROJECT_RULES, CHANGES, CURRENT_STATE, ARCHITECTURE, DECISIONS, ROADMAP, relevant FIXES, and REFERENCES.
+2. Design a documented port reservation/allocation map; do not allocate ports ad hoc.
+3. Design command/event message envelopes, validation, correlation/idempotence conventions, bounded queues, backpressure, overflow, and restart behavior.
+4. Design canonical latest-state file/envelope layout, domain boundaries, single-writer ownership, freshness metadata, and stale/unavailable semantics.
+5. Define how the existing M2 observation files feed the canonical owner without becoming canonical merely by reuse.
+6. Define consumer interfaces so M4+ code never depends directly on collector storage.
+7. Define Validation Dashboard M3 state/transport health surfaces and registered tests/evidence.
+8. Review and lock the design in DECISIONS/ARCHITECTURE before writing M3 runtime code.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
