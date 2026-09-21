@@ -23,27 +23,28 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r37 System Health current-instance uptime
-**Status:** r37 installed — service uptime PASS; updater action-state sizing remains open
+### r38 deterministic Update Watcher two-state sizing
+**Status:** Approved — implementation
 
-**Goal:** Show how long each currently reporting service instance has been continuously observed, making restarts/replacements visible in Service Placement without adding Netscript calls to React.
+**Goal:** Finish M2 Update Watcher sizing by giving its two real UI states explicit width contracts while preserving the validated r37 service uptime feature.
 
 **Files / areas touched:**
-- `src/core/health-collector.js`
-- `src/ui/system-health-dashboard.jsx`
-- `src/core/README.md`
-- deployment r37 metadata
+- `src/ui/update-dashboard.jsx`
+- `src/ui/dashboard-window-memory.js`
+- `src/ui/README.md`
+- deployment r38 metadata
 
 **Decisions / constraints:**
-- Uptime means current telemetry instance lifetime as observed by Health Collector, not historical service lifetime.
-- Health Collector records `observedSince` on first sight of an instance and preserves it across later heartbeats for that same instance.
-- Replacement instance/PID receives a new `observedSince`, so displayed uptime resets naturally.
-- React derives the live duration from snapshot `observedSince` using ordinary JS time only; it does not invoke Netscript or force per-second health snapshot writes.
-- r36 compact Update Watcher root-measured sizing is PASS. Publishing r37 also provides the pending r36 action-state Install/Later sizing test before installation.
+- Compact state and update-action state are the only width modes. Install/Later remain conditionally rendered.
+- Compact width remains the r36/r37 proven 620px native target.
+- Action state requests a fixed 900px native target, comfortably fitting the complete current nowrap action row without depending on hidden intrinsic width measurement.
+- Shared dashboard helper accepts an optional React-owned preferred width through the bridge, clamped by the same min/max/viewport rules. Dashboards without a preferred width, including System Health, keep rendered-root sizing unchanged.
+- Preferred width changes are presentation state only; React does not call Netscript. The dashboard main loop remains the sole `resizeTail()` owner.
+- Remove no additional shared sizing behavior. Preserve countdown, docking, viewport-aware height, r37 uptime, and all collector/runtime behavior.
 
-**Validation:** Current runtime shows all seven persistent reporting services healthy. Static implementation complete: Health Collector preserves `observedSince` for the same instance ID and resets it on replacement; snapshot exposes it; Service Placement renders live compact uptime using ordinary JS time. Producer telemetry schema and React/Netscript ownership are unchanged. Runtime validation: r36 compact root-measured sizing PASS, but with r37 presented the action state FAILS: the right-side Install/Later controls are clipped and the native tail does not expand. This demonstrates that complete-root measurement is reliable for the compact state but cannot discover hidden intrinsic width once the nowrap action row is constrained by the existing native viewport. r37 was subsequently installed cleanly. Service Placement now shows live current-instance uptimes for all seven healthy services; uptime presentation PASS. The roughly one-minute values reflect first observation by the restarted r37 Health Collector, not guaranteed process launch time for unchanged collector PIDs. r37 immutable manifest published at releaseRef `b74e8bbb3892647b1930641fdd8037b1d25dce43`; descriptor published last.
+**Validation:** r36/r37 compact root-measured updater state PASS. r36 with r37 presented action state FAIL because constrained root measurement cannot discover the hidden nowrap action-row demand. r37 service uptime PASS with seven healthy services.
 
-**Next step:** Preserve the validated r37 uptime feature. Implement the Update Watcher as an explicit two-width control bar: proven compact width when no update is presented, wider action width while Install/Later are rendered. Use the next revision to re-test action-state expansion from installed r37 before installation.
+**Next step:** Implement bridge preferred-width support and updater two-state selection, update docs, publish r38, then inspect installed r37 with r38 presented before installation.
 
 ## Recently completed
 
