@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r40 collector process-uptime correction
-**Status:** Approved — implementation
+**Status:** Implementation complete — publication pending
 
 **Goal:** Correct shared collector uptime so producer-owned `startedAt` remains the immutable process start timestamp instead of being shadowed by each collection cycle.
 
@@ -39,9 +39,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Do not change Health Collector, Update Watcher, dashboard presentation, incident retention, collector behavior, or sizing.
 - r39 runtime shows the defect clearly: shared collectors report only seconds because their per-cycle timestamp shadows process `startedAt`; Health Collector and Update Watcher already show correct process-scoped uptime.
 
-**Validation:** Static defect confirmed in `collector-runtime.js`: an inner `const startedAt = Date.now()` shadows the outer process timestamp. Runtime correction pending.
+**Validation:** Static defect confirmed and corrected. The outer `startedAt` is now the only process lifetime timestamp; the loop uses `cycleStartedAt` solely for collection interval accounting. Health, incidents, dashboard, sizing, and collector collection logic are unchanged. Runtime correction pending.
 
-**Next step:** Apply only the shadowing correction, publish r40, then install and confirm all shared collector uptimes advance continuously instead of resetting each collection cycle.
+**Next step:** Publish immutable r40 and descriptor last, then install and confirm all five shared collector uptimes advance continuously instead of resetting each collection cycle. Incident/error expiry remains a separate subsequent change.
 
 ## Recently completed
 
