@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 canonical resource associations
-**Status:** r64 deployment committed but runtime reconciliation degraded; implementation correction in progress
+**Status:** r64 and r65 committed but runtime reconciliation degraded; corrected source published as v0.6.0-r66, runtime validation pending
 
 **Goal:** Add a derived canonical resource-association domain that records factual stock-symbol ↔ organization ↔ server relationships for later authority, HWGW isolation, and stock-manipulation coordination.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Associations are canonical facts, not authority. Do not create a second resource registry. Derive associations only from already-canonical market and network facts: market supplies stock symbol→organization through the official Stock API; network supplies server→organization through getServer(). Exact organization-name equality creates a link. Unmatched stocks/servers remain explicitly visible and are never guessed. Derived observedAt is bounded by the older of its two source observations; source revisions/timestamps are recorded as provenance. If either source is unavailable, association state is unavailable rather than inferred.
 
-**Validation:** r64 runtime install exposed a canonical-state restart failure: the generated service source contained a literal `\\n` between domain declarations, so the changed persistent service could not restart and health correctly reported the previous canonical-state instance stale. This is an implementation/publication defect, not an association validation result. Official v3.0.1-compatible API behavior was rechecked: Stock.getOrganization returns the organization associated with a symbol, while Server.organizationName exposes the organization owning a server. r64 derives associations only from those canonical facts. SAFE `m3.resource.associations` is registered to verify source provenance/timestamp bounds, exact organization equality, unique/source-backed links, explicit unmatched sets, and real runtime association coverage. Runtime proof is pending.
+**Validation:** r64 and r65 runtime installs exposed the same canonical-state restart failure. Immutable r65 inspection proved the first repair had not removed the literal escape sequence. The exact r66 releaseRef was then verified to contain a real newline, the startup derivation call, and observed-domain-only reconciliation. r64 initially exposed: the generated service source contained a literal `\\n` between domain declarations, so the changed persistent service could not restart and health correctly reported the previous canonical-state instance stale. This is an implementation/publication defect, not an association validation result. Official v3.0.1-compatible API behavior was rechecked: Stock.getOrganization returns the organization associated with a symbol, while Server.organizationName exposes the organization owning a server. r64 derives associations only from those canonical facts. SAFE `m3.resource.associations` is registered to verify source provenance/timestamp bounds, exact organization equality, unique/source-backed links, explicit unmatched sets, and real runtime association coverage. Runtime proof is pending.
 
-**Exact next step:** Correct canonical-state source and association derivation invocation, publish r65, verify clean persistent reconciliation, then run SAFE `Stock/server resource associations`.
+**Exact next step:** Install v0.6.0-r66 and first verify CLEAN runtime reconciliation plus a new HEALTHY canonical-state PID. Only then run SAFE `Stock/server resource associations`.
 
 ## Recently completed
 
