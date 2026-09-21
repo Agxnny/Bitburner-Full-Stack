@@ -184,13 +184,24 @@ function writeSnapshot(ns, services, invalidRecords, now) {
 }
 
 function addIncident(items, incident) {
-    const next = [...items, incident];
+    const uniqueOperational = incident.severity === "warning" || incident.severity === "error";
+    const retained = uniqueOperational
+        ? items.filter((item) => !sameIncidentIdentity(item, incident))
+        : items;
+    const next = [...retained, incident];
     const recoveries = next.filter((x) => x.code === "SERVICE_RECOVERED");
     if (recoveries.length > RECOVERY_LIMIT) {
         const remove = new Set(recoveries.slice(0, recoveries.length - RECOVERY_LIMIT));
         return next.filter((x) => !remove.has(x)).slice(-INCIDENT_LIMIT);
     }
     return next.slice(-INCIDENT_LIMIT);
+}
+
+function sameIncidentIdentity(left, right) {
+    const leftOperational = left?.severity === "warning" || left?.severity === "error";
+    return leftOperational
+        && left.service === right.service
+        && left.code === right.code;
 }
 
 function eventIncident(record) {
@@ -203,7 +214,10 @@ function eventIncident(record) {
 function readIncidents(ns) {
     try {
         const value = JSON.parse(ns.read(INCIDENTS_PATH));
-        return Array.isArray(value?.incidents) ? value.incidents.slice(-INCIDENT_LIMIT) : [];
+        if (!Array.isArray(value?.incidents)) return [];
+        return value.incidents
+            .slice(-INCIDENT_LIMIT)
+            .reduce((items, incident) => addIncident(items, incident), []);
     } catch { return []; }
 }
 
