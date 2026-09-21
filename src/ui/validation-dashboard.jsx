@@ -63,7 +63,8 @@ function confirmValidationTest(ns,testId){
     const test=findTest(testId);
     if(!test?.manual)return "Test is not operator-confirmable.";
     const plan=readValidationPlan(ns); const validationVersion=requiredValidationVersion(plan,testId)??1;
-    const record=evidenceRecord({testId,validationVersion,status:"PASS",kind:"operator-confirmed",summary:"Operator confirmed the documented observation was completed successfully."}); appendEvidence(ns,record);\n    recordValidationResult(ns,{testId,validationVersion,status:"PASS",evidenceId:record.id,kind:record.kind,summary:record.summary,at:record.at});
+    const record=evidenceRecord({testId,validationVersion,status:"PASS",kind:"operator-confirmed",summary:"Operator confirmed the documented observation was completed successfully."}); appendEvidence(ns,record);
+    recordValidationResult(ns,{testId,validationVersion,status:"PASS",evidenceId:record.id,kind:record.kind,summary:record.summary,at:record.at});
     return `Recorded operator-confirmed PASS for ${test.title}.`;
 }
 function readSnapshot(ns){
@@ -80,7 +81,7 @@ function findRunningTest(ns){
     }
     return null;
 }
-function TESTS_RUNNABLE(){return ["m2.dashboard.smoke","m2.dashboard.emergency-focus"].map(findTest).filter((x)=>x?.runner);}
+function TESTS_RUNNABLE(){return ["m3.canonical.state","m3.canonical.restart","m2.dashboard.smoke","m2.dashboard.emergency-focus"].map(findTest).filter((x)=>x?.runner);}
 function writeUiState(ns,bridge){ns.write(TEST_UI_PATH,JSON.stringify({schemaVersion:1,updatedAt:Date.now(),emergency:bridge.emergencyUi},null,2),"w");}
 function ValidationDashboard({bridge}){
     const rootRef=useDashboardWindow(WINDOW_KEY,bridge,{minWidth:980,minHeight:680,maxWidth:1320,maxHeight:860});
