@@ -138,3 +138,13 @@ Dashboard position remains a browser-local user preference and is restored by st
 Each dashboard owns its runtime size. React may measure rendered content using ordinary DOM APIs and publish a debounced desired size through its in-memory bridge. Only the dashboard `main()` path may call Netscript UI resize/move APIs. Per-dashboard min/max bounds, viewport clamping, and resize tolerance prevent unusable geometry and resize jitter.
 
 This contract applies to current dashboards and future tabbed dashboards: content or tab changes may dynamically grow or shrink the native tail while preserving the user's chosen screen position.
+
+
+## D-022 — Dynamic dashboard size derives from the measured native content viewport
+**Status:** Locked
+
+Calibration in r25/r26 established that `ns.ui.resizeTail()` maps to the native `.react-resizable` dimensions, while Bitburner's intermediate log/content viewport is a scrollable flex column-reverse container whose placement caused the apparent black-gap/clipping behavior.
+
+Production sizing must discover that content viewport structurally from the dashboard root-to-resizable ancestor chain rather than depending on generated MUI class names. Native overhead is measured at runtime as resizable dimensions minus content-viewport client dimensions; requested native size is rendered dashboard content plus that measured overhead, subject to dashboard bounds and viewport clamping.
+
+Resize observation and main-loop tolerance provide convergence after content or tab changes. Fixed guessed chrome offsets are not part of the production sizing contract.
