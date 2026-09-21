@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M1 update-dashboard deployment completion status
-**Status:** Approved design — implementation
+**Status:** Runtime validation — r20 published
 
 **Goal:** Make the ultra-compact update watcher clearly show when an installation has finished and whether the committed deployment was clean, instead of leaving transient `Installing rN.` feedback visible after completion.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Transient command feedback must not override a terminal deployment result.
 - Preserve the approved ultra-compact grey-blue visual language, React/Netscript ownership boundary, and dashboard geometry memory.
 
-**Validation:** r19 retirement validation passed: after normal r19 installation, `src/bootstrap/validation/retirement-fixture.js` was gone while `src/bootstrap/update-watcher.js` and its dashboard remained running. This proves explicit retirement stopped only the authorized fixture. The new dashboard completion indicator is not yet runtime validated.
+**Validation:** r19 retirement validation passed: after normal r19 installation, `src/bootstrap/validation/retirement-fixture.js` was gone while `src/bootstrap/update-watcher.js` and its dashboard remained running. The dashboard completion indicator is implemented and documented. r20 is published with immutable releaseRef `0ec3e741e2f61eff860fdaf2b282a0c9a7df9f63`; runtime UI behavior remains to be validated.
 
-**Next step:** Implement the dashboard status indicator, update feature documentation, publish r20, then install r20 normally and confirm the dashboard reports a clean completed installation.
+**Next step:** Install r20 normally from the update dashboard. Confirm the UI transitions through installation and then settles on a green `Install clean` indicator with `Last installation completed successfully (r20).` rather than retaining stale `Installing r20.` feedback.
 
 ## Recently completed
 
