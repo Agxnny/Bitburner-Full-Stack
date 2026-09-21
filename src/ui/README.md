@@ -93,7 +93,7 @@ React components, effects, timers, and button callbacks do not call Netscript AP
 
 `system-health-dashboard.jsx` is the first M2 telemetry consumer. It is a compact alarm/status surface rather than the full Validation Dashboard. It reads the central aggregate health snapshot and bounded incident history owned by `health-collector.js`.
 
-The surface shows overall suite health, active stale/degraded/failed services, recent warning/error incidents, and observed service placement (service, host, PID, health). Healthy operation stays intentionally quiet.
+The surface shows overall suite health, active stale/degraded/failed services, recent warning/error incidents, and observed service placement (service, host, PID, health). Recent warning/error incidents are operationally deduplicated by service plus incident code by the collector, so repeated stale/failure episodes replace the older matching warning instead of growing duplicate rows. Different incident types remain visible independently. Healthy operation stays intentionally quiet.
 
 The dashboard uses the shared grey-blue visual language and `dashboard-window-memory.js` with the stable key `system-health`. Its height follows current content within defined bounds, so active issues/incidents can grow the tail and recovery can shrink it. React measures content only; the script main loop owns Netscript reads, position restore, and tail resizing.
 
