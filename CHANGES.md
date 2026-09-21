@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r48 Controlled emergency-focus validation
-**Status:** Implementation
+**Status:** Implementation complete — preparing r48 runtime validation
 
 **Goal:** Add the first DISRUPTIVE registered validation test. It must deliberately cross the real dashboard emergency threshold using only disposable M2 observation collectors, prove one-shot Health focus plus acknowledgement, restore every process it stopped, and record machine/operator evidence without terminal use.
 
@@ -45,9 +45,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Recovery clears the previous emergency acknowledgement/focus generation so a later materially separate identical failure can escalate again.
 - No updater-convergence work is mixed into r48.
 
-**Validation:** r47 is runtime PASS for quiet Tests, persistent dashboard tail replacement, and explicit automated/operator-confirmed evidence provenance. Official Bitburner v3.0.1 API verification confirms `NS.atExit()` is available for script-death cleanup callbacks. r48 runtime validation is pending.
+**Validation:** r47 is runtime PASS for quiet Tests, persistent dashboard tail replacement, and explicit automated/operator-confirmed evidence provenance. Official Bitburner v3.0.1 API verification confirms `NS.atExit()` is available for script-death cleanup callbacks. Static r48 review confirms: four fixed collector targets; real 4-of-7 emergency threshold; restoration callback armed before kills; exact process tuples captured; bounded emergency/ack/recovery timeouts; single-flight test dispatch; React only updates bridge UI facts while dashboard main persists them; recovery clears the prior emergency generation. Runtime validation is pending.
 
-**Next step:** Implement the registry entry, confirmation UX, UI-event bridge/state, disruptive runner with guaranteed restoration path, docs, and immutable r48 release. Then run only through Tests and observe the emergency/acknowledgement/recovery sequence.
+**Next step:** Publish immutable r48, install through the integrated Updater, then run `m2.dashboard.emergency-focus` only from Tests. Confirm the DISRUPTIVE warning first; during the run acknowledge the emergency after automatic Health focus; then verify restoration and final 7/7 health.
 
 ## Recently completed
 
