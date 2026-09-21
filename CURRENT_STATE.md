@@ -55,11 +55,11 @@ Relevant starting surfaces:
 - relevant `FIXES.md` entries
 
 ## Exact next step
-1. Publish r42 with the first full Validation Dashboard application while retaining compact Health/Updater windows for parity comparison.
-2. Runtime-validate all six tabs, observation freshness, Health parity, exact-revision update controls, unread Updater badge behavior, and large-window geometry.
-3. Exercise a controlled widespread service failure to validate one-shot emergency focus and acknowledgement semantics.
-4. After parity passes, retire the standalone Health/Updater presentation windows without merging their backend service ownership.
-5. Use Validating/Validated as the hub for the formal M2 closeout review before beginning M3 canonical state.
+1. Publish r44 with the dedicated Tests workspace and first registered SAFE smoke test.
+2. Before installing r44, capture r43's genuine update-available state while remaining off Updater: verify the Updater unread badge appears and selected tab is not stolen.
+3. Open Updater to verify the unread badge clears while r44 remains pending, then install r44 through the integrated exact-revision control.
+4. On r44, run `m2.dashboard.smoke` from Tests and verify the result/evidence renders without terminal use.
+5. Then exercise controlled widespread service failure for one-shot Health focus/acknowledgement before retiring standalone Health/Updater presentation.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
