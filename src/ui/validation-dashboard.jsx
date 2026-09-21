@@ -23,7 +23,7 @@ const PATHS={
     statePlayer:"data/state/player.json", stateNetwork:"data/state/network.json", stateMarket:"data/state/market.json",
     stateInfrastructure:"data/state/infrastructure.json", stateCapabilities:"data/state/capabilities.json",
 };
-const TABS=[["overview","Overview"],["validating","Validating"],["tests","Tests"],["validated","Validated"],["health","Health"],["updater","Updater"],["data","Data"]];
+const TABS=[["overview","⌂","Overview"],["validating","⚗","Validating"],["tests","☷","Tests"],["validated","✓","Validated"],["health","♡","Health"],["updater","⇩","Updater"],["data","▤","Data"]];
 
 /** @param {NS} ns */
 export async function main(ns){
@@ -84,7 +84,7 @@ function findRunningTest(ns){
 function TESTS_RUNNABLE(){return ["m3.canonical.state","m3.canonical.restart","m2.dashboard.smoke","m2.dashboard.emergency-focus"].map(findTest).filter((x)=>x?.runner);}
 function writeUiState(ns,bridge){ns.write(TEST_UI_PATH,JSON.stringify({schemaVersion:1,updatedAt:Date.now(),emergency:bridge.emergencyUi},null,2),"w");}
 function ValidationDashboard({bridge}){
-    const rootRef=useDashboardWindow(WINDOW_KEY,bridge,{minWidth:980,minHeight:680,maxWidth:1320,maxHeight:860});
+    const rootRef=useDashboardWindow(WINDOW_KEY,bridge,{minWidth:640,minHeight:680,maxWidth:1320,maxHeight:860});
     const [snapshot,setSnapshot]=React.useState(bridge.snapshot);
     const [tab,setTab]=React.useState("overview");
     const [tick,setTick]=React.useState(0);
@@ -117,12 +117,12 @@ function ValidationDashboard({bridge}){
     const summary=validationSummaryFrom(snapshot.validationPlan,snapshot.validationLedger);
     const badges={validating:summary.validatingGroups,health:unhealthy.length,updater:updateUnread};
 
-    return <div ref={rootRef} style={{boxSizing:"border-box",minWidth:960,minHeight:660,padding:10,background:V.page,color:V.text,fontFamily:'Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif'}}>
+    return <div ref={rootRef} style={{boxSizing:"border-box",minWidth:620,minHeight:660,padding:10,background:V.page,color:V.text,fontFamily:'Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif'}}>
         <div style={{border:`1px solid ${V.border}`,borderRadius:10,overflow:"hidden",background:V.surface,boxShadow:"0 10px 30px rgba(0,0,0,.28)"}}>
             <Header snapshot={snapshot}/>
             {emergencySignature&&ack!==emergencySignature?<Emergency count={unhealthy.length} onAck={()=>{setAck(emergencySignature);writeLocal("emergency-ack",emergencySignature);bridge.emergencyUi={...bridge.emergencyUi,signature:emergencySignature,acknowledgedAt:Date.now()};}}/>:null}
-            <nav style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:6,padding:"8px 10px",borderBottom:`1px solid ${V.divider}`}}>
-                {TABS.map(([id,label])=><Tab key={id} active={tab===id} badge={badges[id]??0} danger={id==="health"&&emergency} onClick={()=>navigate(id)}>{label}</Tab>)}
+            <nav style={{display:"flex",flexWrap:"wrap",gap:6,padding:"8px 10px",borderBottom:`1px solid ${V.divider}`}}>
+                {TABS.map(([id,icon,label])=><Tab key={id} icon={icon} active={tab===id} badge={badges[id]??0} danger={id==="health"&&emergency} onClick={()=>navigate(id)}>{label}</Tab>)}
             </nav>
             <main style={{padding:12,minHeight:540}}>
                 {tab==="overview"?<ValidationOverviewTab snapshot={snapshot} navigate={navigate}/>:null}
@@ -138,7 +138,7 @@ function ValidationDashboard({bridge}){
 }
 function Header({snapshot}){const local=snapshot?.update?.local;const version=local?.version&&Number.isSafeInteger(local.revision)?`${local.version}-r${local.revision}`:"—";const online=snapshot?.health?.overall==="healthy";return <header style={{display:"flex",alignItems:"center",height:46,padding:"0 14px",borderBottom:`1px solid ${V.divider}`,background:V.raised}}><strong style={{letterSpacing:".08em",color:"#b8d2f3"}}>FULL STACK — VALIDATION DASHBOARD</strong><span style={{marginLeft:"auto",color:V.muted,fontSize:12}}>{version}　|　M3 — Canonical State　</span><span style={{color:online?V.green:V.amber,fontSize:12,fontWeight:800}}>● {online?"Online":"Attention"}</span></header>;}
 function Emergency({count,onAck}){return <div style={{display:"flex",alignItems:"center",gap:10,padding:"9px 14px",background:"rgba(255,93,104,.12)",borderBottom:`1px solid ${V.red}`,color:V.red,fontWeight:800}}>● EMERGENCY — {count} persistent services unavailable or unhealthy <button onClick={onAck} style={{marginLeft:"auto",border:`1px solid ${V.red}`,borderRadius:5,background:"transparent",color:V.text,padding:"5px 9px",cursor:"pointer"}}>Acknowledge</button></div>;}
-function Tab({children,active,badge,danger,onClick}){const color=danger?V.red:active?V.green:V.blue;return <button onClick={onClick} style={{height:38,border:`1px solid ${active?color:V.border}`,borderRadius:6,background:active?"#10251f":V.page,color:active?color:"#b8d2f3",fontWeight:750,cursor:"pointer",boxShadow:active?`inset 0 0 14px ${color}22`:"none"}}>{children}{badge>0?<span style={{display:"inline-grid",placeItems:"center",minWidth:18,height:18,marginLeft:8,padding:"0 4px",borderRadius:9,background:danger?V.red:V.blue,color:"white",fontSize:10}}>{badge}</span>:null}</button>;}
+function Tab({children,icon,active,badge,danger,onClick}){const color=danger?V.red:active?V.green:V.blue;return <button onClick={onClick} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7,height:36,flex:"0 1 146px",minWidth:112,padding:"0 12px",border:`1px solid ${active?color:V.border}`,borderRadius:6,background:active?"#10251f":V.page,color:active?color:"#b8d2f3",fontWeight:750,cursor:"pointer",boxShadow:active?`inset 0 0 14px ${color}22`:"none",whiteSpace:"nowrap"}}><span aria-hidden="true" style={{fontSize:16,lineHeight:1,minWidth:16,textAlign:"center"}}>{icon}</span><span>{children}</span>{badge>0?<span style={{display:"inline-grid",placeItems:"center",minWidth:18,height:18,marginLeft:1,padding:"0 4px",borderRadius:9,background:danger?V.red:V.blue,color:"white",fontSize:10}}>{badge}</span>:null}</button>;}
 function readJson(ns,path){if(!ns.fileExists(path,"home"))return null;try{return JSON.parse(ns.read(path));}catch{return null;}}
 function readLocal(key){try{return localStorage.getItem(`bitburner-full-stack.validation.${key}`);}catch{return null;}}
 function writeLocal(key,value){try{localStorage.setItem(`bitburner-full-stack.validation.${key}`,value);}catch{}}
