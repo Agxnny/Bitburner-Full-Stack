@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Validation plan + durable runtime ledger
-**Status:** Implemented and published as v0.6.0-r53; awaiting runtime validation
+**Status:** r53 runtime launch failure diagnosed; corrective release in implementation
 
 **Goal:** Replace the hard-coded Validation Dashboard work catalog with a deployed repository plan describing what currently requires proof, while preserving runtime PASS truth in protected Bitburner data so completed validation survives later pulls.
 
@@ -41,9 +41,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Files / areas:** validation plan data, validation ledger/reconciliation helpers, test registry/evidence integration, Validation Dashboard work/tests/summary views, deployment manifest, docs.
 
-**Validation:** Repository implementation complete. Runtime proof pending. After r53 installs, the dashboard should show only the M3 Canonical State group in Validating and only its two outstanding registered tests in Tests. Passing the SAFE canonical-state test should write versioned evidence and the protected runtime ledger; the four requirements it covers should immediately show as satisfied while restart reconciliation remains outstanding. Passing the DISRUPTIVE restart test should complete the group and move it automatically to Validated.
+**Validation:** r53 deployment committed, but the changed Validation Dashboard failed to relaunch. Deployment report isolated the failure to that unit. Repository inspection then found malformed literal backslash-n escape sequences introduced into JavaScript source in `test-registry.js` and `evidence-store.js`; these make imported modules unparsable and explain `ns.run()` returning 0. Corrective release pending.
 
-**Exact next step:** Install v0.6.0-r53 normally and validate automatic plan/ledger reconciliation through the Dashboard. The ledger path data/validation/ledger.json is runtime-owned and intentionally absent from the deployment manifest.
+**Exact next step:** Correct the malformed JavaScript source, publish a new revision, and verify the Validation Dashboard relaunches cleanly before running M3 validation tests. The ledger path data/validation/ledger.json remains runtime-owned and absent from deployment.
 
 ## Recently completed
 
