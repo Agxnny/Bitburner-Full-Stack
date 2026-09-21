@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M1 update discovery freshness regression
-**Status:** Investigation pending; operator has reproduced delayed discovery across recent releases
+**Status:** Root cause identified; corrective release implementation in progress
 
 **Goal:** Restore the M1 guarantee that a newly published valid release is normally discovered within one watcher polling interval using redundant cache-busted Raw + GitHub API discovery.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Do not reopen or redesign M1 broadly. Preserve human exact-revision approval, redundant discovery, highest-valid-revision selection, immutable releaseRef semantics, and fail-closed source disagreement behavior. The separately observed repeat-install option did not reproduce on r55 and is not currently established as a persistent defect.
 
-**Validation:** M3 r55 SAFE canonical-state test PASS. DISRUPTIVE canonical restart test PASS: canonical service was stopped/restarted, all five domains converged to durable observations without revision rollback, and the validation plan now has no outstanding tests. The M3 first vertical slice is therefore runtime-proven through r55. Operator reports update discovery still sometimes takes 2–3 watcher cycles, so cache/discovery freshness remains the next bounded reliability issue.
+**Validation:** Repository inspection identified a cadence mismatch rather than a failed cache-buster alone: the watcher labels 30 seconds as its poll interval, but the independent GitHub Contents API source is intentionally attempted only every 75 seconds. Raw is cache-busted every 30 seconds, but GitHub community evidence documents residual Raw propagation/cache latency even with unique query strings. Therefore a fresh release can legitimately require 2–3 displayed watcher cycles before the API source sees it. GitHub's Contents API remains the supported file-content endpoint. The fix will make one displayed discovery cycle mean one redundant Raw+API discovery attempt, while keeping the API cadence conservative enough for unauthenticated rate limits.
 
-**Exact next step:** Inspect current update-watcher discovery implementation and its official network/API assumptions, identify why both redundant sources can remain stale across multiple polls, then implement a narrowly scoped fix with runtime-visible source evidence before resuming the next M3 cadence-control slice.
+**Exact next step:** Align the watcher discovery interval with the redundant API cadence so every normal displayed poll attempts both Raw and API, preserve unique Raw cache-busting, expose per-cycle source revisions/attempt times, publish a no-op corrective release, and validate that the next release is discovered on the first normal redundant discovery cycle.
 
 ## Recently completed
 
