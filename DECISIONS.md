@@ -190,3 +190,13 @@ Validation lifecycle and individual test result are distinct. Active/incomplete/
 The dashboard shell owns attention presentation. Ordinary events use unread badges/highlights and never change the selected tab. Critical/emergency escalation may force focus to the relevant tab once per materially distinct incident signature; acknowledgement suppresses repeated focus stealing for that same condition without hiding the active failure. Update availability is ordinary attention and therefore badges Updater rather than navigating automatically.
 
 React remains Netscript-free under FIX-002. The dashboard main loop is the sole Netscript owner and uses existing command interfaces for actions such as exact-revision update approval. The dashboard does not gain lifecycle, canonical-state, authority, spending, scheduling, or execution ownership from presenting those systems.
+
+
+## D-027 — Validation test execution is registry-controlled
+**Status:** Locked
+
+Validation test execution has its own Tests workspace. Validating answers what still requires proof; Tests owns approved execution; Validated stores completed evidence.
+
+The Validation Dashboard is not a terminal or arbitrary script launcher. React may submit a stable test ID only. The Netscript-owning dashboard main loop resolves that ID through a repository-controlled registry, which owns the runner path, arguments, risk classification, and whether a test is executable or observational. Unknown IDs and manual/observational tests fail closed.
+
+Tests should prefer real production interfaces and real observable conditions. Synthetic stimuli may be added only when explicitly designed and must not bypass the behavior being validated. In particular, updater-notification validation uses a genuine newer release rather than forged update telemetry.
