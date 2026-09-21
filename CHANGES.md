@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M1 explicit persistent-unit retirement
-**Status:** Runtime validation setup — r18 ready to publish
+**Status:** Runtime validation — r18 passed, r19 publication in progress
 
 **Goal:** Add and runtime-validate an explicit retirement contract for persistent runtime units so a service is stopped only when a newer validated manifest positively authorizes retirement.
 
@@ -47,9 +47,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - r18 introduces a harmless persistent `retirement-validation-fixture`; r19 will explicitly retire it. The real update watcher remains an active persistent unit throughout.
 - No unrelated deployment refactor or schema redesign.
 
-**Validation:** Source implementation and feature documentation are updated. `deployment/releases/r18-manifest.json` contains the retirement-aware puller/helper plus the harmless validation fixture and declares both the fixture and update watcher as persistent units. Runtime behavior is not yet proven.
+**Validation:** r18 installed successfully through the normal dashboard path. Runtime inspection confirmed both `src/bootstrap/update-watcher.js` and `src/bootstrap/validation/retirement-fixture.js` are running, proving the retirement-aware deployment path can introduce the controlled persistent fixture without disrupting the watcher. Retirement itself remains to be proven by r19.
 
-**Next step:** Publish r18 by updating `deployment/version.json` last with releaseRef `5f4732259ae57d2addaf56bcfa481992462e93fe`. After r18 is presented, install it normally and verify `src/bootstrap/validation/retirement-fixture.js` and the update watcher are both running before publishing r19.
+**Next step:** Create and publish r19 with the fixture omitted from active `runtimeUnits` and explicitly listed in `retireRuntimeUnits`. After r19 is presented, install it normally and verify the fixture stops, the watcher remains healthy, and the committed runtime ledger no longer contains the fixture.
 
 ## Recently completed
 
