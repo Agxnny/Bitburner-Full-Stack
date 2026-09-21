@@ -23,27 +23,29 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Dashboard DOM-chain calibration
-**Status:** Implementation complete — runtime measurement pending
+### Measured content-viewport dashboard sizing
+**Status:** Approved — implementation
 
-**Goal:** Extend the r25 calibration harness to identify the exact native log/content ancestor responsible for size-dependent vertical placement before changing production dynamic sizing again.
+**Goal:** Replace r23/r24 root-only sizing with the DOM model proven by r25/r26 so production dashboards dynamically fit content without clipping or column-reverse black space.
 
 **Files / areas touched:**
-- `src/ui/dashboard-geometry-calibration.jsx`
+- `src/ui/dashboard-window-memory.js`
+- current dashboard size profiles
 - `src/ui/README.md`
 - deployment manifest/version
 
 **Decisions / constraints:**
-- Keep the same exact 600×300, 720×420, and 840×540 resizeTail targets for comparable evidence.
-- Enumerate every DOM ancestor from the React root through `.react-resizable`.
-- For each ancestor report tag/class, bounding box, client/scroll dimensions, scrollTop/scrollLeft, display, position, overflow, flex direction/grow/shrink, align/justify, and root offset.
-- Include explicit top/bottom content markers so rendered content extent can be separated from ancestor positioning.
-- React performs DOM inspection only; Netscript main remains the sole resizeTail owner.
-- Production dashboard sizing remains unchanged in r26.
+- r26 identified the intermediate MUI Paper/log viewport as flex column-reverse with hidden/scroll overflow; resizeTail itself maps exactly to `.react-resizable`.
+- Discover the content viewport structurally from the root→resizable ancestor chain; do not bind to generated MUI class names.
+- Measure native overhead as resizable dimensions minus content-viewport client dimensions, then request rendered content requirement plus measured overhead.
+- Width must use content scroll/bounds without allowing the current native width to become a self-reinforcing target.
+- Apply debounce/tolerance and remeasure after resize so sizing converges instead of oscillating.
+- Preserve D-021: position persists, user size does not; React measures only and main owns Netscript UI calls.
+- Keep the r26 calibration harness as a dormant diagnostic tool.
 
-**Validation:** r25 proved resizeTail exactly matches the `.react-resizable` dimensions, while React-root Y offset changes materially with target height. r26 now reports the full root→resizable ancestor chain, layout/overflow/scroll metrics, and explicit content markers. Runtime evidence is pending.
+**Validation:** r25/r26 calibration completed. Production implementation and runtime validation pending.
 
-**Next step:** Publish r26 from immutable manifest commit `9c4bccc6a367e0f53cb83562b7dda82707f4da73`, run the calibration dashboard, capture all three settled target measurements, then derive and implement the production sizing correction.
+**Next step:** Implement measured content-viewport sizing, publish r27, then validate Update Watcher compact fit and System Health healthy → stale growth → recovery shrink with position preserved.
 
 ## Recently completed
 
