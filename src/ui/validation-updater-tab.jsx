@@ -9,7 +9,7 @@ export function ValidationUpdaterTab({ snapshot, bridge }) {
     function send(action){
         if(!available){bridge.feedback="No update is awaiting approval.";return;}
         if(bridge.pendingIntent){bridge.feedback="Command already queued.";return;}
-        bridge.pendingIntent={action,revision:s.presentedRevision};
+        bridge.pendingIntent={type:"update-command",action,revision:s.presentedRevision};
         bridge.feedback=`${action==="approve"?"Approving":"Deferring"} r${s.presentedRevision}…`;
     }
     return <div style={{display:"grid",gap:12}}>
