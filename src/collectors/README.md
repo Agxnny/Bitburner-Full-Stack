@@ -4,7 +4,7 @@ M2 collectors are independent, observation-only persistent services. They do not
 
 ## Storage contract
 
-`src/core/observation-store.js` writes one replaceable snapshot per domain under `data/observations/<domain>.json`. Every snapshot carries schema version, domain, producer, collection time, freshness deadline, status, optional reason, and domain data.
+`src/core/observation-store.js` writes one replaceable snapshot per domain under `data/observations/<domain>.json`. Every snapshot carries schema version, domain, producer, factual observation time, availability, optional reason, and domain data. Collectors do not declare universal freshness; consumers compare observation time against the shared wall clock using their own maximum-age requirement.
 
 Current domains are:
 - `player` — player money, city, HP, skills/experience, multipliers, factions/jobs and basic access facts.
@@ -13,11 +13,11 @@ Current domains are:
 - `infrastructure` — home compute, owned cloud servers via the Bitburner v3 `ns.cloud` API, and Hacknet node observations.
 - `capabilities` — safe probes for optional mechanics such as Gang, Corporation, Bladeburner and Sleeves.
 
-Market price history is the only initial time-series store: `data/observations/market-history.json`, bounded to 240 samples. Other domains replace their latest snapshot.
+Market price history is the only initial time-series store: `data/observations/market-history.json`, bounded to 240 samples. Samples carry their actual observation timestamp so elapsed-time windows preserve gaps. Other domains replace their latest snapshot.\n\nEvery observation is also offered to the centrally registered M3 ingress port (market uses its dedicated data lane). Port publication is transient transport only; the durable observation snapshot remains available for canonical-state restart reconciliation.
 
 ## Failure isolation
 
-Each domain is a separate runtime unit/process. A thrown API error degrades only that collector through shared service telemetry; its last snapshot remains available but naturally becomes stale according to `freshUntil`. Other collectors continue.
+Each domain is a separate runtime unit/process. A thrown API error degrades only that collector through shared service telemetry; its last snapshot remains available with its original observation timestamp. A consumer may judge that value too old for its use, but the collector does not rewrite history as a freshness label. Other collectors continue.
 
 Locked/unavailable optional mechanics are normal capability data, not suite failures. Market collection explicitly reports `unavailable` while TIX access is absent rather than treating that condition as an error.
 
