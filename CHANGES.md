@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Validation plan + durable runtime ledger
-**Status:** Approved; implementation starting
+**Status:** Implemented and published as v0.6.0-r53; awaiting runtime validation
 
 **Goal:** Replace the hard-coded Validation Dashboard work catalog with a deployed repository plan describing what currently requires proof, while preserving runtime PASS truth in protected Bitburner data so completed validation survives later pulls.
 
@@ -41,9 +41,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Files / areas:** validation plan data, validation ledger/reconciliation helpers, test registry/evidence integration, Validation Dashboard work/tests/summary views, deployment manifest, docs.
 
-**Validation:** Pending implementation and runtime proof.
+**Validation:** Repository implementation complete. Runtime proof pending. After r53 installs, the dashboard should show only the M3 Canonical State group in Validating and only its two outstanding registered tests in Tests. Passing the SAFE canonical-state test should write versioned evidence and the protected runtime ledger; the four requirements it covers should immediately show as satisfied while restart reconciliation remains outstanding. Passing the DISRUPTIVE restart test should complete the group and move it automatically to Validated.
 
-**Exact next step:** Implement the plan/ledger contract and dashboard reconciliation, publish the next release, then verify that completed requirements move automatically and only outstanding current tests remain actionable.
+**Exact next step:** Install v0.6.0-r53 normally and validate automatic plan/ledger reconciliation through the Dashboard. The ledger path data/validation/ledger.json is runtime-owned and intentionally absent from the deployment manifest.
 
 ## Recently completed
 
