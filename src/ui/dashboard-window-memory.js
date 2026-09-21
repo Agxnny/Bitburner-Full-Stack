@@ -102,7 +102,6 @@ export function useDashboardWindow(key, bridge, options = {}) {
 
         const measureSoon = () => {
             if (sizeTimer !== null) clearTimeout(sizeTimer);
-            if (layoutTimer !== null) clearInterval(layoutTimer);
             sizeTimer = setTimeout(measure, SIZE_DEBOUNCE_MS);
         };
 
@@ -152,6 +151,7 @@ export function useDashboardWindow(key, bridge, options = {}) {
             clearTimeout(armTimer);
             if (positionTimer !== null) clearTimeout(positionTimer);
             if (sizeTimer !== null) clearTimeout(sizeTimer);
+            if (layoutTimer !== null) clearInterval(layoutTimer);
             resizeObserver.disconnect();
             mutationObserver.disconnect();
             window.removeEventListener("resize", measureSoon);
