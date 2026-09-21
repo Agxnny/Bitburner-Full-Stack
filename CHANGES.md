@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Validation Dashboard compact responsive navigation
-**Status:** Follow-up height correction published as v0.6.0-r60; runtime validation pending
+**Status:** Complete; runtime validated on v0.6.0-r60
 
 **Goal:** Make the Validation Dashboard materially usable at narrower tail widths by replacing stretched navigation tabs with compact icon+text controls that wrap to two rows when space requires it.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Preserve all seven existing navigation destinations, labels, badges, emergency focus behavior, and text size. Use lightweight text glyph icons with no new dependency. Wide layouts may remain one row; narrower layouts wrap naturally into a compact 4+3 arrangement. This is a bounded UI change before resuming M3 cadence control.
 
-**Validation:** Repository implementation complete. Navigation now uses compact icon+text controls, natural wrapping, a 640px dashboard minimum, and preserves labels/badges/emergency behavior. r58 established compact icon+text navigation; r59 made the stacked ~720px layout the auto-sized default and runtime confirmed the intended 4+3 navigation. That narrower layout exposed the existing 860px max-height clamp cropping the taller Overview content. r60 raises the dashboard max-height to 950px while retaining viewport-bounded auto-sizing. Runtime validation now requires confirming the default stacked dashboard opens without top/content cropping.
+**Validation:** Repository implementation complete. Navigation now uses compact icon+text controls, natural wrapping, a 640px dashboard minimum, and preserves labels/badges/emergency behavior. r58 established compact icon+text navigation; r59 made the stacked ~720px layout the auto-sized default and runtime confirmed the intended 4+3 navigation. That narrower layout exposed the existing 860px max-height clamp cropping the taller Overview content. r60 raises the dashboard max-height to 950px while retaining viewport-bounded auto-sizing. Runtime validation on r60 confirms the default stacked dashboard opens at the intended narrow width with 4+3 icon/text navigation and the Overview content is no longer cropped.
 
-**Exact next step:** Install v0.6.0-r60 and confirm the default stacked dashboard opens at its measured height without cropping; then close this UI change and resume M3 cadence-control work.
+**Exact next step:** Resume M3 with the deferred consumer cadence-request/control-plane slice.
 
 ## Recently completed
 
