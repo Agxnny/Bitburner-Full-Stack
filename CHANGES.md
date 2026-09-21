@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r36 unify Update Watcher with root-measured dashboard sizing
-**Status:** Implementation complete — publication pending
+**Status:** Published as v0.5.0-r36 — runtime validation pending
 
 **Goal:** Remove the updater-only synthetic width model and use the same rendered-root sizing path that is already stable for System Health.
 
@@ -41,9 +41,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Remove shared width-probe machinery once no dashboard uses it; keep content mutation/resize observation so action-state appearance/disappearance triggers grow/shrink.
 - Layout coordinator, countdown, heartbeat formatting, height behavior, and System Health sizing remain unchanged.
 
-**Validation:** r35 runtime: System Health rollback PASS; Update Watcher probe-based crop FAIL. r36 static implementation removes all `widthProbe`/`intrinsicRowWidth` machinery and the updater probe marker; Update Watcher now uses the same complete-root width path as System Health. Updater Shell is `border-box`, so its 620px minimum includes its 20px horizontal padding. Countdown/docking code is unchanged. Runtime validation pending.
+**Validation:** r35 runtime: System Health rollback PASS; Update Watcher probe-based crop FAIL. r36 static implementation removes all `widthProbe`/`intrinsicRowWidth` machinery and the updater probe marker; Update Watcher now uses the same complete-root width path as System Health. Updater Shell is `border-box`, so its 620px minimum includes its 20px horizontal padding. Countdown/docking code is unchanged. Runtime validation pending. r36 immutable manifest published at releaseRef `5fafb084563c162402b0d11f1d80e391fa149059`; descriptor published last.
 
-**Next step:** Publish immutable r36 and descriptor last. Validate compact Update Watcher right edge first; when the next revision is presented, validate that conditional Install/Later content expands the same root-measured model and shrinks after resolution.
+**Next step:** Install r36 normally. Validate compact Update Watcher right edge and unchanged System Health sizing. On the next presented revision, validate that conditional Install/Later content expands the root-measured window and shrinks again after resolution.
 
 ## Recently completed
 
