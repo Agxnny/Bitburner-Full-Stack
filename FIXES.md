@@ -359,7 +359,7 @@ Operator-visible polling cadence must describe the cadence of the reliability gu
 
 
 ## FIX-012 — Generated source patch preserved a literal escape sequence
-**Status:** Corrected in source; runtime validation pending in r66
+**Status:** Corrected in source; runtime validated through r66
 
 **Symptom:** r64 and r65 both committed deployment files but persistent runtime reconciliation degraded because `canonical-state-service.js` could not launch. Health retained the previous canonical-state instance as stale.
 
