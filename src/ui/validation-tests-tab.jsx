@@ -3,12 +3,14 @@ import { V, panel, sectionTitle } from "./validation-theme.js";
 
 export function ValidationTestsTab({snapshot,bridge}){
     const running=snapshot.testRun;
+    const [confirming,setConfirming]=React.useState(null);
     const result=snapshot.testResult;
     const evidence=snapshot.evidence?.records??[];
     function send(intent,message){if(bridge.pendingIntent){bridge.feedback="Another dashboard command is already queued.";return;}bridge.pendingIntent=intent;bridge.feedback=message;}
-    function run(test){if(!test.manual)send({type:"run-validation-test",testId:test.id},`Starting ${test.title}…`);}
+    function run(test){if(test.manual)return;if(test.risk==="DISRUPTIVE"){setConfirming(test);return;}send({type:"run-validation-test",testId:test.id},`Starting ${test.title}…`);}
+    function confirmedRun(){const test=confirming;if(!test)return;setConfirming(null);send({type:"run-validation-test",testId:test.id},`Starting ${test.title}…`);}
     function confirm(test){send({type:"confirm-validation-test",testId:test.id},`Recording operator confirmation for ${test.title}…`);}
-    return <div style={{display:"grid",gridTemplateColumns:"1.05fr 1fr",gap:12}}>
+    return <><div style={{display:"grid",gridTemplateColumns:"1.05fr 1fr",gap:12}}>
         <section style={{...panel,padding:14}}>
             <div style={sectionTitle}>REGISTERED TESTS</div>
             <div style={{marginTop:8,color:V.muted,fontSize:12}}>Repository-registered tests only. Automated and operator-confirmed evidence remain explicitly distinguished.</div>
@@ -23,8 +25,9 @@ export function ValidationTestsTab({snapshot,bridge}){
             <div style={{...sectionTitle,marginTop:18}}>RECENT EVIDENCE</div>
             <Evidence records={evidence}/>
         </section>
-    </div>;
+    </div>{confirming?<Confirm test={confirming} onCancel={()=>setConfirming(null)} onRun={confirmedRun}/>:null}</>;
 }
+function Confirm({test,onCancel,onRun}){return <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",background:"rgba(0,0,0,.72)",zIndex:20}}><div style={{...panel,width:520,padding:18,border:`1px solid ${V.red}`,boxShadow:"0 18px 50px rgba(0,0,0,.55)"}}><div style={{color:V.red,fontWeight:900,fontSize:13}}>DISRUPTIVE VALIDATION</div><h3 style={{margin:"8px 0"}}>{test.title}</h3><div style={{color:V.muted,fontSize:12,lineHeight:1.5}}>{test.confirmation}</div><div style={{marginTop:10,color:V.amber,fontSize:12}}>Health degradation is intentional. The runner arms restoration before stopping any collector and will attempt recovery on completion, failure, timeout, or script death.</div><div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:16}}><button onClick={onCancel} style={button(false,false)}>Cancel</button><button onClick={onRun} style={{...button(false,true),borderColor:V.red,background:V.red}}>Start Disruptive Test</button></div></div></div>;}
 function TestCard({test,running,latest,onRun,onConfirm}){
     const active=running?.testId===test.id;
     return <div style={{border:`1px solid ${V.divider}`,borderRadius:7,padding:11,background:V.raised}}>
@@ -46,6 +49,6 @@ function Result({run,result}){
 }
 function Evidence({records}){const recent=records.slice(-5).reverse();return <div style={{display:"grid",gap:5,marginTop:8}}>{recent.length?recent.map((r)=><div key={r.id} style={{padding:"7px 8px",border:`1px solid ${V.divider}`,borderRadius:5,fontSize:11}}><span style={{color:r.status==="PASS"?V.green:V.red,fontWeight:800}}>{r.status}</span>　{r.testId}<span style={{float:"right",color:V.muted}}>{r.kind}</span><div style={{marginTop:3,color:V.muted}}>{r.summary}</div></div>):<span style={{color:V.muted,fontSize:12}}>No durable evidence recorded yet.</span>}</div>;}
 function latestFor(records,id){return [...records].reverse().find((r)=>r.testId===id)??null;}
-function Risk({value}){return <span style={{padding:"2px 6px",borderRadius:4,border:`1px solid ${V.green}`,color:V.green,fontSize:9,fontWeight:900}}>{value}</span>;}
+function Risk({value}){const color=value==="DISRUPTIVE"?V.red:V.green;return <span style={{padding:"2px 6px",borderRadius:4,border:`1px solid ${color}`,color,fontSize:9,fontWeight:900}}>{value}</span>;}
 function button(disabled,primary){return{marginLeft:"auto",padding:"6px 11px",borderRadius:5,border:`1px solid ${primary?V.blue:V.border}`,background:disabled?V.page:primary?"#177ee3":V.raised,color:disabled?V.muted:V.text,fontWeight:750,cursor:disabled?"default":"pointer"};}
 function duration(r){return Number.isFinite(r?.startedAt)&&Number.isFinite(r?.finishedAt)?`${Math.max(0,r.finishedAt-r.startedAt)}ms`:"—";}
