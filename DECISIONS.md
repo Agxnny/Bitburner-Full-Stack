@@ -252,3 +252,13 @@ All operational data uses a shared wall-time contract. An observation records wh
 Port allocation is centralized. Port 1 remains telemetry; ordinary observations share an ingress lane and market receives a dedicated observation lane plus a reserved control lane because high-frequency isolation is expected to matter. Dedicated lanes are justified by domain requirements, not allocated automatically per collector.
 
 Collection cadence is a control-plane concern. Collectors retain baseline and safe-minimum cadence constraints; M3 will resolve leased consumer cadence requests to an effective interval. A crashed requester must not permanently force high-frequency collection. This cadence mechanism changes acquisition frequency but does not make collectors controller-aware or grant consumers authority.
+
+
+## D-033 — Validation requirements and runtime proof have separate owners
+**Status:** Locked
+
+The repository owns a deployed validation plan describing current validation requirements, stable test IDs, and per-requirement validationVersion. The Bitburner installation owns a protected durable validation ledger recording the latest proven result for each test/version. The dashboard derives Validating, Tests, and Validated by reconciling those sources rather than hard-coding milestone lifecycle in JSX.
+
+A PASS counts only for the matching test ID and validationVersion. A normal software release does not invalidate unchanged proof; incrementing the validationVersion intentionally requires new proof while retaining older evidence as history. A later FAIL for the current test/version regresses its requirements to Validating.
+
+The plan cannot authorize arbitrary execution. Runner paths, risk classification, and manual/automated behavior remain repository-code allowlisted by the validation test registry. Protected runtime ledger/evidence files are not deployment targets.
