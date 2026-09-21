@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 collection cadence control
-**Status:** r61 SAFE validation failed; test/control timing correction in progress
+**Status:** SAFE runtime validated on v0.6.0-r62; disruptive restart/recovery validation next
 
 **Goal:** Add a single durable collection-control owner so consumers can request bounded, expiring collector cadence leases without owning collector configuration or canonical state.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Collector baseline cadence remains the fallback. Each domain declares a minimum safe interval. Consumers request owner/domain/interval/expiry leases; fastest active valid request wins, clamped to the domain floor. Port 3 is transport only; durable control state is authority. Expired leases are removed automatically. Collectors consume resolved cadence and never arbitrate competing requests. Market port 5 remains reserved for later dedicated market control.
 
-**Validation:** r61 SAFE test reached collection-control healthy, published the lease, and correctly resolved the 100ms request to the 500ms player floor. It then observed intervals 2012, 514, 513ms: the first sample straddled activation because the collector was already sleeping on its prior 2000ms baseline. The 4500ms lease also expired while the test was still collecting three accelerated samples, so expiry/baseline checks raced the test timeline and reported 502/512ms carry-over observations. This is a validation timing defect, not evidence that floor resolution failed.
+**Validation:** r62 SAFE `m3.cadence.control` PASS, 6/6 assertions. Collection-control healthy; lease published; 100ms request clamped to 500ms; accelerated player observations measured at 502/515/501ms; lease expired automatically and resolved back to 2000ms; restored observations measured at 2000/2009ms. The r61 failure is retained as evidence of the corrected validation timing race.
 
-**Exact next step:** Correct the SAFE test to establish an activation observation boundary, use a lease long enough for bounded accelerated sampling, wait explicitly for durable expiry resolution, then establish a post-expiry observation boundary before measuring restored baseline.
+**Exact next step:** Add a disruptive collection-control restart test proving a live unexpired lease survives owner restart from durable state, remains bounded/resolved, and still expires back to baseline without stale authority.
 
 ## Recently completed
 
