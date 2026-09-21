@@ -23,18 +23,18 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M1 update discovery freshness regression
-**Status:** Complete; runtime validated with r56 detecting r57 on the first complete discovery cycle
+### Validation Dashboard compact responsive navigation
+**Status:** Implementation in progress
 
-**Goal:** Restore the M1 guarantee that a newly published valid release is normally discovered within one watcher polling interval using redundant cache-busted Raw + GitHub API discovery.
+**Goal:** Make the Validation Dashboard materially usable at narrower tail widths by replacing stretched navigation tabs with compact icon+text controls that wrap to two rows when space requires it.
 
-**Files / areas:** update watcher release discovery, Raw/API fetch paths, cache-busting/query construction, discovery-source telemetry, deployment/update feature documentation.
+**Files / areas:** `src/ui/validation-dashboard.jsx`, dashboard presentation documentation/state, next immutable deployment release.
 
-**Decisions / constraints:** Do not reopen or redesign M1 broadly. Preserve human exact-revision approval, redundant discovery, highest-valid-revision selection, immutable releaseRef semantics, and fail-closed source disagreement behavior. The separately observed repeat-install option did not reproduce on r55 and is not currently established as a persistent defect.
+**Decisions / constraints:** Preserve all seven existing navigation destinations, labels, badges, emergency focus behavior, and text size. Use lightweight text glyph icons with no new dependency. Wide layouts may remain one row; narrower layouts wrap naturally into a compact 4+3 arrangement. This is a bounded UI change before resuming M3 cadence control.
 
-**Validation:** Repository inspection identified a cadence mismatch rather than a failed cache-buster alone: the watcher labels 30 seconds as its poll interval, but the independent GitHub Contents API source is intentionally attempted only every 75 seconds. Raw is cache-busted every 30 seconds, but GitHub community evidence documents residual Raw propagation/cache latency even with unique query strings. Therefore a fresh release can legitimately require 2–3 displayed watcher cycles before the API source sees it. GitHub's Contents API remains the supported file-content endpoint. The fix will make one displayed discovery cycle mean one redundant Raw+API discovery attempt, while keeping the API cadence conservative enough for unauthenticated rate limits.
+**Validation:** Repository implementation and release packaging pending. Runtime validation requires resizing the installed dashboard and confirming one-row wide layout, two-row narrow layout, icon+text readability, badges, and navigation.
 
-**Exact next step:** Install the already-presented harmless r57 validation release normally, then resume the deferred M3 consumer cadence-request/control-plane slice.
+**Exact next step:** Implement compact responsive tabs, publish the next immutable release, install it, and runtime-check resizing/navigation before resuming M3 cadence-control work.
 
 ## Recently completed
 
