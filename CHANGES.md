@@ -23,30 +23,32 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M1 update-dashboard deployment completion status
-**Status:** Runtime validation — r20 published
+### M1 Reliable Deployment close-out
+**Status:** Complete — milestone handoff
 
-**Goal:** Make the ultra-compact update watcher clearly show when an installation has finished and whether the committed deployment was clean, instead of leaving transient `Installing rN.` feedback visible after completion.
+**Goal:** Close M1 after runtime validation of deployment reliability, persistent-unit retirement, and operator-visible deployment completion status.
 
 **Files / areas touched:**
-- `src/ui/update-dashboard.jsx`
-- `src/ui/README.md`
-- `deployment/releases/r20-manifest.json`
-- `deployment/version.json`
 - `CURRENT_STATE.md`
+- `CHANGES.md`
+- deployment and UI feature documentation already updated with validated behavior
 
 **Decisions / constraints:**
-- Reuse the watcher's existing canonical deployment observation/report; do not create a second deployment-status authority.
-- The dashboard derives operator states from deployment report status, `success`, `clean`, finished revision, and whether deployment infrastructure is still running.
-- Successful completion is explicit and green; degraded/failed completion is explicit and red; active deployment remains an in-progress state.
-- Transient command feedback must not override a terminal deployment result.
-- Preserve the approved ultra-compact grey-blue visual language, React/Netscript ownership boundary, and dashboard geometry memory.
+- Full transactional rollback and per-file hashes remain documented future hardening, not M1 blockers.
+- FIX-004 remains historical/investigating; do not invent a root cause.
+- Do not begin a later subsystem until M2 is designed from the locked architecture and roadmap.
 
-**Validation:** r19 retirement validation passed: after normal r19 installation, `src/bootstrap/validation/retirement-fixture.js` was gone while `src/bootstrap/update-watcher.js` and its dashboard remained running. The dashboard completion indicator is implemented and documented. r20 is published with immutable releaseRef `0ec3e741e2f61eff860fdaf2b282a0c9a7df9f63`; runtime UI behavior remains to be validated.
+**Validation:** r20 installed normally and the update dashboard settled on `v0.4.0-r20`, green `Install clean`, and `Last installation completed successfully (r20).` r19 had already runtime-validated explicit retirement by removing only the authorized validation fixture while preserving the watcher/dashboard.
 
-**Next step:** Install r20 normally from the update dashboard. Confirm the UI transitions through installation and then settles on a green `Install clean` indicator with `Last installation completed successfully (r20).` rather than retaining stale `Installing r20.` feedback.
+**Next step:** Begin M2 — Telemetry/Dashboard Foundation design. No M2 implementation mutation until ownership, interfaces, dependencies, and done criteria are defined.
 
 ## Recently completed
+
+### r20 update-dashboard deployment completion status
+**Status:** Runtime validated
+
+Normal r20 installation completed successfully and the dashboard transitioned from install progress to a green `Install clean` terminal state with the completed revision. This validates that transient command feedback no longer leaves the operator uncertain whether deployment finished cleanly.
+
 
 ### M1 explicit persistent-unit retirement
 **Status:** Runtime validated
