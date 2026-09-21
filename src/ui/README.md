@@ -71,3 +71,14 @@ The watcher opens the dashboard automatically. Manual dashboard launch is only f
 ### Netscript ownership rule
 
 React components, effects, timers, and button callbacks do not call Netscript APIs. The script `main()` loop is the sole Netscript owner. It reads telemetry, restores window geometry, and writes commands serially. React uses ordinary browser/JavaScript APIs for rendering and window-geometry observation. This avoids Bitburner's concurrent Netscript-call restriction.
+
+
+## M2 System Health Watcher
+
+`system-health-dashboard.jsx` is the first M2 telemetry consumer. It is a compact alarm/status surface rather than the full Validation Dashboard. It reads the central aggregate health snapshot and bounded incident history owned by `health-collector.js`.
+
+The surface shows overall suite health, active stale/degraded/failed services, recent warning/error incidents, and observed service placement (service, host, PID, health). Healthy operation stays intentionally quiet.
+
+The dashboard uses the shared grey-blue visual language and `dashboard-window-memory.js` with the stable key `system-health`. React only renders ordinary in-memory snapshots; the script main loop owns all Netscript file reads and window restore calls.
+
+Desired placement and restart authority do not belong to this dashboard or to M2 telemetry. The future M4 Supervisor will compare intended service placement with this observed runtime information.
