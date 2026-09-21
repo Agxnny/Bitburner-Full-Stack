@@ -18,8 +18,10 @@ const TEMP_RAW_PATH = "data/update-watch-version-raw.txt";
 const TEMP_API_PATH = "data/update-watch-version-api.txt";
 const PULLER_PATH = "src/bootstrap/git-pull.js";
 const HELPER_PATH = "src/bootstrap/git-pull-self-update.js";
-const POLL_MS = 30_000;
-const API_POLL_MS = 75_000;
+// One normal discovery cycle checks both independent sources. Keep this above one minute
+// so an unauthenticated GitHub Contents request stays below the 60 requests/hour ceiling.
+const POLL_MS = 65_000;
+const API_POLL_MS = POLL_MS;
 const HEARTBEAT_MS = 5_000;
 const LOOP_MS = 1_000;
 
@@ -119,7 +121,7 @@ function initialStatus(ns) {
     };
 }
 
-async function checkRemote(ns, status, forceApi) {
+async function checkRemote(ns, status, _forceApi) {
     const checkedAt = Date.now();
     const localState = readJson(ns, LOCAL_STATE_PATH);
     status.phase = "checking";
@@ -130,13 +132,11 @@ async function checkRemote(ns, status, forceApi) {
     const raw = await fetchSource(ns, "raw", checkedAt);
     status.discovery.raw = mergeDiscovery(status.discovery.raw, raw, checkedAt);
 
-    const apiDue = forceApi
-        || !Number.isFinite(status.discovery.api.lastAttemptAt)
-        || checkedAt - status.discovery.api.lastAttemptAt >= API_POLL_MS;
-    if (apiDue) {
-        const api = await fetchSource(ns, "api", checkedAt);
-        status.discovery.api = { ...mergeDiscovery(status.discovery.api, api, checkedAt), intervalMs: API_POLL_MS };
-    }
+    // A displayed watcher poll is a complete redundant discovery cycle: both Raw and
+    // GitHub Contents API are sampled together. This prevents the old 30s UI cadence
+    // from implying a redundant check when API discovery actually ran every 75s.
+    const api = await fetchSource(ns, "api", checkedAt);
+    status.discovery.api = { ...mergeDiscovery(status.discovery.api, api, checkedAt), intervalMs: API_POLL_MS };
 
     try {
         const selected = chooseNewest(status.discovery.raw.descriptor, status.discovery.api.descriptor);
