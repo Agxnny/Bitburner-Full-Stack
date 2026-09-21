@@ -294,3 +294,33 @@ Any release that introduces a new manifest field whose semantics must be acted o
 #### Related
 - D-012 — Puller self-update uses post-exit helper.
 - D-031 — Managed file retirement requires explicit stop-verify-delete authorization.
+
+
+---
+
+### FIX-010 — Live canonical validation used race-prone snapshot equality
+**Date:** 2026-09-22  
+**Status:** Corrected; runtime validation pending  
+**Subsystem:** M3 canonical state / validation  
+**Affected files:**
+- `src/core/canonical-state-service.js`
+- `src/validation/tests/canonical-state-test.js`
+- `src/validation/tests/canonical-restart-test.js`
+
+#### Symptoms
+The first r54 SAFE canonical-state validation passed player, network, and market checks but failed `timestamp-infrastructure`. Operator inspection later showed different observation/state timestamps, but those files were read at different wall-clock times while the 5-second infrastructure collector continued producing observations.
+
+#### Root cause
+The validation test compared two independently read live files for exact equality once. A collector/canonical update between those reads can produce a false failure even when the canonical path preserves the producer timestamp correctly. Separately, canonical durable-snapshot reconciliation ran only when a loop accepted zero port observations, so unrelated ingress could postpone reconciliation.
+
+#### Fix
+Canonical state now reconciles durable snapshots every service loop after draining transient ingress. SAFE and restart validation use bounded convergence sampling: they allow the live producer/canonical pair up to three seconds to expose a matching observation timestamp rather than treating one cross-file read as an atomic snapshot. The strict requirement remains that canonical `observedAt` must equal a producer observation; the fix does not replace equality with an age tolerance.
+
+#### Verification
+Repository inspection confirms `writeObservation()` writes the durable observation before publishing that same envelope to its port. Official Bitburner v3.0.1-generated API documentation defines `ns.write()` as synchronous/void. Runtime re-validation is pending the corrective release.
+
+#### Prevention / notes
+Validation over independently changing runtime files must not assume a multi-file atomic read. When exact identity is the invariant, use bounded convergence or an explicit correlation identifier rather than weakening identity into an arbitrary timestamp tolerance.
+
+#### Related
+- D-032 — M3 canonical state separates factual time from consumer freshness.
