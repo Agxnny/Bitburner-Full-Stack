@@ -23,29 +23,27 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r33 collector/API and dashboard overflow stabilization
-**Status:** r33 installed — partial runtime PASS; UI width issue remains
+### r34 Update Watcher sizing and useful poll countdown
+**Status:** Approved — implementation
 
-**Goal:** Correct the r32 Bitburner v3 API regression and make large health incidents remain readable without allowing a dynamically sized dashboard to extend beyond the usable viewport.
+**Goal:** Eliminate the remaining compact Update Watcher right-edge crop and make its polling indicator show useful time remaining until the next real remote check.
 
 **Files / areas touched:**
-- `src/collectors/infrastructure-collector.js`
-- all r32 collector API assumptions audited against Bitburner v3.0.1
+- `src/ui/update-dashboard.jsx`
 - `src/ui/dashboard-window-memory.js`
-- `src/ui/system-health-dashboard.jsx`
-- `src/ui/README.md`, `src/collectors/README.md`, `FIXES.md`
-- deployment r33 metadata
+- `src/ui/README.md`
+- deployment r34 metadata
 
 **Decisions / constraints:**
-- r32 runtime proved collector failure isolation: infrastructure degraded while the other six reporting services stayed healthy.
-- Purchased/cloud server enumeration uses v3 `ns.cloud.getServerNames()`; removed legacy `ns.getPurchasedServers()` must not be reintroduced.
-- Dynamic sizing remains content-driven, but maximum height is constrained by the window's current on-screen position and usable viewport. Oversized content must scroll rather than push the native tail off-screen.
-- System Health remains a compact alarm surface. It displays concise single-line failure summaries; full diagnostic detail remains in telemetry/logs for engineering surfaces.
-- No unrelated collector behavior, authority, or dashboard docking changes.
+- r33 collector recovery is PASS: all seven reporting services are healthy.
+- Heartbeat display becomes whole seconds only and reserves stable width; telemetry timestamp precision is unchanged.
+- Poll metric is derived from watcher-owned `nextCheckAt`, counts down in whole seconds, and resets only when the watcher schedules its next actual check.
+- Remaining crop is treated as a sizing conversion/inset issue, not a heartbeat-text cause. Shared sizing adds a small explicit edge safety allowance after measured content/native overhead.
+- Preserve r31/r32-proven reactive update-available grow/shrink behavior and existing docking.
 
-**Validation:** r32 runtime reproduced `REMOVED FUNCTION ERROR` for `getPurchasedServers` and demonstrated isolation. r31 reactive update-width grow path is PASS. Official v3.0.1 docs confirm `ns.cloud.getServerNames()` as the supported owned-server enumeration API. The r32 collector calls were rechecked against v3.0.1 generated docs/source surfaces; no additional removed top-level call was identified. Infrastructure API, viewport-aware max height, compact incident rendering, FIX-007, and feature docs are implemented. Runtime validation: infrastructure recovery PASS and System Health reports all seven services healthy after install. Compact Health incident rendering PASS. Update Watcher still shows right-edge cropping in compact state, and sub-second heartbeat text changes intrinsic row width; sizing stabilization remains pending. r33 immutable manifest published at releaseRef `c427769592e16ba1bde3e121dac99ada8fc7905d`; descriptor published last.
+**Validation:** Implementation pending. Current r33 compact watcher can still clip its right rounded edge; update-available growth is already runtime PASS.
 
-**Next step:** Record r33 collector recovery as PASS. Before further isolation fault injection, stabilize Update Watcher compact width: render heartbeat age in whole seconds and reserve a stable heartbeat width, then correct the remaining right-edge crop using measured dashboard inset/safety allowance rather than a large arbitrary width. Preserve the already-passing update-available grow behavior.
+**Next step:** Implement presentation/countdown and shared edge allowance, update UI docs, publish r34, then validate compact right edge, countdown reset, and update-available growth.
 
 ## Recently completed
 
