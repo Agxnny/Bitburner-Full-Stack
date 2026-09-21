@@ -23,28 +23,32 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### r38 deterministic Update Watcher two-state sizing
-**Status:** Published as v0.5.0-r38 — pre-install action-state validation pending
+### r39 producer-owned service instance uptime
+**Status:** Approved — implementation
 
-**Goal:** Finish M2 Update Watcher sizing by giving its two real UI states explicit width contracts while preserving the validated r37 service uptime feature.
+**Goal:** Make Service Placement uptime survive Health Collector/dashboard restarts by moving instance start ownership to each reporting service.
 
 **Files / areas touched:**
-- `src/ui/update-dashboard.jsx`
-- `src/ui/dashboard-window-memory.js`
-- `src/ui/README.md`
-- deployment r38 metadata
+- `src/core/telemetry.js`
+- `src/collectors/collector-runtime.js`
+- `src/core/health-collector.js`
+- `src/bootstrap/update-watcher.js`
+- `src/ui/system-health-dashboard.jsx`
+- `src/core/README.md`
+- deployment r39 metadata
 
 **Decisions / constraints:**
-- Compact state and update-action state are the only width modes. Install/Later remain conditionally rendered.
-- Compact width remains the r36/r37 proven 620px native target.
-- Action state requests a fixed 900px native target, comfortably fitting the complete current nowrap action row without depending on hidden intrinsic width measurement.
-- Shared dashboard helper accepts an optional React-owned preferred width through the bridge, clamped by the same min/max/viewport rules. Dashboards without a preferred width, including System Health, keep rendered-root sizing unchanged.
-- Preferred width changes are presentation state only; React does not call Netscript. The dashboard main loop remains the sole `resizeTail()` owner.
-- Remove no additional shared sizing behavior. Preserve countdown, docking, viewport-aware height, r37 uptime, and all collector/runtime behavior.
+- `startedAt` is immutable producer-owned current-process lifetime metadata.
+- Shared collector runtime captures one `startedAt` before its loop and includes it in every collector health record.
+- Update Watcher and Health Collector capture their own process `startedAt` once and publish it with their health.
+- Health Collector passes producer `startedAt` through; it no longer invents uptime from first observation.
+- Dashboard derives live uptime from `startedAt` using ordinary JS only.
+- A deployment that restarts a service correctly resets that service's uptime; a Health/dashboard-only restart does not reset other unchanged processes.
+- r38 installed cleanly; compact updater state and r37 uptime presentation remain validated. Action-state 900px width still requires the next presented release to observe before installation.
 
-**Validation:** r36/r37 compact root-measured updater state PASS. r36 with r37 presented action state FAIL because constrained root measurement cannot discover the hidden nowrap action-row demand. r37 service uptime PASS with seven healthy services. r38 static implementation adds only an optional bridge preferred native width; Update Watcher selects 620px compact / 900px action, while System Health and all other dashboards retain rendered-root sizing. React/Netscript ownership and coordinator logic are unchanged. Runtime validation pending. r38 immutable manifest published at releaseRef `96411b6358a3bbd9738a8785d6e0134970b57a9c`; descriptor published last.
+**Validation:** Current r38 runtime screenshot shows seven healthy services. Implementation pending.
 
-**Next step:** Do not install r38 yet. Inspect installed r37 while r38 is presented. The Update Watcher should switch to the explicit 900px action width and show the complete update badge, Install/Later controls, countdown, and rounded right card edge. If that passes, install r38 and confirm it returns to the 620px compact state.
+**Next step:** Implement producer-owned `startedAt`, update docs, publish r39, inspect r38 action-state sizing while r39 is presented, then install and validate uptime ownership.
 
 ## Recently completed
 
