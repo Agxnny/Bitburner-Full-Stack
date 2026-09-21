@@ -10,7 +10,7 @@ Controlled r16/r17 testing validated stale exact-revision rejection and concurre
 
 Full transactional rollback and per-file cryptographic hashes remain documented future hardening rather than M1 blockers. FIX-004's historical ledger-drift root cause remains unproven and must not be invented.
 
-M2 implementation has begun with the first vertical slice: a shared cross-host telemetry contract, central health collector/storage owner, observed service placement reporting, bounded incident history, and compact System Health Watcher. The update watcher is the first external real producer. Runtime validation is pending r21.
+M2 first vertical slice is runtime validated through v0.5.0-r22: shared cross-host telemetry, central health collector/storage ownership, observed service placement, stale detection, bounded incident history, service-instance supersession, and the compact System Health Watcher. The update watcher is the first external real producer.
 
 ## Completed
 - Repository foundation, project rules, architecture, roadmap, decisions, fixes, references, and working-change documentation established.
@@ -37,6 +37,7 @@ M2 implementation has begun with the first vertical slice: a shared cross-host t
 - r20 runtime validated operator-visible deployment completion: green `Install clean` and completed revision replace stale install-progress feedback.
 - `CHANGES.md` is required for preserving in-progress work between implementation steps, chats, and handoffs.
 - Project rules require each feature/subsystem's own documentation to be updated whenever its behavior, interface, configuration, lifecycle, telemetry, validation procedure, or operator workflow changes.
+- M2 r21/r22 health vertical slice runtime validated: healthy placement, stale detection, degraded aggregate state, retained incidents, replacement-instance supersession, and recovery to healthy with only the current PID active.
 
 ## Active feature
 **M2 — Telemetry / Dashboard Foundation / first vertical slice**
@@ -52,11 +53,11 @@ Relevant starting surfaces:
 - relevant `FIXES.md` entries
 
 ## Exact next step
-1. Install r21 normally through the validated updater.
-2. Confirm health collector and update watcher both appear healthy with actual host/PID in the System Health Watcher.
-3. Stop the update watcher long enough to prove stale detection, then restart it and prove recovery.
-4. Confirm recent incident retention and health-dashboard geometry restoration.
-5. Fix any runtime defect before expanding M2 into broader structured events/status and dashboard shells.
+1. Design the next M2 data-collection/storage slice around structured operational status/events, freshness, and consumer interfaces.
+2. Keep telemetry operational and distinct from M3 canonical game state.
+3. Define how later collectors publish data and how dashboards/validation consumers read it without direct producer coupling.
+4. Define bounded storage/retention and malformed/stale-data behavior before implementation.
+5. Implement only after the next slice design is recorded.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
