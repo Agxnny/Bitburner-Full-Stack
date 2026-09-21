@@ -1,10 +1,10 @@
 import { V, panel, sectionTitle, tone } from "./validation-theme.js";
-import { validationSummary } from "./validation-catalog.js";
+import { validationSummaryFrom } from "../validation/validation-state.js";
 
 export function ValidationOverviewTab({ snapshot, navigate }) {
     const health=snapshot.health;
     const update=snapshot.update;
-    const summary=validationSummary();
+    const summary=validationSummaryFrom(snapshot.validationPlan,snapshot.validationLedger);
     const unhealthy=health?.services?.filter((s)=>s.health!=="healthy") ?? [];
     const updateAvailable=update?.phase==="update-available" && Number.isSafeInteger(update?.presentedRevision);
     return <div style={{display:"grid",gap:12}}>
