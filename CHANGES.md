@@ -23,28 +23,32 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 Canonical State — design
-**Status:** Design
+### r50 Explicit managed-file retirement and standalone dashboard scrub
+**Status:** Implementation
 
-**Goal:** Begin M3 only after formally closing the runtime-validated M2 Telemetry / Dashboard Foundation. Define the canonical-state ownership, schemas, freshness semantics, raw-versus-derived boundary, reconciliation responsibilities, and Validation Dashboard state-health surfaces before implementation.
+**Goal:** Add a fail-closed deployment contract for explicitly deprecated managed files, then use it to retire the standalone System Health and Update Watcher dashboard scripts without retiring their persistent backend services.
 
 **Files / areas touched:**
-- `CURRENT_STATE.md`
-- `ROADMAP.md`
-- `DECISIONS.md`
-- `src/ui/README.md`
-- M3 design surfaces to be identified before code
+- `src/bootstrap/git-pull.js`
+- `src/bootstrap/git-pull-self-update.js`
+- `src/bootstrap/update-watcher.js`
+- `src/core/health-collector.js`
+- deployment r50 manifest/descriptor
+- deployment architecture/decision/current-state documentation
 
 **Decisions / constraints:**
-- M2 is complete at r49. Structured telemetry/events, central health/status aggregation, React Validation Dashboard shell, registered validation/evidence framework, and operator production surfaces are all runtime validated.
-- The five M2 observation files remain explicitly non-canonical inputs. M3 may consume/replace their interfaces but must not silently relabel them as canonical state.
-- Standalone System Health and Update Watcher windows may remain during M3; presentation consolidation is not an M2 blocker and must not delay state architecture.
-- The observed short post-install updater convergence/stale command-feedback polish is not a correctness blocker: deployment completion and update state converge without intervention and the canonical compact updater already exposes terminal install state. Track presentation polish separately rather than reopening M2.
-- No M3 implementation until ownership, dependencies, interfaces, reconciliation, freshness/failure semantics, validation plan, and done criteria are documented and approved.
+- File disappearance is never deletion authorization. Only explicit `retireFiles` entries may scrub files.
+- Retirement paths must be previously managed, must not be under protected `data/`, and cannot also be active manifest targets.
+- Runtime ownership/relaunch behavior is removed before retirement reconciliation.
+- For each retirement path: discover matching processes, close any tail, kill, wait, verify no matching process remains, then delete, then verify absence. If stop verification fails, preserve the file and mark deployment degraded.
+- Every retirement action is printed individually and persisted in `data/git-pull-report.json`: already absent, stopped PIDs, verified stopped, deleted, verified absent, or blocked/failure reason.
+- Retirements are one-release instructions; immutable release metadata/report provide durable audit history.
+- r50 retires only `src/ui/system-health-dashboard.jsx` and `src/ui/update-dashboard.jsx`. `health-collector.js` and `update-watcher.js` remain persistent backend services. Validation Dashboard remains the UI.
+- No M3 canonical-state runtime work is mixed into this deployment hygiene release.
 
-**Validation:** M2 closeout evidence includes healthy 7-service telemetry, stale/degraded/recovery handling, bounded incidents, five isolated observation collectors, dashboard sizing/layout behavior, Validation Dashboard smoke 9/9, genuine non-focus-stealing updater notification with operator-confirmed evidence, persistent dashboard replacement cleanup, and the controlled emergency-focus test with exact restoration and final 7/7 health.
+**Validation:** Pending static review and r50 runtime deployment. Acceptance requires both old dashboard tails/processes closed, both files absent from home, backend Health Collector/Update Watcher still healthy, Validation Dashboard healthy, and retirement print/report evidence naming both files.
 
-**Next step:** Design the M3 canonical-state contract and validation criteria. Do not write M3 runtime code until the design is reviewed.
+**Next step:** Implement manifest validation/planning, helper-side stop-before-delete retirement, remove standalone relaunch ownership, publish r50, then validate through the integrated Validation Dashboard updater.
 
 ## Recently completed
 
