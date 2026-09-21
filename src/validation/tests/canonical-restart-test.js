@@ -3,6 +3,8 @@ import { readValidationPlan, recordValidationResult, requiredValidationVersion }
 const RESULT_PATH="data/validation/latest-result.json";
 const SERVICE="src/core/canonical-state-service.js";
 const DOMAINS=["player","network","market","infrastructure","capabilities"];
+const CONVERGENCE_TIMEOUT_MS=3_000;
+const CONVERGENCE_POLL_MS=100;
 /** @param {NS} ns */
 export async function main(ns){
     ns.disableLog("ALL");
@@ -19,10 +21,10 @@ export async function main(ns){
         restartedPid=ns.exec(SERVICE,"home",{threads:original.threads,preventDuplicates:true},...original.args);
         check(assertions,"service-restarted",restartedPid>0,restartedPid?`Canonical service restarted at pid ${restartedPid}.`:"Canonical service restart failed.");
         if(!restartedPid)throw new Error("Canonical service restart failed.");
-        await ns.sleep(2_000);
         for(const domain of DOMAINS){
-            const observation=read(ns,`data/observations/${domain}.json`), state=read(ns,`data/state/${domain}.json`);
-            check(assertions,`reconciled-${domain}`,Boolean(state)&&state.observedAt===observation?.observedAt&&state.revision>=(before[domain]?.revision??0),`${domain} canonical state reconciled from durable observation without revision rollback.`);
+            const matched=await waitForConvergence(ns,domain);
+            const state=matched.state;
+            check(assertions,`reconciled-${domain}`,matched.converged&&state.revision>=(before[domain]?.revision??0),`${domain} canonical state converged to its durable observation after restart without revision rollback.`);
         }
         status=assertions.every((x)=>x.pass)?"PASS":"FAIL";
         summary=status==="PASS"?"Canonical state restarted and reconciled all five durable observations.":"One or more restart reconciliation assertions failed.";
@@ -36,6 +38,19 @@ export async function main(ns){
         appendEvidence(ns,record);
         recordValidationResult(ns,{testId,validationVersion,status,evidenceId:record.id,kind:record.kind,summary:record.summary,at:finishedAt});
     }
+}
+async function waitForConvergence(ns,domain){
+    const deadline=Date.now()+CONVERGENCE_TIMEOUT_MS;
+    let observation=null,state=null;
+    do{
+        observation=read(ns,`data/observations/${domain}.json`);
+        state=read(ns,`data/state/${domain}.json`);
+        if(Number.isFinite(observation?.observedAt)&&state?.observedAt===observation.observedAt)return {converged:true,observation,state};
+        await ns.sleep(CONVERGENCE_POLL_MS);
+    }while(Date.now()<deadline);
+    observation=read(ns,`data/observations/${domain}.json`);
+    state=read(ns,`data/state/${domain}.json`);
+    return {converged:Number.isFinite(observation?.observedAt)&&state?.observedAt===observation.observedAt,observation,state};
 }
 function check(out,id,pass,evidence){out.push({id,pass:Boolean(pass),evidence});}
 function read(ns,path){if(!ns.fileExists(path,"home"))return null;try{return JSON.parse(ns.read(path));}catch{return null;}}
