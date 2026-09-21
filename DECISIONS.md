@@ -128,3 +128,13 @@ M2 operational telemetry uses a shared producer contract and one central `health
 Observed runtime placement is telemetry, not lifecycle authority. The future M4 Supervisor owns desired placement, launches, restarts, duplicate/orphan reconciliation, and startup ordering. M2 health collection may mark missing heartbeats stale but may not independently relocate or restart general services.
 
 Telemetry is also distinct from M3 canonical game state: operational health/events describe the automation system; observed player/server/game facts belong to the canonical state owner.
+
+
+## D-021 — Dashboard position is persistent; size is content-owned
+**Status:** Locked
+
+Dashboard position remains a browser-local user preference and is restored by stable dashboard key. Dashboard size is no longer persisted or restored from manual user resizing.
+
+Each dashboard owns its runtime size. React may measure rendered content using ordinary DOM APIs and publish a debounced desired size through its in-memory bridge. Only the dashboard `main()` path may call Netscript UI resize/move APIs. Per-dashboard min/max bounds, viewport clamping, and resize tolerance prevent unusable geometry and resize jitter.
+
+This contract applies to current dashboards and future tabbed dashboards: content or tab changes may dynamically grow or shrink the native tail while preserving the user's chosen screen position.
