@@ -86,3 +86,12 @@ The surface shows overall suite health, active stale/degraded/failed services, r
 The dashboard uses the shared grey-blue visual language and `dashboard-window-memory.js` with the stable key `system-health`. Its height follows current content within defined bounds, so active issues/incidents can grow the tail and recovery can shrink it. React measures content only; the script main loop owns Netscript reads, position restore, and tail resizing.
 
 Desired placement and restart authority do not belong to this dashboard or to M2 telemetry. The future M4 Supervisor will compare intended service placement with this observed runtime information.
+
+
+## Dashboard geometry calibration
+
+`dashboard-geometry-calibration.jsx` is a temporary/diagnostic presentation harness used to establish the real relationship between `ns.ui.resizeTail()` dimensions and Bitburner's rendered tail DOM. It is not a production dashboard and does not alter the shared sizing policy by itself.
+
+The harness offers known 600×300, 720×420, and 840×540 native tail targets. The Netscript main loop alone applies those exact sizes. React measures the dashboard root, root scroll size, nearest `.react-resizable` element, enclosing native frame, offsets between those boxes, and the requested-minus-measured deltas. Comparing the three settled measurements determines whether the correction needed by dynamic sizing is fixed or size-dependent.
+
+Use it only for sizing validation. Production sizing should be changed from measured evidence rather than further guessed chrome offsets.
