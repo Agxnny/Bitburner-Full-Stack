@@ -23,28 +23,30 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Health incident uniqueness + updater reactive-width correction
-**Status:** Published as v0.5.0-r31 — runtime validation pending
+### M2 resilient observation/data collection foundation
+**Status:** Approved — implementation
 
-**Goal:** Keep the System Health Watcher focused on the latest meaningful warning/error for each service incident type instead of accumulating repeated copies across repeated stale/failure episodes, while using r30 presentation to validate the pending Update Watcher grow/shrink behavior.
+**Goal:** Add broadly useful observational data collection for player, network/world, market, infrastructure, and optional game capabilities while isolating collectors so one unavailable API or failed domain does not collapse the observation stack.
 
 **Files / areas touched:**
-- `src/core/health-collector.js`
-- `src/core/README.md`
-- `src/ui/README.md`
-- deployment r30 release metadata
+- new shared observation snapshot contract/storage helper under `src/core/`
+- independent domain collectors under `src/collectors/`
+- `src/core/README.md` and collector feature documentation
+- deployment r32 release metadata
 
 **Decisions / constraints:**
-- Incident identity for warning/error retention is stable service + incident code. A newer occurrence replaces the older retained occurrence of the same identity.
-- Different incident codes for the same service remain independently visible; different services never deduplicate one another.
-- Recovery/info records remain bounded history and do not become active warnings.
-- This changes retained operational incident presentation only; it does not create canonical game state or Supervisor authority.
-- Existing incident files are normalized through the same retention rule when the collector starts, so historical duplicate warnings do not survive indefinitely.
-- r29 four-side docking/anchor behavior is runtime PASS. Update Watcher update-available grow/shrink remains pending and will be exercised when r30 is presented.
+- Each domain is a separate persistent runtime unit and owns only its own snapshot. No aggregate collector process is a single point of failure.
+- Collectors are observation-only: no purchases, trading, hacking actions, progression actions, or controller authority.
+- Each snapshot carries schema version, stable domain/producer identity, collection/freshness timestamps, status, and structured data.
+- Optional/locked mechanics report `unavailable`/limited capability as data rather than crashing or degrading the whole suite.
+- Actual collector/API failures report their own service degradation through the existing health telemetry; other collectors continue independently.
+- Network discovery is observational topology/server metadata only. Market history is bounded; ordinary latest-state domains replace snapshots rather than accumulating unbounded history.
+- M3 remains owner of future canonical shared game state. These M2 files are observations, not competing canonical truth.
+- r31 health incident uniqueness is runtime PASS. Dashboard update-available width remains under test and this change does not alter dashboard geometry.
 
-**Validation:** Health incident implementation is statically complete but not yet installed. r30 presentation exposed a failed updater-width validation: the native tail remained at compact width and clipped the Install/Later controls. Root cause was missing remeasurement when React changed status-row children without changing an observed box. The shared helper now observes root child/text mutations and schedules the same debounced intrinsic-width measurement used by resize events. Docs updated. r31 immutable manifest published at releaseRef `bd766e7b32e7edf0ca17fb0f4ea65fa3a46a7b22`; descriptor published last. Runtime proof of the reactive grow path necessarily requires the corrected helper to be installed first, so final grow validation moves to the next presented revision.
+**Validation:** Implementation pending. Bitburner API assumptions are being checked against the official v3.0.1 release/source before use.
 
-**Next step:** Let the watcher replace presented r30 with r31. Validate that the existing r29 dashboard expands enough to expose the full r31 Install/Later controls only after it receives the new sizing source through installation is impossible; therefore install r31 normally, then use the next update-presented state for final reactive-width proof. Immediately after r31 install, validate compact sizing and health incident normalization/uniqueness. The r30 failed screenshot remains the regression baseline.
+**Next step:** Implement independent collectors and storage contracts, update feature docs, publish immutable r32, then stop before install so the running r31 Update Watcher can be inspected with r32 available.
 
 ## Recently completed
 
