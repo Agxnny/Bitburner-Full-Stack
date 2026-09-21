@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### Dashboard dynamic sizing correction + deployment refresh
-**Status:** Runtime defect confirmed — implementation
+**Status:** Implementation complete — r24 publication
 
 **Goal:** Correct r23 dashboard sizing so tails fit rendered content without excess top/outer blank space, keep the updater compact, and ensure every successful deployment refreshes dashboard presentation code without unnecessarily restarting unchanged telemetry services.
 
@@ -43,9 +43,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Dashboard refresh must close the old native tail before killing the old process to avoid zombie logs.
 - Future dashboard registry/orchestrator may generalize this; this change only establishes the safe deployment-refresh contract for current dashboards.
 
-**Validation:** r23 screenshot confirms position persistence/dynamic resize is active but exposes oversized Update Watcher and persistent blank area above dashboard content. Deployment-wide dashboard refresh is not yet implemented.
+**Validation:** r23 runtime screenshot confirmed the defects. Implementation now removes the fixed native-chrome size allowance, tightens current dashboard bounds, preserves position-only persistence, and refreshes both dashboard processes after runtime reconciliation without requiring unchanged telemetry/core services to restart. Runtime validation remains pending.
 
-**Next step:** Correct native tail size measurement, tighten current dashboard profiles, add post-deployment dashboard refresh, publish r24, then validate healthy sizing, stale grow/shrink, position persistence, and dashboard PID refresh after install.
+**Next step:** Publish r24 from immutable manifest commit `ed1e12939a6fc8da7c9aae4f7f63788c532303d1`, install normally, then validate healthy sizing/no black top gap, stale grow/shrink, position persistence, and dashboard PID refresh after install.
 
 ## Recently completed
 
