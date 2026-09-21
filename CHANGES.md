@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M2 resilient observation/data collection foundation
-**Status:** Implementation complete — publication pending
+**Status:** Published as v0.5.0-r32 — pre-install validation pending
 
 **Goal:** Add broadly useful observational data collection for player, network/world, market, infrastructure, and optional game capabilities while isolating collectors so one unavailable API or failed domain does not collapse the observation stack.
 
@@ -44,9 +44,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - M3 remains owner of future canonical shared game state. These M2 files are observations, not competing canonical truth.
 - r31 health incident uniqueness is runtime PASS. Dashboard update-available width remains under test and this change does not alter dashboard geometry.
 
-**Validation:** Static implementation complete. Official v3.0.1 release/API definitions were checked for `getPlayer`, `getServer`, stock standardized APIs, Hacknet observations, and no-access membership probes for Gang/Corporation/Bladeburner. Five independent domain collectors plus shared observation/runtime helpers are implemented. No dashboard geometry code changed.
+**Validation:** Static implementation complete. Official v3.0.1 release/API definitions were checked for `getPlayer`, `getServer`, stock standardized APIs, Hacknet observations, and no-access membership probes for Gang/Corporation/Bladeburner. Five independent domain collectors plus shared observation/runtime helpers are implemented. D-025 and collector/core docs updated. No dashboard geometry code changed. r32 immutable manifest published at releaseRef `d03b76338b65d45f4712b84c658d8fa50cce7f7d`; descriptor published last. Runtime validation pending.
 
-**Next step:** Publish immutable r32 with all five collectors as independent persistent runtime units. Stop before operator install: first inspect the running r31 Update Watcher while r32 is available to validate its current Install/Later resize behavior.
+**Next step:** Do not install r32 yet. First inspect/screenshot the running r31 Update Watcher with `r32 available` and Install/Later visible to validate the current reactive-width behavior. After that result is captured, install r32 and validate that Health Watcher reports seven healthy services (or expected capability-limited collector status), each observation snapshot refreshes independently, market unavailability is non-failing when TIX is absent, and stopping one collector does not stop or stale unrelated collectors.
 
 ## Recently completed
 
