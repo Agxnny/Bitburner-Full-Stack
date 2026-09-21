@@ -23,34 +23,39 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 Canonical State — handoff/design
-**Status:** Design only; no M3 runtime implementation started
+### M3 Canonical State — first vertical slice
+**Status:** Approved; implementation starting
 
-**Goal:** Define the thin information-contract layer between the already-built M2 observation collectors and future M4+ consumers. M3 is not a second collection system and is not controller intelligence. It standardizes how current state is published/read and how events/commands move between owners.
+**Goal:** Implement the smallest end-to-end M3 canonical-state path between the existing M2 observation collectors and future consumers, while preserving M2 as observation-only acquisition.
 
-**Current framing approved in chat:**
-- M2 collectors remain the producers of player, network, market, infrastructure, and capabilities observations.
-- M3 is primarily the in-between contract used by future Supervisor, resource/authority manager, scheduler, controllers, and dashboards.
-- Default transport rule to design/lock: **state through state interfaces/files; commands and events through ports/queues**.
-- Canonical/latest state should be durable enough that a restarted consumer can read current truth without reconstructing it from missed port messages.
-- Ports are for transient ordered commands/events, not the sole store of canonical state.
-- Direct process args are startup configuration/identity, not a general state bus.
-- Telemetry/event history is diagnostic evidence, not operational authority.
-- React in-memory bridges remain UI-local only and never become a system bus (FIX-002).
-- Shared canonical state follows single-writer/many-reader ownership. Consumers do not edit state files to “correct” them.
-- M3 should stay lean: normalize contracts, freshness/validity, ownership, message envelopes, port allocation, queue/backpressure rules, and consumer interfaces. Do not add controller decisions such as target selection or purchase decisions.
+**Locked design for this implementation:**
+- M2 collectors remain factual observation producers; M3 is the single canonical-state owner.
+- Canonical latest state is durable and single-writer/many-reader. Ports are transport, never canonical truth.
+- Port 1 remains telemetry. M3 port allocation is centralized in a registry; no scattered magic port numbers.
+- Ordinary observation traffic may share an ingress lane; high-frequency domains may receive dedicated data/control lanes when justified. Market is the first intended dedicated domain.
+- Collection cadence is baseline + bounded consumer cadence leases. Shared infrastructure resolves effective cadence; individual collectors do not implement consumer policy.
+- Wall time is a shared contract. Observations carry factual timestamps. M3 does not declare observations globally fresh/stale; consumers judge freshness from observation time for their own use.
+- Availability is factual and remains distinct from freshness.
+- Historical windows are elapsed-time windows, not “last N samples”; missing observations remain visible gaps.
+- Commands, events, state, telemetry, and authority remain distinct. Lease/budget authority is future M5 work and will not be implemented in M3.
+- Queue behavior is bounded and backpressure is explicit; ports are not treated as broadcast/pub-sub.
 
-**Pre-M3 cleanup completed:**
-- M2 is complete and runtime validated through r49.
-- r51 runtime-validated explicit managed-file retirement. The obsolete standalone `src/ui/system-health-dashboard.jsx` and `src/ui/update-dashboard.jsx` were stopped, verified stopped, deleted, and verified absent with per-file terminal/report audit.
-- Health Collector and Update Watcher remain backend services. Validation Dashboard is now the sole UI surface.
-- FIX-009 documents the r50→r51 deployment-schema compatibility transition.
+**Compatibility findings checked before implementation:**
+- Official Bitburner release history still lists v3.0.1 as the latest published release.
+- v3 exposes nextPortWrite, readPort, peek, tryWritePort, and writePort; ports are queue transport and are not durable restart state.
+- Repository port usage currently reserves Port 1 for telemetry.
 
-**Validation state:** Documentation/handoff only. No M3 code, ports, schemas, or state authority process have been implemented or allocated yet.
+**Files / areas expected to change first:**
+- CHANGES.md, ARCHITECTURE.md, DECISIONS.md, ROADMAP.md
+- shared M3 contracts/port registry/time helpers under src/core/
+- src/collectors/collector-runtime.js and observation publication path
+- one first canonical domain path, then Validation Dashboard evidence before expansion
 
-**Exact next step for the next chat:** Read the startup documents, then design the M3 communication contract before any code. Specifically propose: (1) port allocation/reservation map, (2) command/event envelope and schema/version/ID/timestamp conventions, (3) canonical state-file/envelope contract and domain layout, (4) writer/read ownership, (5) freshness/stale/unavailable semantics, (6) queue/backpressure/overflow behavior, (7) startup/restart behavior, and (8) Validation Dashboard tests/evidence. Review with the operator and lock decisions before implementation.
+**Validation state:** Design reviewed with operator. No M3 runtime behavior has yet been validated in-game.
 
-**Do not do yet:** Do not implement M3 runtime code, allocate ports by convention without documentation, promote `data/observations/*` directly to canonical truth, or begin M4+ behavior.
+**Exact next step:** Record the locked M3 decisions, implement shared contracts plus one end-to-end canonical-state slice, publish a release, and hand runtime validation to the operator before expanding all domains.
+
+**Risks:** High-frequency market cadence must be measured in-game rather than guessed. Port consumers must remain single-owner because queue reads are destructive. Existing M2 snapshots must not accidentally become canonical authority.
 
 ## Recently completed
 
