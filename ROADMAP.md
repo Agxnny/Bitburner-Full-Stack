@@ -21,12 +21,12 @@
 - Validation panel framework
 - Production dashboard shell
 
-## M3 — Canonical State — ACTIVE (design only; no runtime implementation started)
+## M3 — Canonical State — ACTIVE (implementation; first vertical slice pending runtime validation)
 - Define port reservation/allocation and command/event transport rules
-- Define canonical latest-state interfaces, ownership, freshness, and consumer contracts
+- Define canonical latest-state interfaces, ownership, factual timestamps, and consumer freshness contracts
 - Reuse M2 collectors as producers; do not duplicate collection
 - Collectors and state schema
-- Freshness metadata
+- Shared wall-time semantics and consumer-defined freshness
 - Raw vs derived state
 - Reconciliation
 - Validation dashboard state-health views
