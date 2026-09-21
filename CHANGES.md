@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r34 Update Watcher sizing and useful poll countdown
-**Status:** r35 implementation complete — publication pending
+**Status:** Published as v0.5.0-r35 — runtime validation pending
 
 **Goal:** Eliminate the remaining compact Update Watcher right-edge crop and make its polling indicator show useful time remaining until the next real remote check.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Update Watcher uniquely supplies `widthProbeSelector`; shared sizing therefore replaces normal root width with the status-row intrinsic width. The probe already includes its own 28px row padding, then only adds the root's 20px padding. It does not include the inner card border/box footprint used by the rendered Shell. The correction belongs to the updater-local probe contract, not global sizing.
 - Preserve r31/r32-proven reactive update-available grow/shrink behavior and existing docking.
 
-**Validation:** r34 installed cleanly. Whole-second heartbeat and live next-check countdown are working at runtime (observed 19s then 8s). The failed shared 8px width allowance has now been fully removed, restoring ordinary root-measured dashboards such as System Health to the pre-r34 width calculation. Probe-based sizing now accepts explicit local compensation; Update Watcher supplies exactly 2px for its bordered card box. Layout coordinator is unchanged. Runtime r35 validation pending. r34 immutable manifest published at releaseRef `fe8926ca4477fe314b0c1f98114a70b985742c63`; descriptor published last.
+**Validation:** r34 installed cleanly. Whole-second heartbeat and live next-check countdown are working at runtime (observed 19s then 8s). The failed shared 8px width allowance has now been fully removed, restoring ordinary root-measured dashboards such as System Health to the pre-r34 width calculation. Probe-based sizing now accepts explicit local compensation; Update Watcher supplies exactly 2px for its bordered card box. Layout coordinator is unchanged. Runtime r35 validation pending. r35 immutable manifest published at releaseRef `19bb3975baf87e9e907595d70e6804ac264f7040`; descriptor published last. r34 immutable manifest published at releaseRef `fe8926ca4477fe314b0c1f98114a70b985742c63`; descriptor published last.
 
-**Next step:** Publish immutable r35 and descriptor last. Then validate System Health width rollback and the Update Watcher's right rounded edge in compact and update-available states.
+**Next step:** Install r35 normally. Validate that System Health returns to its pre-r34 width, Update Watcher's right rounded card edge is intact in compact state, countdown remains functional, and the next update-available presentation still expands without clipping.
 
 ## Recently completed
 
