@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 collection cadence control
-**Status:** Implemented and published as v0.6.0-r61; runtime validation pending
+**Status:** r61 SAFE validation failed; test/control timing correction in progress
 
 **Goal:** Add a single durable collection-control owner so consumers can request bounded, expiring collector cadence leases without owning collector configuration or canonical state.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Collector baseline cadence remains the fallback. Each domain declares a minimum safe interval. Consumers request owner/domain/interval/expiry leases; fastest active valid request wins, clamped to the domain floor. Port 3 is transport only; durable control state is authority. Expired leases are removed automatically. Collectors consume resolved cadence and never arbitrate competing requests. Market port 5 remains reserved for later dedicated market control.
 
-**Validation:** Static repository inspection complete and r61 published. SAFE test `m3.cadence.control` is registered in the plan/dashboard. It verifies collection-control health, publishes a 100ms player request that must clamp to the 500ms floor, observes accelerated collection, waits for automatic lease expiry, and verifies return to the 2000ms baseline. Runtime proof is pending.
+**Validation:** r61 SAFE test reached collection-control healthy, published the lease, and correctly resolved the 100ms request to the 500ms player floor. It then observed intervals 2012, 514, 513ms: the first sample straddled activation because the collector was already sleeping on its prior 2000ms baseline. The 4500ms lease also expired while the test was still collecting three accelerated samples, so expiry/baseline checks raced the test timeline and reported 502/512ms carry-over observations. This is a validation timing defect, not evidence that floor resolution failed.
 
-**Exact next step:** Install v0.6.0-r61, confirm the stack returns healthy with the new collection-control service, then run the SAFE `Consumer cadence lease` test from the Validation Dashboard.
+**Exact next step:** Correct the SAFE test to establish an activation observation boundary, use a lease long enough for bounded accelerated sampling, wait explicitly for durable expiry resolution, then establish a post-expiry observation boundary before measuring restored baseline.
 
 ## Recently completed
 
