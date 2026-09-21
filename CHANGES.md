@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M2 telemetry foundation + System Health Watcher
-**Status:** Runtime validation — instance replacement defect found
+**Status:** Fix implemented — r22 publication
 
 **Goal:** Establish the first M2 vertical slice: shared structured service-health/event telemetry, central protected runtime storage, service instance/location tracking, bounded incident history, and a lightweight System Health Watcher dashboard.
 
@@ -48,7 +48,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** r21 baseline passed: health collector and update watcher reported healthy with actual host/PID. Stopping update-watcher correctly produced STALE, active issue, degraded aggregate health, and a retained warning. Restarting update-watcher exposed a lifecycle defect: old instance pid 17 remains stale while replacement pid 19 is healthy, so service recovery cannot clear the old active issue.
 
-**Next step:** Fix collector instance supersession so a newer healthy instance for the same stable service replaces the prior stale instance in active health while preserving the stale/recovery incident history. Publish r22 and repeat stale → restart validation.
+**Next step:** Publish r22 with collector instance supersession. Install normally, then repeat update-watcher stop → STALE → restart and confirm only the replacement PID remains active while incident history is preserved.
 
 ## Recently completed
 
