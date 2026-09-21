@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r37 System Health current-instance uptime
-**Status:** Implementation complete — publication pending
+**Status:** Published as v0.5.0-r37 — pre-install validation pending
 
 **Goal:** Show how long each currently reporting service instance has been continuously observed, making restarts/replacements visible in Service Placement without adding Netscript calls to React.
 
@@ -41,9 +41,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - React derives the live duration from snapshot `observedSince` using ordinary JS time only; it does not invoke Netscript or force per-second health snapshot writes.
 - r36 compact Update Watcher root-measured sizing is PASS. Publishing r37 also provides the pending r36 action-state Install/Later sizing test before installation.
 
-**Validation:** Current runtime shows all seven persistent reporting services healthy. Static implementation complete: Health Collector preserves `observedSince` for the same instance ID and resets it on replacement; snapshot exposes it; Service Placement renders live compact uptime using ordinary JS time. Producer telemetry schema and React/Netscript ownership are unchanged. Runtime validation pending.
+**Validation:** Current runtime shows all seven persistent reporting services healthy. Static implementation complete: Health Collector preserves `observedSince` for the same instance ID and resets it on replacement; snapshot exposes it; Service Placement renders live compact uptime using ordinary JS time. Producer telemetry schema and React/Netscript ownership are unchanged. Runtime validation pending. r37 immutable manifest published at releaseRef `b74e8bbb3892647b1930641fdd8037b1d25dce43`; descriptor published last.
 
-**Next step:** Publish immutable r37 and descriptor last. Before installation, inspect r36 with r37 presented to validate root-measured Install/Later expansion; then install and validate seven uptime fields and reset semantics on a future instance replacement.
+**Next step:** Do not install r37 until the running r36 Update Watcher is inspected with r37 presented. Validate that Install/Later action-state expansion preserves the full rounded card edge. Then install r37 and validate seven Service Placement uptime fields advancing live; restarted/replaced instances should reset while unchanged instances retain their observed lifetime.
 
 ## Recently completed
 
