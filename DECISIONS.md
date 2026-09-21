@@ -200,3 +200,11 @@ Validation test execution has its own Tests workspace. Validating answers what s
 The Validation Dashboard is not a terminal or arbitrary script launcher. React may submit a stable test ID only. The Netscript-owning dashboard main loop resolves that ID through a repository-controlled registry, which owns the runner path, arguments, risk classification, and whether a test is executable or observational. Unknown IDs and manual/observational tests fail closed.
 
 Tests should prefer real production interfaces and real observable conditions. Synthetic stimuli may be added only when explicitly designed and must not bypass the behavior being validated. In particular, updater-notification validation uses a genuine newer release rather than forged update telemetry.
+
+
+## D-028 — Validation evidence records provenance explicitly
+**Status:** Locked
+
+Validation evidence distinguishes automated assertions from operator-confirmed observations. Both may be durable evidence, but their provenance must remain visible and must not be collapsed into an undifferentiated PASS.
+
+Dashboard-owned automated runners suppress ordinary Netscript log output; the Tests workspace is their normal operator surface. Detailed latest automated results may be stored separately from the bounded evidence history. Operator confirmation is available only for registry entries explicitly marked observational/manual and records the documented observation without claiming machine verification.
