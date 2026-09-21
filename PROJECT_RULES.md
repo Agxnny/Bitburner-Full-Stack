@@ -54,7 +54,7 @@
 38. A persistent process must not be stopped merely because an update exists.
 39. A persistent runtime unit may be restarted only when a valid newer manifest explicitly marks its runtime unit changed or retired, replacement files have been successfully staged/validated, and controlled restart has begun.
 40. A failed or partial update must leave currently running persistent processes untouched.
-41. Disappearance of a persistent unit from a manifest is not authorization to terminate it; retirement must be explicit.
+41. Disappearance of a persistent unit from a manifest is not authorization to terminate it; retirement must be explicit. Disappearance of a managed file is likewise not deletion authorization; file retirement must be explicit, must stop and verify matching processes before deletion, and must be auditable.
 42. The update orchestrator itself is restarted last.
 
 ## Dashboards and validation
