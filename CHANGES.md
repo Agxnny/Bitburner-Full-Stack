@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r44 Validation Tests workspace
-**Status:** r44 published — waiting for pre-install Updater notification evidence
+**Status:** r44 published — updater notification pre-install PASS; awaiting integrated install/runtime Tests validation
 
 **Goal:** Add a dedicated Tests tab to the Validation Dashboard so approved validation scripts can be launched and observed from the dashboard rather than the terminal. Use r44 itself as the real updater-notification stimulus.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - The first registered test is a SAFE dashboard smoke test that validates current r44 shell/telemetry prerequisites. Publishing r44 itself supplies the genuine newer-release condition for the updater notification test; the test framework does not forge updater telemetry.
 - Update availability remains ordinary attention: badge only, no automatic navigation.
 
-**Validation:** r43 six-tab rendering/runtime pass is recorded. r44 adds the seventh Tests tab, registry-controlled typed dispatch, and the SAFE `m2.dashboard.smoke` runner. Static review confirms the immutable r44 manifest includes the new UI/registry/runner files; Validation Dashboard runtime dependencies include the Tests UI and registry. Immutable releaseRef is `1e1a56619516fa9e2a203bf26f2fce1afc6bfcdc`; descriptor publication was last. Runtime evidence is still required for the genuine r44 Updater notification badge before installation and Tests execution after installation.
+**Validation:** r43 six-tab rendering/runtime pass is recorded. r44 adds the seventh Tests tab, registry-controlled typed dispatch, and the SAFE `m2.dashboard.smoke` runner. Static review confirms the immutable r44 manifest includes the new UI/registry/runner files; Validation Dashboard runtime dependencies include the Tests UI and registry. Immutable releaseRef is `1e1a56619516fa9e2a203bf26f2fce1afc6bfcdc`; descriptor publication was last. Operator screenshot while still running r43 provides genuine pre-install r44 notification evidence: Overview retained focus; Updater displayed unread badge `1`; Deployment and Attention both reported r44 available; Health remained 7/7 healthy; standalone Update Watcher independently showed r44 available. This passes the non-focus-stealing update notification condition. Runtime evidence is still required for opening integrated Updater to clear unread state while preserving pending r44, installing r44 through that tab, and executing Tests after installation.
 
-**Next step:** While still on installed r43, wait for Update Watcher to discover published r44 and capture the dashboard on a non-Updater tab showing the Updater unread badge. Do not open Updater before that screenshot. Then open Updater to verify the badge clears while r44 remains pending; only after that install r44.
+**Next step:** Open the Validation Dashboard Updater tab (not the standalone updater) and verify unread badge clears while r44 remains available. Then install r44 using the integrated Updater control. After clean installation, open Tests and run `m2.dashboard.smoke` from the dashboard.
 
 ## Recently completed
 
