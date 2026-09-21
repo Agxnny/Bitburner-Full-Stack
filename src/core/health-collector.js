@@ -13,6 +13,7 @@ const LOOP_MS = 500;
 const SELF_HEARTBEAT_MS = 5_000;
 const INCIDENT_LIMIT = 40;
 const RECOVERY_LIMIT = 20;
+const OPERATIONAL_INCIDENT_TTL_MS = 10 * 60_000;
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -29,7 +30,7 @@ export async function main(ns) {
 
     const services = new Map();
     const startedAt = Date.now();
-    let incidents = readIncidents(ns);
+    let incidents = pruneExpiredIncidents(readIncidents(ns), Date.now());
     let invalidRecords = 0;
     let nextSelfAt = 0;
     ensureDashboard(ns);
@@ -49,6 +50,11 @@ export async function main(ns) {
         }
 
         let changed = false;
+        const retainedIncidents = pruneExpiredIncidents(incidents, now);
+        if (retainedIncidents.length !== incidents.length) {
+            incidents = retainedIncidents;
+            changed = true;
+        }
         while (true) {
             const raw = ns.readPort(TELEMETRY_PORT);
             if (raw === "NULL PORT DATA") break;
@@ -198,6 +204,13 @@ function addIncident(items, incident) {
         return next.filter((x) => !remove.has(x)).slice(-INCIDENT_LIMIT);
     }
     return next.slice(-INCIDENT_LIMIT);
+}
+
+function pruneExpiredIncidents(items, now) {
+    return items.filter((incident) => {
+        const operational = incident?.severity === "warning" || incident?.severity === "error";
+        return !operational || !Number.isFinite(incident.at) || now - incident.at < OPERATIONAL_INCIDENT_TTL_MS;
+    });
 }
 
 function sameIncidentIdentity(left, right) {
