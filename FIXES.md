@@ -205,3 +205,31 @@ A mutable discovery pointer may be eventually consistent; it must never also def
 - D-010 — Deployment identity uses version plus revision.
 - D-014 — Release manifests use immutable revision-specific paths.
 - D-017 — Release discovery is redundant; release content is commit-pinned.
+
+
+---
+
+### FIX-007 — Removed purchased-server API degraded infrastructure collector
+**Date:** 2026-09-21  
+**Status:** Resolved  
+**Subsystem:** M2 observation collectors / infrastructure  
+**Affected files:**
+- `src/collectors/infrastructure-collector.js`
+
+#### Symptoms
+After r32 installed on Bitburner v3.0.1, only `infrastructure-collector` degraded with `getPurchasedServers: Function removed in 3.0.0. Please use ns.cloud.getServerNames() instead.` The other reporting services remained healthy.
+
+#### Root cause
+The r32 collector used the pre-v3 `ns.getPurchasedServers()` API. Bitburner v3 moved purchased-server management to the Cloud API and removed that function.
+
+#### Fix
+Infrastructure observation now enumerates owned cloud servers with `ns.cloud.getServerNames()` and continues to read each server through `ns.getServer()`.
+
+#### Verification
+The v3.0.1 official generated API documentation confirms `Cloud.getServerNames()` is the supported server-enumeration API and no generated `NS.getPurchasedServers()` method exists. Runtime recovery is pending r33 installation.
+
+#### Prevention / notes
+For Bitburner v3 work, verify the exact current namespace as well as the method name. A familiar v2 Netscript method must not be assumed to survive a major-version namespace migration. Collector failures remain isolated by D-025.
+
+#### Related
+- D-025 — M2 game observations use isolated domain collectors.
