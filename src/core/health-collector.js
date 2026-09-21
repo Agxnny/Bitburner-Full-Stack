@@ -28,6 +28,7 @@ export async function main(ns) {
     ns.disableLog("run");
 
     const services = new Map();
+    const startedAt = Date.now();
     let incidents = readIncidents(ns);
     let invalidRecords = 0;
     let nextSelfAt = 0;
@@ -38,6 +39,7 @@ export async function main(ns) {
         if (now >= nextSelfAt) {
             const self = ingestHealth(services, serviceHealth(ns, "health-collector", {
                 lifecycle: "persistent",
+                startedAt,
                 health: "healthy",
                 phase: "collecting",
                 staleAfterMs: 12_000,
@@ -127,7 +129,6 @@ function ingestHealth(services, record, now) {
     const next = {
         ...record,
         receivedAt: now,
-        observedSince: previousInstance?.observedSince ?? now,
         effectiveHealth: record.health,
         effectiveReason: record.reason,
     };
@@ -166,7 +167,7 @@ function writeSnapshot(ns, services, invalidRecords, now) {
         reason: entry.effectiveReason,
         heartbeatAt: entry.heartbeatAt,
         receivedAt: entry.receivedAt,
-        observedSince: entry.observedSince,
+        startedAt: entry.startedAt,
         staleAfterMs: entry.staleAfterMs,
     })).sort((a, b) => a.service.localeCompare(b.service) || a.instanceId.localeCompare(b.instanceId));
 
