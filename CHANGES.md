@@ -23,8 +23,8 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Health incident uniqueness + r30 updater-width validation
-**Status:** Published as v0.5.0-r30 — runtime validation pending
+### Health incident uniqueness + updater reactive-width correction
+**Status:** Fix implementation — r30 width validation failed before install
 
 **Goal:** Keep the System Health Watcher focused on the latest meaningful warning/error for each service incident type instead of accumulating repeated copies across repeated stale/failure episodes, while using r30 presentation to validate the pending Update Watcher grow/shrink behavior.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Existing incident files are normalized through the same retention rule when the collector starts, so historical duplicate warnings do not survive indefinitely.
 - r29 four-side docking/anchor behavior is runtime PASS. Update Watcher update-available grow/shrink remains pending and will be exercised when r30 is presented.
 
-**Validation:** Static review complete. Collector now upserts warning/error retention by service + code and normalizes the existing incident file through the same rule at startup. Feature docs updated. r30 immutable manifest published at releaseRef `10ba4de7df78966cc40794d80c043df83f6db688`; descriptor published last. Runtime validation remains pending.
+**Validation:** Health incident implementation is statically complete but not yet installed. r30 presentation exposed a failed updater-width validation: the native tail remained at compact width and clipped the Install/Later controls. Root cause in the sizing helper is that width is remeasured on element resize, but React adding/removing status-row children can change intrinsic scroll demand without changing any observed box size, so no new desired width is published.
 
-**Next step:** Before installing r30, capture the Update Watcher with r30 available to validate update-control width growth. Install r30 normally, confirm it shrinks afterward, then exercise stale → recovery → stale and verify Recent Incidents retains only the newest `update-watcher / SERVICE_STALE` warning.
+**Next step:** Add content-mutation-triggered remeasurement to the shared dashboard sizing helper, document the correction, supersede uninstalled r30 with immutable r31, then validate r31-presented grow behavior before install, compact shrink after install, and health incident uniqueness after install.
 
 ## Recently completed
 
