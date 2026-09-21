@@ -9,7 +9,7 @@ export async function main(ns) {
             mults: p.mults, factions: p.factions, jobs: p.jobs,
             entropy: p.entropy, numPeopleKilled: p.numPeopleKilled,
             hasTorRouter: ns.hasTorRouter(),
-        }, { freshForMs: 6_000 });
+        });
         return { status: "available" };
     });
 }
