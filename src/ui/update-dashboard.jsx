@@ -1,4 +1,4 @@
-import { restoreDashboardWindow, useDashboardWindowMemory } from "./dashboard-window-memory.js";
+import { applyDashboardSize, restoreDashboardPosition, useDashboardWindow } from "./dashboard-window-memory.js";
 
 /**
  * Ultra-compact React update dashboard for M1.
@@ -38,14 +38,14 @@ export async function main(ns) {
     if (dashboards.length > 0 && dashboards[0].pid !== ns.pid) return;
 
     ns.disableLog("sleep");
-    const bridge = { snapshot: readSnapshot(ns), pendingIntent: null, feedback: "" };
+    const bridge = { snapshot: readSnapshot(ns), pendingIntent: null, feedback: "", desiredSize: null, appliedSize: null };
 
     ns.ui.openTail();
     ns.ui.setTailTitle("Full Stack — Update Watcher");
     ns.clearLog();
     ns.printRaw(<UpdateDashboard bridge={bridge} />);
     await ns.sleep(75);
-    await restoreDashboardWindow(ns, WINDOW_MEMORY_KEY);
+    await restoreDashboardPosition(ns, WINDOW_MEMORY_KEY);
 
     while (true) {
         if (bridge.pendingIntent) {
@@ -53,6 +53,7 @@ export async function main(ns) {
             bridge.pendingIntent = null;
         }
         bridge.snapshot = readSnapshot(ns);
+        applyDashboardSize(ns, bridge);
         await ns.sleep(REFRESH_MS);
     }
 }
@@ -76,7 +77,7 @@ function readSnapshot(ns) {
 }
 
 function UpdateDashboard({ bridge }) {
-    const windowRef = useDashboardWindowMemory(WINDOW_MEMORY_KEY);
+    const windowRef = useDashboardWindow(WINDOW_MEMORY_KEY, bridge, { minWidth: 650, minHeight: 150, maxWidth: 980, maxHeight: 360 });
     const [view, setView] = React.useState(() => ({ snapshot: bridge.snapshot, feedback: bridge.feedback }));
 
     React.useEffect(() => {
