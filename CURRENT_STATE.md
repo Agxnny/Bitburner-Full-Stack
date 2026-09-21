@@ -121,3 +121,12 @@ A fresh development chat should read `PROJECT_RULES.md`, `CHANGES.md`, this file
 - v0.6.0-r63 runtime validated M3 collection cadence control end-to-end: SAFE lease bounds/expiry plus disruptive collection-control restart recovery. A live player lease survived owner restart from durable state, remained bounded at 500ms, and expired back to the 2000ms baseline. No current validation-plan tests remain outstanding.
 
 - v0.6.0-r66 runtime validated canonical resource associations: CLEAN deployment/reconciliation followed by SAFE `m3.resource.associations` PASS (7/7). Live canonical state exposed 33 exact stock/server association pairs, 1 unmatched stock, and 37 unmatched organization servers with source provenance and no invented/duplicate links. No current validation-plan tests remain outstanding.
+
+
+### Diagnostics / incident intelligence — r67 runtime proof
+- v0.6.0-r67 installed cleanly.
+- Health reported 10/10 services healthy including diagnostics-service.
+- Validation Dashboard Diagnostics view loaded with no active incidents before testing.
+- SAFE m3.diagnostics.intelligence PASS: 7/7 assertions.
+- Synthetic incident was durably recorded, evidence/classification preserved, duplicate report bounded, explicit resolution accepted, and resolved evidence remained visible as one Recently Resolved occurrence.
+- Current validation plan has no outstanding tests after the SAFE proof.
