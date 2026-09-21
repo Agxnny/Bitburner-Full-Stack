@@ -8,6 +8,7 @@ import { ValidationUpdaterTab } from "./validation-updater-tab.jsx";
 import { ValidationDataTab } from "./validation-data-tab.jsx";
 import { ValidationTestsTab } from "./validation-tests-tab.jsx";
 import { findTest } from "../validation/test-registry.js";
+import { appendEvidence, evidenceRecord, readEvidence } from "../validation/evidence-store.js";
 
 const SCRIPT_PATH="src/ui/validation-dashboard.jsx";
 const WINDOW_KEY="validation-dashboard";
@@ -39,6 +40,7 @@ export async function main(ns){
 }
 function handleIntent(ns,intent){
     if(intent.type==="run-validation-test")return runValidationTest(ns,intent.testId);
+    if(intent.type==="confirm-validation-test")return confirmValidationTest(ns,intent.testId);
     if(intent.type!=="update-command")return "Unsupported dashboard intent.";
     if(ns.fileExists(COMMAND_PATH,"home"))return "Update command already queued.";
     const command={schemaVersion:1,id:`validation-ui-${Date.now()}-${Math.floor(Math.random()*1e6)}`,action:intent.action,revision:intent.revision,createdAt:Date.now(),origin:"validation-dashboard"};
@@ -50,13 +52,19 @@ function runValidationTest(ns,testId){
     if(!test||!test.runner||test.manual)return "Test is not executable.";
     const active=ns.ps("home").find((p)=>p.filename===test.runner);
     if(active)return `Test already running (pid ${active.pid}).`;
-    const pid=ns.run(test.runner,1,test.id);
+    const pid=ns.run(test.runner,{threads:1,preventDuplicates:true},test.id);
     return pid>0?`Started ${test.title} (pid ${pid}).`:`Could not start ${test.title}.`;
+}
+function confirmValidationTest(ns,testId){
+    const test=findTest(testId);
+    if(!test?.manual)return "Test is not operator-confirmable.";
+    appendEvidence(ns,evidenceRecord({testId,status:"PASS",kind:"operator-confirmed",summary:"Operator confirmed the documented observation was completed successfully."}));
+    return `Recorded operator-confirmed PASS for ${test.title}.`;
 }
 function readSnapshot(ns){
     const test=findRunningTest(ns);
     const observations={}; for(const d of ["player","network","market","infrastructure","capabilities"])observations[d]=readJson(ns,PATHS[d]);
-    return {capturedAt:Date.now(),health:readJson(ns,PATHS.health),incidents:readJson(ns,PATHS.incidents),update:readJson(ns,PATHS.update),observations,testRun:test,testResult:readJson(ns,TEST_RESULT_PATH)};
+    return {capturedAt:Date.now(),health:readJson(ns,PATHS.health),incidents:readJson(ns,PATHS.incidents),update:readJson(ns,PATHS.update),observations,testRun:test,testResult:readJson(ns,TEST_RESULT_PATH),evidence:readEvidence(ns)};
 }
 function findRunningTest(ns){
     for(const testId of ["m2.dashboard.smoke"]){
