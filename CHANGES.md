@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r34 Update Watcher sizing and useful poll countdown
-**Status:** Approved — r35 implementation
+**Status:** r35 implementation complete — publication pending
 
 **Goal:** Eliminate the remaining compact Update Watcher right-edge crop and make its polling indicator show useful time remaining until the next real remote check.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Update Watcher uniquely supplies `widthProbeSelector`; shared sizing therefore replaces normal root width with the status-row intrinsic width. The probe already includes its own 28px row padding, then only adds the root's 20px padding. It does not include the inner card border/box footprint used by the rendered Shell. The correction belongs to the updater-local probe contract, not global sizing.
 - Preserve r31/r32-proven reactive update-available grow/shrink behavior and existing docking.
 
-**Validation:** r34 installed cleanly. Whole-second heartbeat and live next-check countdown are working at runtime (observed 19s then 8s). The shared 8px width safety did not cure the Update Watcher right-edge crop and caused System Health to grow wider than its prior correct footprint. Treat the shared width allowance as a failed experiment to revert, not tune upward. r34 immutable manifest published at releaseRef `fe8926ca4477fe314b0c1f98114a70b985742c63`; descriptor published last.
+**Validation:** r34 installed cleanly. Whole-second heartbeat and live next-check countdown are working at runtime (observed 19s then 8s). The failed shared 8px width allowance has now been fully removed, restoring ordinary root-measured dashboards such as System Health to the pre-r34 width calculation. Probe-based sizing now accepts explicit local compensation; Update Watcher supplies exactly 2px for its bordered card box. Layout coordinator is unchanged. Runtime r35 validation pending. r34 immutable manifest published at releaseRef `fe8926ca4477fe314b0c1f98114a70b985742c63`; descriptor published last.
 
-**Next step:** Revert the shared r34 width allowance, add updater-local width-probe box compensation so the request represents the complete rendered Shell/card footprint, update UI docs, and publish r35 without changing layout-coordinator geometry/docking.
+**Next step:** Publish immutable r35 and descriptor last. Then validate System Health width rollback and the Update Watcher's right rounded edge in compact and update-available states.
 
 ## Recently completed
 
