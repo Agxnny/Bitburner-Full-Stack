@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r41 incident expiry + whole-second Health freshness
-**Status:** Approved — implementation
+**Status:** Implementation complete — publication pending
 
 **Goal:** Automatically remove old retained warning/error incidents and make System Health's "updated … ago" presentation use whole seconds only.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - System Health freshness display floors to whole seconds; values below one second display `0s`, never milliseconds.
 - Do not alter process uptime, collector behavior, updater sizing, or dashboard geometry.
 
-**Validation:** r40 process uptime is runtime PASS. Existing historical infrastructure/update-watcher warnings provide direct expiry validation after r41 installation.
+**Validation:** r40 process uptime is runtime PASS. Static r41 implementation adds a 10-minute TTL only to retained warning/error incidents, prunes on startup and continuously, and leaves active health/recovery history independent. System Health freshness now floors to whole seconds (`0s` below one second) and never renders milliseconds. Runtime validation pending; existing historical infrastructure/update-watcher warnings provide direct expiry validation.
 
-**Next step:** Implement incident pruning and whole-second freshness formatting, update docs, publish r41, then validate old warnings disappear and freshness renders only seconds/minutes.
+**Next step:** Publish immutable r41 and descriptor last, then install and validate that the old infrastructure/update-watcher warning rows disappear if older than 10 minutes while active health remains correct, and that `updated … ago` uses whole seconds only.
 
 ## Recently completed
 
