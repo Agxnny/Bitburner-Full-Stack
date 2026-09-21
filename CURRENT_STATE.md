@@ -117,3 +117,5 @@ Do not begin hacking, stocks, purchased servers, progression, or other domain au
 A fresh development chat should read `PROJECT_RULES.md`, `CHANGES.md`, this file, `ARCHITECTURE.md`, `DECISIONS.md`, `ROADMAP.md`, and relevant `FIXES.md` entries before making code changes. Verify Bitburner API assumptions against `REFERENCES.md` and current official documentation/source.
 
 - r60 runtime validated the compact Validation Dashboard layout: auto-sized narrow window, 4+3 icon/text navigation, and full Overview height without cropping.
+
+- v0.6.0-r63 runtime validated M3 collection cadence control end-to-end: SAFE lease bounds/expiry plus disruptive collection-control restart recovery. A live player lease survived owner restart from durable state, remained bounded at 500ms, and expired back to the 2000ms baseline. No current validation-plan tests remain outstanding.
