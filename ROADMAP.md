@@ -102,3 +102,9 @@
 
 ## Workflow rule
 Only one implementation milestone/feature is active at a time. Later ideas may be documented without interrupting the active feature unless they reveal a genuine blocker.
+
+
+### M3 foundation insertion — Diagnostics & Incident Intelligence
+**Status:** Implementation / runtime validation pending (target r67)
+
+Before Generic Authority, add structured diagnostic ingress, one durable diagnostics owner, evidence-backed health/deployment correlation, deduplicated incident lifecycle, and an explanatory Validation Dashboard view. SAFE validation must prove the contract without disrupting production services. Authority/Work Orders resume after this foundation slice is runtime validated.
