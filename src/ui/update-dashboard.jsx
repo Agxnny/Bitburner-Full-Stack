@@ -195,7 +195,7 @@ function Header({ children }) {
 
 function StatusRow({ children }) {
     return (
-        <div data-dashboard-width-probe style={{
+        <div style={{
             display: "flex",
             alignItems: "center",
             gap: "14px",
