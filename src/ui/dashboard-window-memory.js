@@ -36,8 +36,8 @@ export function useDashboardWindow(key, bridge, options = {}) {
     const minHeight = options.minHeight ?? 120;
     const maxWidth = options.maxWidth ?? 1200;
     const maxHeight = options.maxHeight ?? 900;
-    const chromeWidth = options.chromeWidth ?? 24;
-    const chromeHeight = options.chromeHeight ?? 58;
+    const widthPadding = options.widthPadding ?? 0;
+    const heightPadding = options.heightPadding ?? 0;
 
     React.useEffect(() => {
         const root = rootRef.current;
@@ -54,8 +54,8 @@ export function useDashboardWindow(key, bridge, options = {}) {
             const viewportWidth = Math.max(minWidth, window.innerWidth || minWidth);
             const viewportHeight = Math.max(minHeight, window.innerHeight || minHeight);
             bridge.desiredSize = {
-                width: clamp(Math.ceil(rect.width + chromeWidth), minWidth, Math.min(maxWidth, viewportWidth - 8)),
-                height: clamp(Math.ceil(root.scrollHeight + chromeHeight), minHeight, Math.min(maxHeight, viewportHeight - 8)),
+                width: clamp(Math.ceil(rect.width + widthPadding), minWidth, Math.min(maxWidth, viewportWidth - 8)),
+                height: clamp(Math.ceil(root.scrollHeight + heightPadding), minHeight, Math.min(maxHeight, viewportHeight - 8)),
             };
         };
 
@@ -93,7 +93,7 @@ export function useDashboardWindow(key, bridge, options = {}) {
             mutationObserver.disconnect();
             window.removeEventListener("resize", measureSoon);
         };
-    }, [key, bridge, minWidth, minHeight, maxWidth, maxHeight, chromeWidth, chromeHeight]);
+    }, [key, bridge, minWidth, minHeight, maxWidth, maxHeight, widthPadding, heightPadding]);
 
     return rootRef;
 }
