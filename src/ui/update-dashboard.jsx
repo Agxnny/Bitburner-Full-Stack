@@ -12,6 +12,8 @@ const SCRIPT_PATH = "src/ui/update-dashboard.jsx";
 const WINDOW_MEMORY_KEY = "update-watcher";
 const REFRESH_MS = 1_000;
 const LAYOUT_GROUP = "operations";
+const COMPACT_WIDTH = 620;
+const ACTION_WIDTH = 900;
 
 const COLORS = {
     page: "#0b1119",
@@ -95,6 +97,7 @@ function UpdateDashboard({ bridge }) {
     const heartbeatFresh = heartbeatAge !== null && heartbeatAge < 15_000;
     const updateRevision = status.presentedRevision;
     const updateAvailable = status.phase === "update-available" && Number.isSafeInteger(updateRevision);
+    bridge.preferredWidth = updateAvailable ? ACTION_WIDTH : COMPACT_WIDTH;
     const version = release(status.local);
     const nextCheck = formatCountdown(status.nextCheckAt);
     const install = installationState(status);
