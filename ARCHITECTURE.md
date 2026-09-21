@@ -159,3 +159,8 @@ The plan never supplies executable script paths. `src/validation/test-registry.j
 ### Canonical resource associations
 
 Canonical state includes a derived `associations` domain owned by `canonical-state-service`. It joins canonical market `symbol → organization` facts with canonical network `hostname → organizationName` facts using exact organization-name equality. It records source revisions/timestamps, bounds its observation time to the older source, and keeps unmatched resources explicit. It is factual state only; authority and compatibility policy consume it later. See `docs/canonical-state.md`.
+
+
+### Diagnostics and incident intelligence
+
+Diagnostics-service is the single durable owner of explanatory incident state. Structured diagnostic reports use the centrally reserved diagnostics ingress port; the port is transport, never truth. The service correlates direct reports with health and deployment evidence and persists bounded incidents under data/diagnostics. Findings explicitly distinguish OBSERVED facts, CORRELATED conclusions, and INFERRED hypotheses with evidence/confidence. Unknown causes remain unknown. The Validation Dashboard consumes this state through its Diagnostics view and does not perform its own root-cause inference. See docs/diagnostics.md.
