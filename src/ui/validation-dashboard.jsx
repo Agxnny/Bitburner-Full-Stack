@@ -27,7 +27,7 @@ export async function main(ns){
     if(ns.getHostname()!=="home"){ns.tprint("ERROR | validation-dashboard must run on home");return;}
     const copies=ns.ps("home").filter((p)=>p.filename===SCRIPT_PATH).sort((a,b)=>a.pid-b.pid);
     if(copies.length&&copies[0].pid!==ns.pid)return;
-    ns.disableLog("sleep");
+    ns.disableLog("sleep"); ns.disableLog("run");
     const bridge={snapshot:readSnapshot(ns),pendingIntent:null,feedback:"",desiredSize:null,appliedSize:null,desiredPosition:null,appliedPosition:null,layout:null,preferredWidth:1180};
     ns.ui.openTail(); ns.ui.setTailTitle("Full Stack — Validation Dashboard"); ns.clearLog();
     ns.printRaw(<ValidationDashboard bridge={bridge}/>);
