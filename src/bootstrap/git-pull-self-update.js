@@ -201,7 +201,10 @@ async function refreshDashboards(ns) {
 
 function stopProcesses(ns, processes) {
     let success = true;
-    for (const process of processes) if (!ns.kill(process.pid)) success = false;
+    for (const process of processes) {
+        ns.ui.closeTail(process.pid);
+        if (!ns.kill(process.pid)) success = false;
+    }
     return success;
 }
 
