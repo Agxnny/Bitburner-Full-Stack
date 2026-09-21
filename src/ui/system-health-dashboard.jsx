@@ -1,10 +1,12 @@
-import { applyDashboardSize, restoreDashboardPosition, useDashboardWindow } from "./dashboard-window-memory.js";
+import { applyDashboardPosition, applyDashboardSize, restoreDashboardPosition, useDashboardWindow } from "./dashboard-window-memory.js";
+import { DashboardAnchorControl } from "./dashboard-anchor-control.jsx";
 
 const HEALTH_PATH = "data/telemetry/health.json";
 const INCIDENTS_PATH = "data/telemetry/incidents.json";
 const SCRIPT_PATH = "src/ui/system-health-dashboard.jsx";
 const WINDOW_KEY = "system-health";
 const REFRESH_MS = 1_000;
+const LAYOUT_GROUP = "operations";
 const C = { page:"#0b1119", surface:"#111a26", raised:"#152131", border:"#294766", text:"#f3f6fb", muted:"#91a9c7", blue:"#2993ff", green:"#29d8a3", amber:"#ffb31a", red:"#ff5d68" };
 
 /** @param {NS} ns */
@@ -14,7 +16,7 @@ export async function main(ns) {
     if (copies.length && copies[0].pid !== ns.pid) return;
 
     ns.disableLog("sleep");
-    const bridge = { snapshot: readSnapshot(ns), desiredSize: null, appliedSize: null };
+    const bridge = { snapshot: readSnapshot(ns), desiredSize: null, appliedSize: null, desiredPosition: null, appliedPosition: null, layout: null };
     ns.ui.openTail();
     ns.ui.setTailTitle("Full Stack — System Health");
     ns.clearLog();
@@ -25,12 +27,13 @@ export async function main(ns) {
     while (true) {
         bridge.snapshot = readSnapshot(ns);
         applyDashboardSize(ns, bridge);
+        applyDashboardPosition(ns, bridge);
         await ns.sleep(REFRESH_MS);
     }
 }
 
 function HealthDashboard({ bridge }) {
-    const rootRef = useDashboardWindow(WINDOW_KEY, bridge, { minWidth: 590, minHeight: 180, maxWidth: 900, maxHeight: 760 });
+    const rootRef = useDashboardWindow(WINDOW_KEY, bridge, { minWidth: 590, minHeight: 180, maxWidth: 900, maxHeight: 760, layoutGroup: LAYOUT_GROUP, layoutOrder: 20, layoutGap: 6 });
     const [snapshot, setSnapshot] = React.useState(bridge.snapshot);
     React.useEffect(() => {
         const timer = setInterval(() => setSnapshot(bridge.snapshot), REFRESH_MS);
@@ -38,14 +41,14 @@ function HealthDashboard({ bridge }) {
     }, [bridge]);
 
     const health = snapshot?.health;
-    if (!health) return <Shell rootRef={rootRef}><Header /><div style={{padding:16,color:C.muted}}>Waiting for health telemetry…</div></Shell>;
+    if (!health) return <Shell rootRef={rootRef}><Header bridge={bridge} /><div style={{padding:16,color:C.muted}}>Waiting for health telemetry…</div></Shell>;
 
     const unhealthy = health.services.filter((s) => s.health !== "healthy");
     const recent = (snapshot.incidents?.incidents ?? []).filter((x) => x.severity !== "info").slice(-5).reverse();
     const tone = health.overall === "healthy" ? C.green : health.overall === "failed" ? C.red : C.amber;
 
     return <Shell rootRef={rootRef}>
-        <Header />
+        <Header bridge={bridge} />
         <div style={{padding:"12px 14px",display:"flex",alignItems:"center",gap:12,borderBottom:`1px solid ${C.border}`}}>
             <span style={{width:11,height:11,borderRadius:"50%",background:tone,boxShadow:`0 0 12px ${tone}`}} />
             <strong style={{color:tone,letterSpacing:".05em"}}>{health.overall.toUpperCase()}</strong>
@@ -81,8 +84,8 @@ function Row({ service }) {
 function Section({ title, children }) {
     return <div style={{padding:"10px 14px",borderTop:`1px solid ${C.border}`}}><div style={{fontSize:10,color:C.muted,letterSpacing:".1em",fontWeight:750,marginBottom:5}}>{title}</div>{children}</div>;
 }
-function Header() {
-    return <div style={{height:36,padding:"0 14px",display:"flex",alignItems:"center",gap:9,color:"#b8d2f3",fontSize:11,fontWeight:750,letterSpacing:".09em"}}><span style={{color:C.blue}}>◆</span> FULL STACK — SYSTEM HEALTH</div>;
+function Header({ bridge }) {
+    return <div style={{height:36,padding:"0 14px",display:"flex",alignItems:"center",gap:9,color:"#b8d2f3",fontSize:11,fontWeight:750,letterSpacing:".09em"}}><span style={{color:C.blue}}>◆</span> FULL STACK — SYSTEM HEALTH <DashboardAnchorControl group={LAYOUT_GROUP} id={WINDOW_KEY} bridge={bridge} accent={C.blue} muted={C.muted} /></div>;
 }
 function Shell({rootRef,children}) {
     return <div ref={rootRef} style={{fontFamily:'Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif',minWidth:560,padding:10,background:C.page,color:C.text}}><div style={{overflow:"hidden",border:`1px solid ${C.border}`,borderRadius:10,background:`linear-gradient(180deg,${C.raised},${C.surface})`}}>{children}</div></div>;
