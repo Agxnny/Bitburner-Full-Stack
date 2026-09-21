@@ -55,11 +55,12 @@ Relevant starting surfaces:
 - relevant `FIXES.md` entries
 
 ## Exact next step
-1. Publish r44 with the dedicated Tests workspace and first registered SAFE smoke test.
-2. Before installing r44, capture r43's genuine update-available state while remaining off Updater: verify the Updater unread badge appears and selected tab is not stolen.
-3. Open Updater to verify the unread badge clears while r44 remains pending, then install r44 through the integrated exact-revision control.
-4. On r44, run `m2.dashboard.smoke` from Tests and verify the result/evidence renders without terminal use.
-5. Then exercise controlled widespread service failure for one-shot Health focus/acknowledgement before retiring standalone Health/Updater presentation.
+1. Install r48 through the integrated Updater and open Tests.
+2. Start `m2.dashboard.emergency-focus`; verify the DISRUPTIVE confirmation appears before any collector is stopped.
+3. Confirm execution. The test should stop exactly four observation collectors and wait for the real health threshold.
+4. Verify the dashboard automatically selects Health once and displays the emergency banner. Press Acknowledge when prompted by the live emergency.
+5. Observe automatic restoration and final return to 7/7 healthy. Review the Tests result/evidence; any restoration failure is a test failure requiring recovery.
+6. After this passes, investigate the bounded post-install updater convergence separately, then decide whether standalone Health/Updater presentation can retire.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
