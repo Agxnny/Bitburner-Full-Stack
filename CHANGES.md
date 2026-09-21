@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### r45 Quiet validation runners and durable evidence
-**Status:** Implementation
+**Status:** Implementation complete — preparing r45 runtime validation
 
 **Goal:** Complete the first Tests workflow refinement: dashboard-owned automated tests run quietly, while automated and operator-confirmed validation evidence is durably recorded and visible from Tests/Validated rather than relying on terminal/tail output or chat history.
 
@@ -42,9 +42,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - Existing r44 updater-notification evidence may be recorded through the new manual-confirmation workflow after r45 installation.
 - No updater convergence fix is mixed into r45.
 
-**Validation:** r44 proved the full dashboard-run smoke path with nine passing assertions, but exposed runner tail/log noise. r44 also proved genuine updater notification without focus stealing and integrated installation. r45 implementation/static review are in progress.
+**Validation:** r44 proved the full dashboard-run smoke path with nine passing assertions, but exposed runner tail/log noise. r44 also proved genuine updater notification without focus stealing and integrated installation. r45 now suppresses runner Netscript logging, records automated results into a bounded durable evidence store, and adds explicit operator-confirmed evidence for registry entries marked manual. Static source review complete; runtime validation remains.
 
-**Next step:** Implement quiet runner launch plus bounded evidence recording/UI, publish r45, then operator re-runs smoke from Tests and records the already-observed updater notification through the explicit confirmation workflow.
+**Next step:** Publish r45, then operator installs it through the integrated Updater. Re-run `m2.dashboard.smoke` from Tests and confirm no runner log line appears in the dashboard tail; then use `Confirm Observed Pass` on the updater notification test and verify both automated and operator-confirmed records appear in Recent Evidence.
 
 ## Recently completed
 
