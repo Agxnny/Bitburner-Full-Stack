@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 diagnostics / incident intelligence
-**Status:** Implemented; immutable release and SAFE runtime validation pending
+**Status:** Published as v0.6.0-r67; runtime validation pending
 
 **Goal:** Add one durable diagnostics owner that turns structured runtime/deployment/health failures into evidence-backed incidents and concise Validation Dashboard explanations, so operators can distinguish observed symptoms, correlated evidence, and bounded inference without manually reconstructing failures.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** Code review complete for the first slice. SAFE m3.diagnostics.intelligence is registered to publish synthetic evidence, verify durable ownership/classification/deduplication, and explicitly resolve the fixture without disrupting production services. Runtime proof is pending.
 
-**Exact next step:** Publish immutable r67, install it, confirm diagnostics-service health and the Diagnostics dashboard tab, then run SAFE m3.diagnostics.intelligence.
+**Exact next step:** Install r67, confirm a clean deployment with diagnostics-service healthy and the Diagnostics tab present, then run SAFE m3.diagnostics.intelligence.
 
 ## Recently completed
 
