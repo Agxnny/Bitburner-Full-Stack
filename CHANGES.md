@@ -23,29 +23,27 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Validation plan + durable runtime ledger
-**Status:** Corrected and published as v0.6.0-r55; awaiting SAFE runtime re-validation
+### M1 update discovery freshness regression
+**Status:** Investigation pending; operator has reproduced delayed discovery across recent releases
 
-**Goal:** Replace the hard-coded Validation Dashboard work catalog with a deployed repository plan describing what currently requires proof, while preserving runtime PASS truth in protected Bitburner data so completed validation survives later pulls.
+**Goal:** Restore the M1 guarantee that a newly published valid release is normally discovered within one watcher polling interval using redundant cache-busted Raw + GitHub API discovery.
 
-**Locked design:**
-- GitHub/deployment owns the validation plan: what requirements exist, which validation definition version is current, and which approved test ID proves each requirement.
-- Bitburner runtime owns a durable validation ledger under protected data. Deployment must not overwrite it.
-- The Dashboard derives Validating, Tests, and Validated by reconciling the current plan against the local ledger.
-- A PASS satisfies only the matching test ID + validationVersion. Changing a requirement version makes old evidence historical but no longer current.
-- Ordinary release/revision changes do not invalidate unchanged validation definitions.
-- Test runner paths/risk remain code-controlled by test-registry.js. The JSON plan may reference test IDs but may not provide arbitrary executable paths.
-- Evidence history remains provenance/audit detail; the ledger is the compact current passed-truth index.
-- Failed/re-run current evidence may regress a requirement back to Validating; historical records are retained.
-- Current M2 completed validation is seeded into the ledger from existing durable PASS evidence where version-compatible; the new plan focuses active work on M3.
+**Files / areas:** update watcher release discovery, Raw/API fetch paths, cache-busting/query construction, discovery-source telemetry, deployment/update feature documentation.
 
-**Files / areas:** validation plan data, validation ledger/reconciliation helpers, test registry/evidence integration, Validation Dashboard work/tests/summary views, deployment manifest, docs.
+**Decisions / constraints:** Do not reopen or redesign M1 broadly. Preserve human exact-revision approval, redundant discovery, highest-valid-revision selection, immutable releaseRef semantics, and fail-closed source disagreement behavior. The separately observed repeat-install option did not reproduce on r55 and is not currently established as a persistent defect.
 
-**Validation:** r54 launched cleanly and the new plan/ledger workflow behaved correctly. The first SAFE M3 canonical-state run failed only an infrastructure timestamp equality assertion. Operator snapshots appeared contradictory because they were read at different times while the collector continued updating. Repository inspection confirms observation-store writes the durable snapshot before publishing the same observation to the port, and official v3.0.1 API docs confirm ns.write is synchronous. The validation test itself performs two live file reads across independently updating services, so exact instantaneous equality is race-prone. Inspection also found canonical-state snapshot reconciliation was conditional on accepting zero port messages, allowing unrelated continuous ingress to postpone durable reconciliation. r55 makes reconciliation unconditional each loop and changes SAFE/restart validation to bounded exact-timestamp convergence rather than a single non-atomic cross-file read. The equality invariant itself remains strict.
+**Validation:** M3 r55 SAFE canonical-state test PASS. DISRUPTIVE canonical restart test PASS: canonical service was stopped/restarted, all five domains converged to durable observations without revision rollback, and the validation plan now has no outstanding tests. The M3 first vertical slice is therefore runtime-proven through r55. Operator reports update discovery still sometimes takes 2–3 watcher cycles, so cache/discovery freshness remains the next bounded reliability issue.
 
-**Exact next step:** Install v0.6.0-r55, confirm deployment is CLEAN, then rerun only the SAFE Canonical state contract test. Do not run the disruptive restart test until SAFE passes. The failed r54 ledger result should remain current until a real r55 PASS replaces it.
+**Exact next step:** Inspect current update-watcher discovery implementation and its official network/API assumptions, identify why both redundant sources can remain stale across multiple polls, then implement a narrowly scoped fix with runtime-visible source evidence before resuming the next M3 cadence-control slice.
 
 ## Recently completed
+
+### M3 canonical state + validation lifecycle first slice
+**Status:** Runtime validated through v0.6.0-r55
+
+r55 SAFE validation passed the canonical service and all five domains using bounded exact-timestamp convergence, positive revisions, canonicalized-after-observation ordering, and no universal freshness label. The controlled disruptive restart then restarted only canonical-state-service and proved all five domains reconcile from durable observations without revision rollback. The plan/ledger workflow correctly removed satisfied tests and left no outstanding current-plan tests.
+
+
 
 ### M2 Telemetry / Dashboard Foundation
 **Status:** Complete and runtime validated through v0.5.0-r49
