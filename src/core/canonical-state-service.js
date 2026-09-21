@@ -5,7 +5,8 @@ import { publishTelemetry, serviceEvent, serviceHealth } from "./telemetry.js";
 import { wallNow } from "./time.js";
 
 const SERVICE = "canonical-state";
-const OBSERVATION_DOMAINS = ["player", "network", "market", "infrastructure", "capabilities"];\nconst DOMAINS = [...OBSERVATION_DOMAINS, "associations"];
+const OBSERVATION_DOMAINS = ["player", "network", "market", "infrastructure", "capabilities"];
+const DOMAINS = [...OBSERVATION_DOMAINS, "associations"];
 const RECONCILE_MS = 1_000;
 
 /** @param {NS} ns */
