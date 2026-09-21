@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M2 telemetry foundation + System Health Watcher
-**Status:** Fix implemented — r22 publication
+**Status:** Runtime validated — first M2 vertical slice complete
 
 **Goal:** Establish the first M2 vertical slice: shared structured service-health/event telemetry, central protected runtime storage, service instance/location tracking, bounded incident history, and a lightweight System Health Watcher dashboard.
 
@@ -46,9 +46,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 - M4 remains responsible for desired placement, launch/restart policy, and reconciliation; M2 only reports observed runtime placement.
 - Preserve the React/Netscript ownership rule and shared dashboard geometry memory.
 
-**Validation:** r21 baseline passed: health collector and update watcher reported healthy with actual host/PID. Stopping update-watcher correctly produced STALE, active issue, degraded aggregate health, and a retained warning. Restarting update-watcher exposed a lifecycle defect: old instance pid 17 remains stale while replacement pid 19 is healthy, so service recovery cannot clear the old active issue.
+**Validation:** r21 baseline and stale detection passed but exposed stale-instance retention after restart. r22 corrected instance supersession. Runtime r22 sequence passed end-to-end: baseline showed two healthy services; stopping update-watcher pid 19 produced DEGRADED + STALE + retained warning; restarting created pid 24, removed pid 19 from active placement, cleared the active issue, and returned aggregate health to HEALTHY while preserving stale incident history.
 
-**Next step:** Publish r22 with collector instance supersession. Install normally, then repeat update-watcher stop → STALE → restart and confirm only the replacement PID remains active while incident history is preserved.
+**Next step:** Close this vertical slice in CURRENT_STATE and design the next M2 data-collection/storage slice: structured operational events/status plus storage/freshness interfaces that M3 canonical state collectors can later use without making telemetry the canonical game-state owner.
 
 ## Recently completed
 
