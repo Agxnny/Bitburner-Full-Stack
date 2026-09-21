@@ -1,3 +1,5 @@
+import { calculateDashboardLayout, isDashboardAnchor, publishDashboardGeometry, removeDashboardGeometry } from "./dashboard-layout-coordinator.js";
+
 const STORAGE_PREFIX = "bitburner-full-stack.dashboard-window.";
 const SCHEMA_VERSION = 2;
 const TITLE_VISIBLE_WIDTH = 96;
@@ -6,11 +8,25 @@ const SAVE_ARM_DELAY_MS = 500;
 const SAVE_DEBOUNCE_MS = 120;
 const SIZE_DEBOUNCE_MS = 100;
 const SIZE_TOLERANCE_PX = 3;
+const POSITION_TOLERANCE_PX = 2;
+const LAYOUT_POLL_MS = 200;
 
 export async function restoreDashboardPosition(ns, key, pid = ns.pid) {
     const position = readDashboardPosition(key);
     if (!position) return false;
     ns.ui.moveTail(position.x, position.y, pid);
+    return true;
+}
+
+export function applyDashboardPosition(ns, bridge, pid = ns.pid) {
+    const desired = bridge?.desiredPosition;
+    if (!desired || !Number.isFinite(desired.x) || !Number.isFinite(desired.y)) return false;
+    const applied = bridge.appliedPosition;
+    if (applied
+        && Math.abs(applied.x - desired.x) <= POSITION_TOLERANCE_PX
+        && Math.abs(applied.y - desired.y) <= POSITION_TOLERANCE_PX) return false;
+    ns.ui.moveTail(Math.round(desired.x), Math.round(desired.y), pid);
+    bridge.appliedPosition = { x: Math.round(desired.x), y: Math.round(desired.y) };
     return true;
 }
 
@@ -36,6 +52,9 @@ export function useDashboardWindow(key, bridge, options = {}) {
     const minHeight = options.minHeight ?? 120;
     const maxWidth = options.maxWidth ?? 1200;
     const maxHeight = options.maxHeight ?? 900;
+    const layoutGroup = options.layoutGroup ?? null;
+    const layoutOrder = options.layoutOrder ?? 100;
+    const layoutGap = options.layoutGap ?? 6;
 
     React.useEffect(() => {
         const root = rootRef.current;
@@ -47,6 +66,7 @@ export function useDashboardWindow(key, bridge, options = {}) {
         let armed = false;
         let positionTimer = null;
         let sizeTimer = null;
+        let layoutTimer = null;
 
         const measure = () => {
             const rootRect = root.getBoundingClientRect();
@@ -82,11 +102,29 @@ export function useDashboardWindow(key, bridge, options = {}) {
 
         const measureSoon = () => {
             if (sizeTimer !== null) clearTimeout(sizeTimer);
+            if (layoutTimer !== null) clearInterval(layoutTimer);
             sizeTimer = setTimeout(measure, SIZE_DEBOUNCE_MS);
+        };
+
+        const updateLayout = () => {
+            if (!layoutGroup) return;
+            const rect = resizable.getBoundingClientRect();
+            publishDashboardGeometry(layoutGroup, {
+                id: key, order: layoutOrder,
+                x: rect.left, y: rect.top, width: rect.width, height: rect.height,
+            });
+            const layout = calculateDashboardLayout(layoutGroup, key, { gap: layoutGap });
+            bridge.layout = { anchorId: layout.anchorId, isAnchor: layout.isAnchor, memberCount: layout.members.length };
+            bridge.desiredPosition = layout.desiredPosition;
+            if (layout.isAnchor) {
+                bridge.appliedPosition = null;
+                bridge.desiredPosition = null;
+            }
         };
 
         const persistPositionSoon = () => {
             if (!armed) return;
+            if (layoutGroup && !isDashboardAnchor(layoutGroup, key)) return;
             if (positionTimer !== null) clearTimeout(positionTimer);
             positionTimer = setTimeout(() => saveDashboardPosition(key, resizable), SAVE_DEBOUNCE_MS);
         };
@@ -102,8 +140,10 @@ export function useDashboardWindow(key, bridge, options = {}) {
         window.addEventListener("resize", measureSoon);
         const armTimer = setTimeout(() => {
             armed = true;
-            saveDashboardPosition(key, resizable);
+            if (!layoutGroup || isDashboardAnchor(layoutGroup, key)) saveDashboardPosition(key, resizable);
             measure();
+            updateLayout();
+            layoutTimer = setInterval(updateLayout, LAYOUT_POLL_MS);
         }, SAVE_ARM_DELAY_MS);
         measure();
 
@@ -115,8 +155,9 @@ export function useDashboardWindow(key, bridge, options = {}) {
             resizeObserver.disconnect();
             mutationObserver.disconnect();
             window.removeEventListener("resize", measureSoon);
+            if (layoutGroup) removeDashboardGeometry(layoutGroup, key);
         };
-    }, [key, bridge, minWidth, minHeight, maxWidth, maxHeight]);
+    }, [key, bridge, minWidth, minHeight, maxWidth, maxHeight, layoutGroup, layoutOrder, layoutGap]);
 
     return rootRef;
 }
