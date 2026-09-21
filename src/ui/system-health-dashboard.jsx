@@ -92,7 +92,7 @@ function Shell({rootRef,children}) {
 }
 function concise(value){ if(typeof value!=="string")return value; return value.split(/\r?\n/)[0].trim(); }
 function healthColor(value){ return value==="healthy"?C.green:value==="failed"?C.red:C.amber; }
-function age(at){ if(!Number.isFinite(at))return "—"; const ms=Math.max(0,Date.now()-at); return ms<1000?`${Math.floor(ms)}ms`:ms<60000?`${Math.floor(ms/1000)}s`:`${Math.floor(ms/60000)}m`; }
+function age(at){ if(!Number.isFinite(at))return "—"; const seconds=Math.max(0,Math.floor((Date.now()-at)/1000)); return seconds<60?`${seconds}s`:`${Math.floor(seconds/60)}m`; }
 function uptime(at){
     if(!Number.isFinite(at))return "—";
     const total=Math.max(0,Math.floor((Date.now()-at)/1000));
