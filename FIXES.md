@@ -239,7 +239,7 @@ For Bitburner v3 work, verify the exact current namespace as well as the method 
 
 ### FIX-008 — Persistent runtime replacement left Validation Dashboard tail open
 **Date:** 2026-09-21  
-**Status:** Resolved in r47; runtime verification pending  
+**Status:** Resolved and runtime validated in r47  
 **Subsystem:** M1 deployment runtime reconciliation / M2 Validation Dashboard  
 **Affected files:**
 - `src/bootstrap/git-pull-self-update.js`
@@ -254,7 +254,7 @@ The generic persistent-unit reconciliation path stopped changed processes with `
 Generic persistent process replacement now closes the process tail before issuing the kill request. This applies the existing managed-UI lifecycle invariant to persistent runtime units, including the Validation Dashboard, instead of adding another dashboard-specific exception.
 
 #### Verification
-Repository inspection confirms changed/retired persistent units now use close-tail-before-kill. Runtime verification is pending r47 installation: replacing the Validation Dashboard must leave exactly one current Validation Dashboard window.
+Repository inspection confirms changed/retired persistent units use close-tail-before-kill. Runtime r47 installation through the integrated Updater closed the previous Validation Dashboard tail and restarted exactly one fresh Validation Dashboard window.
 
 #### Prevention / notes
 Process termination and tail-window cleanup are separate Bitburner lifecycle actions. Any deployment path that intentionally replaces a managed process must close its tail before killing it; this is harmless for managed processes without an open tail.
