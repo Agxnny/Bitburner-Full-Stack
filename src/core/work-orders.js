@@ -44,7 +44,10 @@ export function validWorkOrderCommand(v){
 }
 export function validWorkOrderState(v){return Boolean(v&&v.schemaVersion===1&&v.kind==="work-order-state"&&v.owner==="work-order-service"&&Array.isArray(v.orders)&&Array.isArray(v.decisions));}
 export function delegatedAuthorization(authorityState,workOrderState,{workOrderId,receiver,claim,at=Date.now()}){
-    if(!validAuthorityState(authorityState)||!validWorkOrderState(workOrderState)||!validClaim(claim)||!Number.isFinite(at))return deny("invalid-delegation-state");
+    if(!validAuthorityState(authorityState))return deny("invalid-authority-state");
+    if(!validWorkOrderState(workOrderState))return deny("invalid-work-order-state");
+    if(!validClaim(claim))return deny("invalid-claim");
+    if(!Number.isFinite(at))return deny("invalid-time");
     const order=workOrderState.orders.find(x=>x.workOrderId===workOrderId);
     if(!order)return deny("work-order-not-found");
     if(order.state!=="ACTIVE")return deny("work-order-not-active");
