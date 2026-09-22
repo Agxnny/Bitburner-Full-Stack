@@ -11,6 +11,7 @@ export const PORTS = Object.freeze({
     MARKET_CONTROL: 5,
     DIAGNOSTICS: 6,
     AUTHORITY: 7,
+    WORK_ORDERS: 8,
 });
 
 export function observationPort(domain) {
