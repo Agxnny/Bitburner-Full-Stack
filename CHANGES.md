@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Resource Budget Manager — RAM first vertical slice
-**Status:** Implementation started
+**Status:** RAM budget first-slice implementation complete; SAFE runtime validation pending
 
 **Goal:** Add the single durable owner of logical resource-consumption envelopes, beginning with RAM, and make Execution Scheduler enforce those envelopes against its own active reservations.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Budget Manager owns allocation ceilings, not physical placement or per-process usage. Execution Scheduler remains the sole owner of actual RAM reservations and computes an owner's current usage from its own active execution records. A RAM budget never grants target Authority and never reserves a particular host. First slice supports explicit durable RAM allocations by owner, bounded command/idempotency behavior, release, and scheduler fail-closed admission when a request lacks or exceeds its owner's budget. Money budgets, dynamic policy, priorities, and Production Dashboard behavior are deferred.
 
-**Validation:** Pending. First SAFE proof will allocate a small RAM budget, prove an over-budget Work Order-bound request never launches, prove an in-budget request launches and is charged to the correct budget owner, then prove reservation retirement restores available budget capacity.
+**Validation:** SAFE m3.budgets.ram registered. It proves missing-budget denial, durable allocation, over-budget denial before execution creation, in-budget scheduler admission, active RAM attribution to the budget owner, capacity return after terminal execution, reuse of returned capacity, and clean allocation release. Existing execution validation fixtures now explicitly acquire/release RAM budgets so they remain valid under the new mandatory budgetOwner request contract.
 
-**Exact next step:** Lock the budget ownership decision, implement the versioned RAM budget contract/service and scheduler enforcement, register SAFE validation, publish immutable r81 after exact inspection, then validate in runtime.
+**Exact next step:** Publish immutable r81 after exact release-ref inspection, install it, confirm resource-budget-manager health, then run SAFE m3.budgets.ram. Do not begin money budgets until this RAM accounting/enforcement slice passes.
 
 ## Recently completed
 
