@@ -40,3 +40,9 @@ DISRUPTIVE m3.authority.restart uses a synthetic claim only. It grants a bounded
 work-order-service is the single durable owner of Work Order lifecycle state. Creation is a command, not an authority transfer: the service reads current durable Authority state and activates an order only when the issuer currently owns DIRECT authority for every requested claim and the correlation ID matches the parent lease. Order expiry is capped to the parent lease expiry.
 
 At execution time, delegatedAuthorization validates both durable owners again. It requires an ACTIVE unexpired order, the exact named receiver, an in-scope claim, a present unexpired parent lease still owned by the issuer, matching correlation, and current DIRECT authorization of the parent claim. Success is explicitly DELEGATED. Parent release/expiry therefore invalidates delegation immediately even if the Work Order has not yet reconciled its own lifecycle. Closing an order also denies new delegated work. This slice does not provide cleanup authority after closure; drain-first revocation remains the next lifecycle slice.
+
+
+## Delegated execution slice
+work-order-service is the single durable owner of Work Order lifecycle state. Creation does not transfer authority: activation requires the issuer to hold current DIRECT authority for every requested claim, with matching parent correlation. Order expiry is capped to parent lease expiry.
+
+At execution time, delegatedAuthorization checks both durable owners again. It requires an ACTIVE unexpired order, exact receiver, in-scope claim, and a current parent lease still owned by the issuer with matching correlation and scope. Success is DELEGATED. Parent release or expiry invalidates delegation immediately even before Work Order lifecycle reconciliation. Closing an order denies new delegated work. Cleanup authority remains a later slice.
