@@ -241,7 +241,7 @@
       "id": "m3-execution-scheduler",
       "milestone": "M3",
       "title": "Execution Scheduler",
-      "revision": 78,
+      "revision": 79,
       "requirements": [
         {
           "id": "execution-binding",
@@ -265,6 +265,18 @@
           "id": "execution-retirement",
           "title": "Completed execution retires its RAM reservation",
           "testId": "m3.execution.scheduler",
+          "validationVersion": 1
+        },
+        {
+          "id": "execution-restart-recovery",
+          "title": "RUNNING execution survives scheduler restart with exact PID and no duplicate launch",
+          "testId": "m3.execution.restart",
+          "validationVersion": 1
+        },
+        {
+          "id": "execution-restart-expiry",
+          "title": "Scheduler restart does not extend execution expiry and recovered work retires normally",
+          "testId": "m3.execution.restart",
           "validationVersion": 1
         }
       ]
