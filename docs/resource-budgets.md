@@ -1,7 +1,7 @@
 # Resource Budget Manager
 
 ## Ownership
-`resource-budget-manager` is the single durable owner of logical consumption envelopes for divisible shared resources. The first vertical slice implements RAM only.
+`resource-budget-manager` is the single durable owner of logical consumption envelopes for divisible shared resources. The subsystem now implements RAM ceilings and money allocation/reservation accounting.
 
 A RAM budget answers: **how much managed RAM may this owner consume?** It does not answer where work runs, whether a target may be acted on, or which process currently consumes RAM.
 
@@ -21,8 +21,17 @@ The scheduler checks the ceiling when accepting the request and again immediatel
 
 Budget release prevents subsequent admission. Existing managed work is not retroactively re-owned by Budget Manager; scheduler lifecycle remains responsible for its process and reservation retirement.
 
+## Money contract
+Money uses the same port and durable Budget Manager state. `set-money` establishes one durable logical ceiling for an owner. It does not spend or lock actual player money.
+
+Before a future spending executor performs a transaction, it must obtain a named money reservation. RESERVED amounts immediately reduce available logical capacity. An unspent reservation may be RELEASED, restoring that capacity. A successful transaction is represented by SETTLED state; settlement adds the actual amount (which may be lower than the reservation but never higher) to the allocation's durable `spent` total. An allocation cannot be lowered below already spent plus currently reserved capacity and cannot be retired while live reservations remain.
+
+Budget Manager performs accounting only. It does not call purchasing/trading APIs and does not grant target Authority. Real production spending remains blocked until an executor integration also reconciles budget accounting with canonical player-money observations/manual player actions.
+
 ## Deferred
-Money budgets, distributed host policy, dynamic allocation policy, priorities/preemption, operator controls, and Production Dashboard presentation are outside this first slice.
+Real spending integration and canonical-money reconciliation, distributed host policy, dynamic allocation policy, priorities/preemption, operator controls, and Production Dashboard presentation remain future work.
 
 ## Validation
 SAFE `m3.budgets.ram` uses synthetic Authority/Work Order state and the harmless execution fixture. It proves durable allocation, missing/over-budget fail-closed admission, in-budget scheduler launch attributed to the budget owner, active usage accounting, reservation retirement, and reuse of returned capacity.
+
+SAFE `m3.budgets.money` uses synthetic dollar amounts only. It proves missing-budget denial, allocation, reservation, over-budget denial, release/returned capacity, settlement into spent accounting, unchanged actual player money, and clean allocation retirement.
