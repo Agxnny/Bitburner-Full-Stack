@@ -402,3 +402,15 @@ Operator-visible polling cadence must describe the cadence of the reliability gu
 **Fix:** The executor now imports and uses `authorityClaim()`. Delegated authorization precondition failures are also reported separately as `invalid-authority-state`, `invalid-work-order-state`, `invalid-claim`, or `invalid-time`.
 
 **Prevention:** Consumers must use shared contract constructors/helpers for authority claims instead of reconstructing contract objects manually. Validation/diagnostic APIs should not collapse unrelated contract failures into one reason when the distinction can be reported safely.
+
+
+### FIX-015 — Real weaken validation used fixed lifetimes shorter than the game action
+**Status:** Corrected in source; runtime validation pending in r77
+
+**Symptom:** r76 `m3.authority.real-weaken` ran for about 91.8 seconds, then reported no executor result and a still-live executor.
+
+**Cause:** The fixture capped result waiting and its Work Order at roughly 90 seconds without considering `ns.getWeakenTime(target)`. A legitimate weaken can exceed that duration. The cleanup assertion also ran before the finally block's process kill.
+
+**Fix:** Eligible targets must have a measured weaken duration that fits within the existing bounded Authority/Work Order maximum. Lease, Work Order, and controller wait durations are derived from that measured action time with margins. Cleanup now terminates/waits for any surviving fixture process before asserting no live executor.
+
+**Prevention:** Real-action validation must derive bounded lifetimes from the operation's measured duration rather than arbitrary short fixture constants. Cleanup assertions must observe post-cleanup state, not pre-finally state.
