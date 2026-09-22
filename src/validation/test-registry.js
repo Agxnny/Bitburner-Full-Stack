@@ -1,5 +1,11 @@
 export const TESTS = [
     {
+        id:"m3.authority.real-weaken", subsystem:"Authority", title:"Real delegated weaken execution", risk:"DISRUPTIVE",
+        runner:"src/validation/tests/real-delegated-weaken-test.js",
+        description:"Temporarily selects one rooted non-purchased canonical server above minimum security, acquires real hacking-control authority, issues one bounded Work Order, and runs one one-thread weaken through an executor that has DELEGATED but no DIRECT authority. It then closes the order, releases authority, and verifies fixture cleanup.",
+        validates:["Real controller-to-executor authority path","Real DELEGATED side effect","Terminal Work Order and lease/process cleanup"],
+    },
+    {
         id:"m3.authority.cleanup", subsystem:"Authority", title:"Drain-first cleanup authority", risk:"SAFE",
         runner:"src/validation/tests/authority-cleanup-test.js",
         description:"Uses synthetic leases and Work Orders to prove normal closure stops objective work, grants only bounded receiver/scope CLEANUP authority, survives parent loss solely for cleanup, supports receiver completion, and fails closed on forced cancel or cleanup timeout.",
