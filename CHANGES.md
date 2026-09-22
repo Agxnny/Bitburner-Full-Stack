@@ -34,9 +34,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** Documentation-only architecture lock. Repository docs now have an explicit Production Dashboard feature owner and D-045/D-046 remain the architectural decisions. No runtime validation is required until an implementation slice exists. Existing r29 four-side docking/anchor behavior remains the integration contract.
 
-**Visual design progress:** Overview, Hacking, Stocks, and Stock Manipulation renders are approved and locked in `docs/production-dashboard.md`. Stock Manipulation locks the operation-summary row, active-operation workspace, target/opportunity selection area, selected-operation detail, and compact coordination/supporting controls. Illustrative direct trader buttons and multi-operation values from the render are explicitly non-contractual; trader execution remains trader-owned and all coordination uses standard authority/work-order/budget contracts.
+**Visual design progress:** Overview, Hacking, Stocks, Stock Manipulation, and Network renders are approved and locked in `docs/production-dashboard.md`. Network locks the summary/capacity/access/fleet hierarchy, interactive topology plus synchronized server list, and supporting discovery/tooling workspace. The map is explicitly functional: single-click selects, hover shows compact server facts, the route from home is emphasized, and explicit Connect/Go to Server navigates to the selected host; single-click does not unexpectedly change terminal location.
 
-**Exact next step:** Render and review the Network tab. After explicit operator confirmation, lock its approved layout before moving to Progression. After all required tab visuals are approved, define the smallest honest implementation slice without creating future domain controllers early.
+**Exact next step:** Render and review the Progression tab. After explicit operator confirmation, lock its approved layout before moving to Settings. After all required tab visuals are approved, define the smallest honest implementation slice without creating future domain controllers early.
 
 ## Recently completed
 
