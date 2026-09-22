@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 generic authority + work-order contracts — first authority slice
-**Status:** Direct authority slice implemented; immutable r70 publication pending
+**Status:** Published as v0.6.0-r70; SAFE runtime validation pending
 
 **Goal:** Establish one durable Authority Registry before domain controllers exist. The first runtime slice proves direct expiring authority over typed resource/capability claims, atomic multi-claim acquisition, compatible capability coexistence, conflict denial, renewal/release/expiry, and fail-closed direct authorization. Define the Work Order/delegation contract alongside it without yet implementing delegated execution.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** SAFE m3.authority.direct registered with synthetic resources/controllers only. It covers atomic grant/conflict, compatible capability coexistence, owner/scope fail-closed checks, renewal/release/expiry, durable state validity, and the non-authorizing Work Order envelope. Runtime proof pending.
 
-**Exact next step:** Publish immutable r70 after exact release-ref source inspection, install it, confirm authority-service health, then run SAFE m3.authority.direct.
+**Exact next step:** Install r70, confirm authority-service joins Health cleanly, then run SAFE m3.authority.direct from the Validation Dashboard.
 
 ## Recently completed
 
