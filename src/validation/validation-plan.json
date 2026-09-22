@@ -291,7 +291,7 @@
       "id": "m3-resource-budgets",
       "milestone": "M3",
       "title": "Resource Budgets",
-      "revision": 81,
+      "revision": 82,
       "requirements": [
         {
           "id": "ram-budget-owner",
@@ -321,6 +321,36 @@
           "id": "ram-budget-release",
           "title": "RAM allocation release is owner-bound and leaves no continuing allocation",
           "testId": "m3.budgets.ram",
+          "validationVersion": 1
+        },
+        {
+          "id": "money-budget-owner",
+          "title": "Resource Budget Manager durably owns one logical money ceiling per owner",
+          "testId": "m3.budgets.money",
+          "validationVersion": 1
+        },
+        {
+          "id": "money-budget-reservation",
+          "title": "Money reservations immediately consume available budget and over-budget requests fail closed",
+          "testId": "m3.budgets.money",
+          "validationVersion": 1
+        },
+        {
+          "id": "money-budget-release",
+          "title": "Unspent money reservation release restores available capacity",
+          "testId": "m3.budgets.money",
+          "validationVersion": 1
+        },
+        {
+          "id": "money-budget-settlement",
+          "title": "Money reservation settlement converts reserved capacity into durable spent accounting",
+          "testId": "m3.budgets.money",
+          "validationVersion": 1
+        },
+        {
+          "id": "money-budget-no-side-effect",
+          "title": "Budget accounting alone never performs a real player-money transaction",
+          "testId": "m3.budgets.money",
           "validationVersion": 1
         }
       ]
