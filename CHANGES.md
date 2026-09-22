@@ -23,20 +23,26 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 Execution Scheduler — first vertical slice
-**Status:** Scheduler-backed real side-effect integration runtime validated on v0.6.0-r80
+### M3 Resource Budget Manager — RAM first vertical slice
+**Status:** Implementation started
 
-**Goal:** Introduce the single durable owner of managed compute placement and execution leases so controllers no longer launch managed executors directly.
+**Goal:** Add the single durable owner of logical resource-consumption envelopes, beginning with RAM, and make Execution Scheduler enforce those envelopes against its own active reservations.
 
-**Files / areas:** core ports; execution-scheduler contract/service; architecture/decisions/feature docs; validation plan/registry/tests; persistent runtime manifest.
+**Files / areas:** core ports; resource-budget contract/service; Execution Scheduler request/admission contract; architecture/decisions/feature docs; validation plan/registry/tests; persistent runtime manifest.
 
-**Decisions / constraints:** Execution Scheduler owns placement, bounded RAM reservations, process launch attribution, reconciliation, and reservation retirement. It does not choose domain strategy, grant target authority, or enforce future subsystem budgets. Requests must bind to an ACTIVE Work Order and its named receiver/correlation. First placement is deterministic, single-host, bounded, and non-preemptive. Canonical state informs eligibility/planning; final launch checks real host RAM. Durable restart recovery must never blindly duplicate a RUNNING executor.
+**Decisions / constraints:** Budget Manager owns allocation ceilings, not physical placement or per-process usage. Execution Scheduler remains the sole owner of actual RAM reservations and computes an owner's current usage from its own active execution records. A RAM budget never grants target Authority and never reserves a particular host. First slice supports explicit durable RAM allocations by owner, bounded command/idempotency behavior, release, and scheduler fail-closed admission when a request lacks or exceeds its owner's budget. Money budgets, dynamic policy, priorities, and Production Dashboard behavior are deferred.
 
-**Validation:** Base SAFE proof PASS on r78: 8/8 in 2540 ms. DISRUPTIVE restart proof PASS on r79: 8/8 in 7663 ms. Scheduler-backed real-weaken v2 PASS on r80: 10/10 in 93926 ms. Proven in one real chain: canonical rooted target selection (`max-hardware`), hacking-control Authority, bounded ACTIVE Work Order, scheduler acceptance, scheduler-owned home launch (pid 400, 2 GB reserved), executor-side DELEGATED authorization, measurable weaken 6.038 → 5.988, exact executor completion/reservation retirement, drain-close to CLOSED, and no live authority/RAM/process fixture resources. Dashboard reports no outstanding current-plan tests.
+**Validation:** Pending. First SAFE proof will allocate a small RAM budget, prove an over-budget Work Order-bound request never launches, prove an in-budget request launches and is charged to the correct budget owner, then prove reservation retirement restores available budget capacity.
 
-**Exact next step:** Close this Execution Scheduler first vertical slice into Recently completed and choose the next M3 control-plane slice. The scheduler is proven for admission, idempotency, restart recovery, real delegated execution, and reservation retirement; do not build production hacking/dashboard behavior as part of this validation fixture.
+**Exact next step:** Lock the budget ownership decision, implement the versioned RAM budget contract/service and scheduler enforcement, register SAFE validation, publish immutable r81 after exact inspection, then validate in runtime.
 
 ## Recently completed
+
+### M3 Execution Scheduler — first vertical slice
+**Status:** Runtime validated through v0.6.0-r80
+
+The scheduler is proven for bounded Work Order-bound admission, PID/host/RAM attribution, request idempotency, restart recovery without duplicate launch or expiry extension, natural reservation retirement, and a complete real Canonical State → Authority → Work Order → Execution Scheduler → DELEGATED executor → weaken chain. The real-action fixture remains validation-only; no production hacking subsystem/dashboard was introduced.
+
 
 ### M3 real Authority → Work Order → executor integration proof
 **Status:** Runtime validated through v0.6.0-r77
