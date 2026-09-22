@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 real delegated execution proof — one-shot weaken validation fixture
-**Status:** Validation fixture implemented; r74 publication pending
+**Status:** Published as v0.6.0-r74; DISRUPTIVE runtime validation pending
 
 **Goal:** Prove the production Authority → Work Order → executor path can authorize and perform one real Bitburner side effect without building a production hacking subsystem or dashboard.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** DISRUPTIVE m3.authority.real-weaken registered. It requires an eligible canonical rooted/non-purchased target above minimum security, proves real authority grant and bounded Work Order creation, launches exactly one one-thread executor, requires DELEGATED authorization immediately before ns.weaken(), verifies a real security decrease, then closes/releases and checks no live fixture lease/process remains.
 
-**Exact next step:** Publish immutable r74 after exact release-ref inspection, install it, then run DISRUPTIVE m3.authority.real-weaken with operator confirmation.
+**Exact next step:** Install r74, confirm normal 12/12 Health, then run DISRUPTIVE m3.authority.real-weaken from the Validation Dashboard.
 
 ## Recently completed
 
