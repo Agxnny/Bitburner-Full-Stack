@@ -36,8 +36,16 @@ export async function main(ns){
 
         const resolved=await waitIncident(ns,"resolved",5000);
         check(assertions,"incident-resolved",resolved?.status==="resolved"&&Number.isFinite(resolved?.resolvedAt),"Diagnostics automatically resolved the incident after observed service recovery while preserving its evidence.");
+
+        ns.write(CONTROL_PATH,JSON.stringify({schemaVersion:1,mode:"retire",updatedAt:Date.now()}),"w");
+        const retired=await waitAbsentHealth(ns,5000);
+        check(assertions,"fixture-retired",retired,"Fixture explicitly retired itself and Health removed the intentional ephemeral instance.");
+        await ns.sleep(2000);
+        const post=read(ns,"data/telemetry/health.json"),postIncident=(read(ns,DIAGNOSTICS_STATE_PATH)?.incidents??[]).find(v=>v.id===INCIDENT);
+        check(assertions,"teardown-clean",!(post?.services??[]).some(x=>x.service===SERVICE)&&postIncident?.status==="resolved","After retirement, the fixture stays absent from Health and its diagnostic incident stays resolved.");
     }finally{
-        ns.write(CONTROL_PATH,JSON.stringify({schemaVersion:1,mode:"healthy",updatedAt:Date.now()}),"w");
+        ns.write(CONTROL_PATH,JSON.stringify({schemaVersion:1,mode:"retire",updatedAt:Date.now()}),"w");
+        await ns.sleep(750);
         if(pid>0&&ns.isRunning(pid,"home"))ns.kill(pid);
     }
     const status=assertions.every(x=>x.pass)?"PASS":"FAIL",finishedAt=Date.now(),summary=assertions.filter(x=>x.pass).length+"/"+assertions.length+" assertions passed.";
@@ -45,6 +53,7 @@ export async function main(ns){
     const ev=evidenceRecord({testId,validationVersion:version,status,kind:"automated",summary,assertions,at:finishedAt});appendEvidence(ns,ev);recordValidationResult(ns,{testId,validationVersion:version,status,evidenceId:ev.id,kind:ev.kind,summary:ev.summary,at:finishedAt});
 }
 async function waitHealth(ns,want,timeout){const end=Date.now()+timeout;while(Date.now()<end){const h=read(ns,"data/telemetry/health.json"),s=(h?.services??[]).find(x=>x.service===SERVICE);if(s?.health===want)return s;await ns.sleep(100);}return (read(ns,"data/telemetry/health.json")?.services??[]).find(x=>x.service===SERVICE);}
+async function waitAbsentHealth(ns,timeout){const end=Date.now()+timeout;while(Date.now()<end){const found=(read(ns,"data/telemetry/health.json")?.services??[]).some(x=>x.service===SERVICE);if(!found)return true;await ns.sleep(100);}return false;}
 async function waitIncident(ns,want,timeout){const end=Date.now()+timeout;while(Date.now()<end){const x=(read(ns,DIAGNOSTICS_STATE_PATH)?.incidents??[]).find(v=>v.id===INCIDENT);if(x?.status===want)return x;await ns.sleep(100);}return (read(ns,DIAGNOSTICS_STATE_PATH)?.incidents??[]).find(v=>v.id===INCIDENT);}
 function check(out,id,pass,evidence){out.push({id,pass:Boolean(pass),evidence});}
 function read(ns,path){if(!ns.fileExists(path,"home"))return null;try{return JSON.parse(ns.read(path));}catch{return null;}}
