@@ -390,3 +390,15 @@ Operator-visible polling cadence must describe the cadence of the reliability gu
 **Fix:** The fixture controller now uses `ns.exec(..., "home", ...)` for this home-state integration proof. The executor also explicitly fails closed when not running on home. Failed authorization assertions now preserve the actual denial reason instead of using success-only evidence wording.
 
 **Prevention:** Validation fixtures that depend on home-owned durable control state must either execute on home or use an explicit supported transport/state-access mechanism. Never combine a remote `fileExists(..., "home")` check with an implicit local `ns.read()` and assume the bytes came from home.
+
+
+### FIX-014 — Real delegated executor reconstructed an invalid authority claim shape
+**Status:** Corrected in source; runtime validation pending in r76
+
+**Symptom:** r75 `m3.authority.real-weaken` reached a home-hosted executor but `delegatedAuthorization()` denied with `invalid-delegation-state`.
+
+**Cause:** The validation executor manually built `{kind,id,capability}`. The Authority contract requires `{resource:{kind,id},capability}`. The controller and Work Order used the correct shared `authorityClaim()` helper, but the executor duplicated the schema incorrectly.
+
+**Fix:** The executor now imports and uses `authorityClaim()`. Delegated authorization precondition failures are also reported separately as `invalid-authority-state`, `invalid-work-order-state`, `invalid-claim`, or `invalid-time`.
+
+**Prevention:** Consumers must use shared contract constructors/helpers for authority claims instead of reconstructing contract objects manually. Validation/diagnostic APIs should not collapse unrelated contract failures into one reason when the distinction can be reported safely.
