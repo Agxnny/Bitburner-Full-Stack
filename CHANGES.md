@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 real delegated execution proof — r74 failure correction
-**Status:** Root cause corrected; r75 publication pending
+**Status:** Published as v0.6.0-r75; DISRUPTIVE rerun pending
 
 **Observed r74 runtime:** DISRUPTIVE m3.authority.real-weaken failed 6/8. Target selection, real authority grant, ACTIVE Work Order creation, executor launch, terminal Work Order closure, and fixture cleanup all passed. The executor denied DELEGATED authorization, therefore the real weaken correctly did not execute.
 
@@ -32,7 +32,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Correction:** Launch the temporary executor explicitly on home using ns.exec, and improve executor/test evidence so a denial preserves the exact authorization reason in the validation assertion rather than printing success wording on a failed assertion.
 
-**Exact next step:** Publish immutable r75 after exact release-ref inspection, install it, then rerun the same DISRUPTIVE m3.authority.real-weaken test.
+**Exact next step:** Install r75, confirm normal Health, then rerun DISRUPTIVE m3.authority.real-weaken. If authorization still denies, the result now preserves the exact denial reason.
 
 ## Recently completed
 
