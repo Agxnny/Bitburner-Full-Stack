@@ -1,5 +1,11 @@
 export const TESTS = [
     {
+        id:"m3.authority.cleanup", subsystem:"Authority", title:"Drain-first cleanup authority", risk:"SAFE",
+        runner:"src/validation/tests/authority-cleanup-test.js",
+        description:"Uses synthetic leases and Work Orders to prove normal closure stops objective work, grants only bounded receiver/scope CLEANUP authority, survives parent loss solely for cleanup, supports receiver completion, and fails closed on forced cancel or cleanup timeout.",
+        validates:["Drain-first CLOSING lifecycle","Bounded cleanup-only authorization","Parent-loss cleanup without ordinary authority","Forced cancel and cleanup timeout fail closed"],
+    },
+    {
         id:"m3.authority.delegated", subsystem:"Authority", title:"Delegated Work Order authorization", risk:"SAFE",
         runner:"src/validation/tests/authority-delegated-test.js",
         description:"Uses synthetic authority and Work Orders to prove a named receiver can act only through a valid ACTIVE parent-bound delegation, while receiver/scope/order-state/parent-authority violations fail closed.",
