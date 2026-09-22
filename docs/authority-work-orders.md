@@ -56,3 +56,7 @@ CLEANUP is an authorization classification, not an executable operation. Domain 
 
 ## Real delegated execution validation fixture
 The first non-synthetic consumer is intentionally validation-only rather than a hacking subsystem. DISRUPTIVE test m3.authority.real-weaken reads canonical network state, selects one rooted non-home non-purchased server whose current security is above minimum, acquires server hacking-control authority, creates one bounded weaken-once Work Order, and launches a temporary one-thread executor. The executor has no DIRECT lease and revalidates DELEGATED authorization immediately before calling ns.weaken(). The controller then drain-closes the order, releases authority, and verifies that no executor process or live test lease remains. This fixture establishes integration behavior only; it introduces no persistent hacking service, target strategy, scheduler, batching, rooting, or production dashboard.
+
+
+### Validation fixture placement rule
+The one-shot real delegated execution fixture is explicitly launched on `home` because this integration proof reads the durable Authority and Work Order control files directly. Dashboard placement is not an execution-placement contract: a validation dashboard may run on another host, so validation children must not inherit its host accidentally. Future production executors intended to run remotely must consume authority/work-order state through an explicit supported transport or replicated read model rather than assuming `ns.read()` can read a file from another server.
