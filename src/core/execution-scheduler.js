@@ -6,8 +6,8 @@ export const EXECUTION_MIN_TTL_MS=1000;
 export const EXECUTION_MAX_TTL_MS=300000;
 export const EXECUTION_QUEUE_LIMIT=32;
 
-export function requestExecution({requestId,executionId,workOrderId,receiver,correlationId,script,threads=1,args=[],ttlMs,at=Date.now()}){
-    return {schemaVersion:1,kind:"execution-command",action:"request",requestId,executionId,workOrderId,receiver,correlationId,script,threads,args,ttlMs,at};
+export function requestExecution({requestId,executionId,workOrderId,receiver,correlationId,budgetOwner,script,threads=1,args=[],ttlMs,at=Date.now()}){
+    return {schemaVersion:1,kind:"execution-command",action:"request",requestId,executionId,workOrderId,receiver,correlationId,budgetOwner,script,threads,args,ttlMs,at};
 }
 export function cancelExecution({requestId,executionId,actor,at=Date.now()}){
     return {schemaVersion:1,kind:"execution-command",action:"cancel",requestId,executionId,actor,at};
@@ -22,6 +22,7 @@ export function validExecutionCommand(v){
     return typeof v.workOrderId==="string"&&v.workOrderId.length>0
         &&typeof v.receiver==="string"&&v.receiver.length>0
         &&typeof v.correlationId==="string"&&v.correlationId.length>0
+        &&typeof v.budgetOwner==="string"&&v.budgetOwner.length>0
         &&typeof v.script==="string"&&v.script.length>0
         &&Number.isSafeInteger(v.threads)&&v.threads>0
         &&Array.isArray(v.args)
