@@ -33,3 +33,7 @@ The real failure/recovery assertions passed 8/8, including automatic incident re
 
 ## Intentional service retirement
 Ephemeral or validation-only service instances must explicitly publish a service-retirement telemetry record before exiting normally. The Health owner removes only the exact matching instance ID and records informational SERVICE_RETIRED evidence. Silence without retirement remains a failure signal and will still become stale. This prevents intentional teardown from being confused with a crashed service.
+
+
+### r69 closure proof
+Validation version 2 passed 10/10 including fixture-retired and teardown-clean. After the stale window, Health remained healthy with 10 production services and no validation fixture in active placement; Diagnostics had no active incidents. Historical failure evidence remains retained in Recent Incidents / Recently Resolved by design.
