@@ -23,18 +23,18 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Production Dashboard — information architecture lock
-**Status:** Design approved; architecture/documentation lock in progress; implementation not started
+### Production Dashboard — tab architecture locked; visual design active
+**Status:** Information architecture and feature contract locked; tab-by-tab visual/layout design is next; implementation not started
 
-**Goal:** Lock the Production Dashboard tab architecture, operator-control boundaries, and agreed per-tab information model before visual layout or implementation.
+**Goal:** Preserve the approved Production Dashboard navigation, operator-control boundaries, per-tab information model, stock-history/chart semantics, Settings boundary, and existing window-coordinator integration before visual layout or runtime implementation.
 
-**Files / areas:** Production Dashboard feature documentation; dashboard architecture/decisions/roadmap; current-state handoff. No runtime source, manifest, or deployment revision changes in this documentation-only step.
+**Files / areas touched:** `docs/production-dashboard.md` (feature owner), `ARCHITECTURE.md`, `DECISIONS.md` (D-045/D-046), `ROADMAP.md`, and this working record. No runtime source, manifest, or deployment revision changed.
 
-**Decisions / constraints:** Production and Validation remain distinct clients of shared structured state/telemetry. Production exposes operational state and concise reasoning, never controller logic or a competing source of truth. Core tabs are Overview, Hacking, Stocks, Stock Manipulation, Network, Progression, and Settings; capability tabs appear as their systems become relevant. Every production domain uses standard lifecycle command paths. Graceful Stop, Hard Stop, and Restart cannot affect persistent runtime units. Overview ESTOP is latched and stops non-persistent production only. Persistent lifecycle mutation remains reserved to updater/deployment and explicitly authorized disruptive validation. Existing dashboard sizing/docking infrastructure is reused; no second window coordinator is introduced.
+**Decisions / constraints:** Permanent tabs are Overview, Hacking, Stocks, Stock Manipulation, Network, Progression, and Settings; capability tabs appear when their systems exist. Production is an operational consumer, not controller/diagnostic truth. Every controllable domain uses Start/Graceful Stop/Hard Stop/Restart through standard command paths. Overview ESTOP is latched and non-persistent-only. Persistent lifecycle mutation remains reserved to updater/deployment and explicitly authorized disruptive validation. Settings exposes supported configuration/policy parameters, including thresholds that influence decisions, but not editable controller logic or invariants. Existing measured sizing/four-side docking infrastructure is reused; Production normally anchors to Validation's right.
 
-**Validation:** Documentation review only. Runtime validation is not required until a Production Dashboard implementation slice exists. Existing r29 four-side docking/anchor behavior remains the integration contract.
+**Validation:** Documentation-only architecture lock. Repository docs now have an explicit Production Dashboard feature owner and D-045/D-046 remain the architectural decisions. No runtime validation is required until an implementation slice exists. Existing r29 four-side docking/anchor behavior remains the integration contract.
 
-**Exact next step:** Finish the tab-by-tab visual/layout design beginning with Overview, then define the smallest read-only Production Dashboard implementation slice.
+**Exact next step:** Continue tab-by-tab visual/layout design beginning with Overview using the established compact dark grey-blue Validation Dashboard language and the available workspace to its right. After visual design is approved, define the smallest honest implementation slice without creating future domain controllers early.
 
 ## Recently completed
 
