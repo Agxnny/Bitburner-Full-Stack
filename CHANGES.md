@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Execution Scheduler — first vertical slice
-**Status:** Restart/reconciliation runtime validated on v0.6.0-r79; real-weaken scheduler integration next
+**Status:** Real-weaken scheduler integration implementation started
 
 **Goal:** Introduce the single durable owner of managed compute placement and execution leases so controllers no longer launch managed executors directly.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** Base SAFE proof PASS on r78: 8/8 in 2540 ms. DISRUPTIVE restart proof PASS on r79: 8/8 in 7663 ms. Restart test proved scheduler was running, managed child RUNNING before restart, only scheduler restarted with a new PID, exact child PID recovered, original expiry preserved, no duplicate launch, natural completion after restart, and reservation retirement. Dashboard reports no outstanding current-plan tests. Real-weaken conversion is next.
 
-**Exact next step:** Replace the validation-only real delegated weaken fixture's direct executor launch with an Execution Scheduler request, preserving the existing Authority/Work Order and executor-side DELEGATED authorization proof. Then publish and rerun that DISRUPTIVE real-weaken validation.
+**Exact next step:** Route m3.authority.real-weaken through requestExecution(), add scheduler attribution/retirement assertions, update its validation version, publish immutable r80 after inspection, then rerun the DISRUPTIVE proof.
 
 ## Recently completed
 
