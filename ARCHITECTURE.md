@@ -105,6 +105,8 @@ The first M1 dashboard slice is `src/ui/update-dashboard.jsx`. It reads protecte
 
 The Production Dashboard is the operator-facing answer to “what is production doing?” It consumes canonical state, domain telemetry, budgets, and supported configuration; it never becomes a competing state owner, controller, scheduler, authority ledger, or diagnostic engine. Concise controller-provided reasoning may be shown, but internal formulas, decision trees, Work Orders, leases, scheduler records, and validation evidence remain outside the production UI unless reduced to a production-impacting status.
 
+The detailed feature contract and approved per-tab information model are owned by `docs/production-dashboard.md`. This architecture section is the concise system-level boundary; future tab/layout refinements must keep the feature document synchronized.
+
 ### Navigation
 Permanent production tabs are:
 - **Overview**
