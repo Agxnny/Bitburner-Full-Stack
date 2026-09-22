@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Execution Scheduler — first vertical slice
-**Status:** Published as v0.6.0-r80; DISRUPTIVE scheduler-backed real-weaken validation pending
+**Status:** Scheduler-backed real side-effect integration runtime validated on v0.6.0-r80
 
 **Goal:** Introduce the single durable owner of managed compute placement and execution leases so controllers no longer launch managed executors directly.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Execution Scheduler owns placement, bounded RAM reservations, process launch attribution, reconciliation, and reservation retirement. It does not choose domain strategy, grant target authority, or enforce future subsystem budgets. Requests must bind to an ACTIVE Work Order and its named receiver/correlation. First placement is deterministic, single-host, bounded, and non-preemptive. Canonical state informs eligibility/planning; final launch checks real host RAM. Durable restart recovery must never blindly duplicate a RUNNING executor.
 
-**Validation:** Base SAFE proof PASS on r78: 8/8 in 2540 ms. DISRUPTIVE restart proof PASS on r79: 8/8 in 7663 ms. Real-weaken validation is now version 2 and no longer calls ns.exec() for its executor: it requests scheduler execution, requires scheduler-owned host/PID/RAM attribution, preserves executor-side DELEGATED authorization and measurable weaken evidence, then requires exact-process completion/reservation retirement before Work Order/Authority cleanup. Runtime proof pending.
+**Validation:** Base SAFE proof PASS on r78: 8/8 in 2540 ms. DISRUPTIVE restart proof PASS on r79: 8/8 in 7663 ms. Scheduler-backed real-weaken v2 PASS on r80: 10/10 in 93926 ms. Proven in one real chain: canonical rooted target selection (`max-hardware`), hacking-control Authority, bounded ACTIVE Work Order, scheduler acceptance, scheduler-owned home launch (pid 400, 2 GB reserved), executor-side DELEGATED authorization, measurable weaken 6.038 → 5.988, exact executor completion/reservation retirement, drain-close to CLOSED, and no live authority/RAM/process fixture resources. Dashboard reports no outstanding current-plan tests.
 
-**Exact next step:** Install r80, confirm normal Health, then run DISRUPTIVE m3.authority.real-weaken version 2. A PASS must prove the full Canonical State → Authority → Work Order → Execution Scheduler → DELEGATED executor → real weaken → execution retirement → Work Order/Authority cleanup chain.
+**Exact next step:** Close this Execution Scheduler first vertical slice into Recently completed and choose the next M3 control-plane slice. The scheduler is proven for admission, idempotency, restart recovery, real delegated execution, and reservation retirement; do not build production hacking/dashboard behavior as part of this validation fixture.
 
 ## Recently completed
 
