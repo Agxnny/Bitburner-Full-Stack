@@ -26,3 +26,7 @@ Normal revocation will be drain-first: stop new objective work, close descendant
 
 ## Validation
 SAFE m3.authority.direct uses only synthetic owners/resources. It proves atomic grant/denial, capability coexistence, owner/scope fail-closed checks, renewal, release, expiry, durable state validity, and that a valid Work Order envelope does not implicitly create authority. No hacking/trading side effects occur.
+
+
+## r70 runtime proof
+The first direct-authority slice is runtime validated. authority-service joined aggregate Health as the 11th healthy service and SAFE m3.authority.direct passed 13/13. The proof exercised atomic grant/conflict behavior, compatible capability coexistence, DIRECT authorization, owner/scope fail-closed checks, renewal, release, expiry, durable state validity, and confirmed that a valid Work Order envelope alone does not authorize execution.
