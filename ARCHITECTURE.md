@@ -173,3 +173,7 @@ A service that has registered health and is intentionally ending may publish an 
 ### Generic authority and work orders
 
 The persistent authority-service is the single durable owner of permission leases. Authority claims are typed resource + capability pairs; identical claims conflict while distinct capabilities may coexist unless a later explicit compatibility policy says otherwise. Multi-claim acquisition is atomic and authority expiry fails closed. Work Orders are a separate outcome-request contract and never implicitly transfer authority. Delegated execution must later validate a complete authority-to-work-order chain. Domain functionality is never duplicated by coordinators. See docs/authority-work-orders.md.
+
+
+#### Delegated Work Order execution
+A persistent work-order-service owns durable outcome-request lifecycle state. It may activate an order only against current DIRECT issuer authority, and it caps order lifetime to the parent lease. Executors do not receive or copy leases. They present Work Order identity and are authorized as DELEGATED only after current Authority and Work Order state are jointly validated. Receiver, claim scope, correlation, order state/expiry, parent ownership/scope/expiry all fail closed.
