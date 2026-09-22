@@ -23,16 +23,18 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 post-authority next-slice design
-**Status:** Ready for next design step; no implementation active
+### M3 Execution Scheduler — first vertical slice
+**Status:** Implementation started
 
-**Goal:** Choose the next M3 consumer/control-plane slice now that the first real Authority → Work Order → DELEGATED executor integration is runtime-proven.
+**Goal:** Introduce the single durable owner of managed compute placement and execution leases so controllers no longer launch managed executors directly.
 
-**Validation:** v0.6.0-r77 DISRUPTIVE `m3.authority.real-weaken` PASS 8/8. The test selected `max-hardware`, obtained real `hacking-control` authority, activated one bounded Work Order, launched the temporary executor on home, passed DELEGATED authorization with no direct executor lease, performed one real weaken (security 6.088 → 6.038), drain-closed to CLOSED, released authority, and left no live fixture lease/process. Validation Dashboard reports no outstanding tests.
+**Files / areas:** core ports; execution-scheduler contract/service; architecture/decisions/feature docs; validation plan/registry/tests; persistent runtime manifest.
 
-**Constraint:** This proof remains validation-only. Do not turn it into a production hacking subsystem or add a hacking/Production Dashboard yet.
+**Decisions / constraints:** Execution Scheduler owns placement, bounded RAM reservations, process launch attribution, reconciliation, and reservation retirement. It does not choose domain strategy, grant target authority, or enforce future subsystem budgets. Requests must bind to an ACTIVE Work Order and its named receiver/correlation. First placement is deterministic, single-host, bounded, and non-preemptive. Canonical state informs eligibility/planning; final launch checks real host RAM. Durable restart recovery must never blindly duplicate a RUNNING executor.
 
-**Exact next step:** Review M3 roadmap/current architecture and design the next foundational slice before repository mutation.
+**Validation:** Pending. First implementation will prove SAFE contract/rejection/idempotency/reconciliation behavior before replacing the already-proven real-weaken fixture's direct launch.
+
+**Exact next step:** Lock D-043 and implement the versioned execution request/lease contract plus persistent scheduler service and SAFE validation.
 
 ## Recently completed
 
