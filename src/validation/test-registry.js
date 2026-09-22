@@ -1,5 +1,11 @@
 export const TESTS = [
     {
+        id:"m3.budgets.money", subsystem:"Resource Budgets", title:"Money budget accounting", risk:"SAFE",
+        runner:"src/validation/tests/money-budget-test.js",
+        description:"Uses synthetic dollar amounts only to prove money allocation, reservation, remaining-capacity enforcement, release, settlement into spent accounting, unchanged player money, and clean allocation retirement.",
+        validates:["Durable per-owner money allocation","Reservation and over-budget fail-closed accounting","Reservation release restores capacity","Settlement records spent capacity","No real game-money side effect"],
+    },
+    {
         id:"m3.budgets.ram", subsystem:"Resource Budgets", title:"RAM budget enforcement", risk:"SAFE",
         runner:"src/validation/tests/ram-budget-test.js",
         description:"Allocates one small durable RAM envelope and uses harmless Work Order-bound scheduler fixtures to prove missing/over-budget admission fails closed, in-budget RAM is attributed to the correct owner, terminal execution returns capacity, returned capacity is reusable, and allocation release is clean.",
