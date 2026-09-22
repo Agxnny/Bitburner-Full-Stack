@@ -181,3 +181,7 @@ A persistent work-order-service owns durable outcome-request lifecycle state. It
 
 #### Delegated Work Order execution
 A persistent work-order-service owns durable outcome-request lifecycle state. It activates an order only against current DIRECT issuer authority and caps order lifetime to the parent lease. Executors do not receive or copy leases. They receive DELEGATED authorization only after current Authority and Work Order state are jointly validated for receiver, claim scope, correlation, order state/expiry, and parent ownership/scope/expiry.
+
+
+#### Drain-first closure and cleanup authority
+Normal Work Order closure is two-phase. ACTIVE becomes CLOSING immediately, which denies all new DELEGATED objective execution. During CLOSING only the named receiver may obtain CLEANUP authorization, limited to the order's original claims and a fixed short deadline. CLEANUP is a distinct execution mode for executor-defined unwind operations; it is not a lease and cannot authorize ordinary objective work or new delegation. It may remain valid after parent authority disappears solely to retire effects already started under valid authority. Receiver completion ends cleanup early at CLOSED. Forced cancellation is immediate CANCELLED with no cleanup. Cleanup deadline exhaustion becomes FAILED and fails closed.
