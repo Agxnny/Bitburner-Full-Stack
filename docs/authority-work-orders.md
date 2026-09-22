@@ -64,3 +64,7 @@ The one-shot real delegated execution fixture is explicitly launched on `home` b
 
 ### Claim construction rule
 Authority consumers must construct claims through the shared `authorityClaim(kind,id,capability)` contract helper (or consume an already validated claim) rather than manually reproducing its object shape. The canonical claim shape is `{resource:{kind,id},capability}`. Delegated authorization reports invalid authority state, Work Order state, claim, and time inputs as distinct denial reasons so integration failures remain explainable.
+
+
+### Real-action validation lifetime rule
+A real executor test must size its bounded parent lease, Work Order, and observation timeout from the measured duration of the selected game operation. The real-weaken fixture only selects eligible canonical targets whose current weaken time fits safely inside the existing five-minute Authority/Work Order ceiling; it does not lengthen the core authority limits for the test.
