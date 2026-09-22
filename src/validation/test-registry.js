@@ -1,5 +1,11 @@
 export const TESTS = [
     {
+        id:"m3.authority.delegated", subsystem:"Authority", title:"Delegated Work Order authorization", risk:"SAFE",
+        runner:"src/validation/tests/authority-delegated-test.js",
+        description:"Uses synthetic authority and Work Orders to prove a named receiver can act only through a valid ACTIVE parent-bound delegation, while receiver/scope/order-state/parent-authority violations fail closed.",
+        validates:["Authority-backed delegated execution","Receiver and scope binding","Parent authority bounds and immediate loss propagation"],
+    },
+    {
         id:"m3.authority.restart", subsystem:"Authority", title:"Authority owner restart recovery", risk:"DISRUPTIVE",
         runner:"src/validation/tests/authority-restart-test.js",
         description:"Creates a synthetic live authority lease, restarts only authority-service, verifies exact durable recovery without extending expiry, confirms conflict and DIRECT authorization remain correct, then proves expiry still fails closed on the original boundary.",
