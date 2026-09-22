@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 generic authority + work orders — delegated execution slice
-**Status:** Delegated execution implementation complete; r72 publication pending
+**Status:** Published as v0.6.0-r72; SAFE delegated execution runtime validation pending
 
 **Goal:** Add one durable Work Order owner and Authority-backed DELEGATED authorization without weakening the proven DIRECT lease contract. An authorized issuer may create a bounded outcome order for a named receiver; the receiver may act only while both the order and its parent authority remain current.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** SAFE m3.authority.delegated registered using only synthetic claims. It proves authorized activation, DELEGATED receiver execution, receiver/scope bounds, issuer cannot over-delegate, order expiry capped by parent, closed-order denial, and immediate fail-closed behavior after parent authority release.
 
-**Exact next step:** Publish immutable r72 after exact release-ref inspection, install it, confirm work-order-service joins Health, then run SAFE m3.authority.delegated.
+**Exact next step:** Install r72, confirm work-order-service joins aggregate Health as the 12th service, then run SAFE m3.authority.delegated.
 
 ## Recently completed
 
