@@ -68,3 +68,7 @@ Authority consumers must construct claims through the shared `authorityClaim(kin
 
 ### Real-action validation lifetime rule
 A real executor test must size its bounded parent lease, Work Order, and observation timeout from the measured duration of the selected game operation. The real-weaken fixture only selects eligible canonical targets whose current weaken time fits safely inside the existing five-minute Authority/Work Order ceiling; it does not lengthen the core authority limits for the test.
+
+
+### Managed executor launch boundary
+The validation-only real weaken proof now composes Authority and Work Orders with the Execution Scheduler. After the controller acquires `hacking-control` and creates the bounded ACTIVE Work Order, it does not directly call `ns.exec()`. It requests compute from the Execution Scheduler using the same Work Order receiver and correlation ID. The scheduler owns process placement/RAM attribution; the launched executor independently revalidates DELEGATED target authorization immediately before the real side effect. Compute admission therefore does not substitute for Authority, and Authority does not imply compute ownership.
