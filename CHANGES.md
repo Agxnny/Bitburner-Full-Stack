@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 generic authority + work-order contracts — restart recovery slice
-**Status:** Published as v0.6.0-r71; disruptive authority restart runtime validation pending
+**Status:** Direct authority and disruptive durable restart/recovery runtime validated through v0.6.0-r71
 
 **Goal:** Establish one durable Authority Registry before domain controllers exist. The first runtime slice proves direct expiring authority over typed resource/capability claims, atomic multi-claim acquisition, compatible capability coexistence, conflict denial, renewal/release/expiry, and fail-closed direct authorization. Define the Work Order/delegation contract alongside it without yet implementing delegated execution.
 
@@ -34,9 +34,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** PASS — m3.authority.direct 13/13 on r70. Authority service joined Health as the 11th healthy service. Runtime proved atomic two-claim grant, identical resource+capability conflict denial, distinct capability coexistence, DIRECT authorization, wrong-owner/out-of-scope fail-closed denial, owner renewal, release, all-or-nothing conflict denial, expiry reconciliation, Work Order contract distinction, Work Order-not-authority, and durable state validity.
 
-**Validation:** DISRUPTIVE m3.authority.restart is registered against synthetic authority only. It restarts only authority-service and checks exact lease recovery, unchanged absolute expiry, DIRECT authorization/conflict behavior after restart, original-boundary expiry, and post-expiry fail-closed denial.
+**Validation:** PASS — m3.authority.restart on r71. Runtime captured authority-service pid 316, persisted the synthetic live lease, restarted only authority-service at pid 331, recovered the same unexpired owner/correlation/claim, preserved original issuedAt and absolute expiry, retained DIRECT authorization and identical-claim conflict denial, expired on the original boundary, and failed closed after expiry. The Validation Dashboard reports no outstanding current-plan tests.
 
-**Exact next step:** Install r71, confirm the normal 11-service Health state, then run DISRUPTIVE m3.authority.restart from the Validation Dashboard.
+**Exact next step:** Close the direct/restart authority slice in durable state documentation, then design the delegated Work Order execution slice without weakening the proven direct-authority boundary.
 
 ## Recently completed
 
