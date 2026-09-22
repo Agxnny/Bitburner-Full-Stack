@@ -356,7 +356,7 @@ The Production Dashboard consumes existing canonical/telemetry/control contracts
 
 Every controllable production domain exposes Start/Graceful Stop/Hard Stop/Restart through standard command pathways. Overview additionally exposes a latched ESTOP for all non-persistent production activity. No Production Dashboard lifecycle command may stop, restart, replace, or retire a persistent runtime unit. Persistent lifecycle mutation remains reserved to updater/deployment and explicitly authorized disruptive validation/tests.
 
-Domain tabs expose immediate operational intent; Settings exposes supported policy/configuration parameters, including thresholds that influence controller decisions, but not editable controller logic or correctness invariants. Production may show concise controller-provided reasoning but not internal decision traces. Existing dashboard sizing/docking infrastructure is reused rather than duplicated.
+Domain tabs expose immediate operational intent; Settings exposes supported policy/configuration parameters, including thresholds that influence controller decisions, but not editable controller logic or correctness invariants. Production may show concise controller-provided reasoning but not internal decision traces. Existing dashboard sizing/docking infrastructure is reused rather than duplicated. The detailed approved tab contract is maintained in `docs/production-dashboard.md`; changes to the operator-facing contract must update that feature document alongside this decision when architectural boundaries change.
 
 
 ## D-046 — Market history is timestamped raw observation truth; chart candles are deterministic views
