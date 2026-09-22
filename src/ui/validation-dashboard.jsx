@@ -82,7 +82,7 @@ function findRunningTest(ns){
     }
     return null;
 }
-function TESTS_RUNNABLE(){return ["m3.execution.scheduler","m3.authority.real-weaken","m3.authority.cleanup","m3.authority.delegated","m3.authority.restart","m3.authority.direct","m3.diagnostics.failure-correlation","m3.diagnostics.intelligence","m3.resource.associations","m3.cadence.control","m3.cadence.restart","m3.canonical.state","m3.canonical.restart","m2.dashboard.smoke","m2.dashboard.emergency-focus"].map(findTest).filter((x)=>x?.runner);}
+function TESTS_RUNNABLE(){return ["m3.execution.restart","m3.execution.scheduler","m3.authority.real-weaken","m3.authority.cleanup","m3.authority.delegated","m3.authority.restart","m3.authority.direct","m3.diagnostics.failure-correlation","m3.diagnostics.intelligence","m3.resource.associations","m3.cadence.control","m3.cadence.restart","m3.canonical.state","m3.canonical.restart","m2.dashboard.smoke","m2.dashboard.emergency-focus"].map(findTest).filter((x)=>x?.runner);}
 function writeUiState(ns,bridge){ns.write(TEST_UI_PATH,JSON.stringify({schemaVersion:1,updatedAt:Date.now(),emergency:bridge.emergencyUi},null,2),"w");}
 function ValidationDashboard({bridge}){
     const rootRef=useDashboardWindow(WINDOW_KEY,bridge,{minWidth:700,minHeight:680,maxWidth:1320,maxHeight:950});
