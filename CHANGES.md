@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 real delegated execution proof — r76 timeout/cleanup correction
-**Status:** Root cause corrected; r77 publication pending
+**Status:** Published as v0.6.0-r77; DISRUPTIVE rerun pending
 
 **Observed r76 runtime:** The test ran about 91.8 seconds. Target selection, authority grant, ACTIVE Work Order, and executor launch all passed, but the controller reported `no executor result` / `executor status=missing`. Cleanup then reported the executor still live when the assertion ran.
 
@@ -32,7 +32,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Correction:** Select only a canonical eligible target whose current `ns.getWeakenTime()` fits safely inside the Authority/Work Order maximum lease window, size the lease/order/wait from that measured duration with margin, and ensure cleanup kills/waits for any surviving fixture process before asserting cleanup. The test remains one real weaken only.
 
-**Exact next step:** Publish immutable r77 after exact release-ref inspection, install it, then rerun DISRUPTIVE m3.authority.real-weaken.
+**Exact next step:** Install r77, confirm normal Health, then rerun DISRUPTIVE m3.authority.real-weaken. The selected target must have a measured weaken time within the bounded lease window.
 
 ## Recently completed
 
