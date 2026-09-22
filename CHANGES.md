@@ -23,20 +23,25 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 Resource Budget Manager — Money first vertical slice
-**Status:** Published as v0.6.0-r82; SAFE money-budget runtime validation pending
+### Production Dashboard — information architecture lock
+**Status:** Design approved; architecture/documentation lock in progress; implementation not started
 
-**Goal:** Extend the existing Resource Budget Manager with durable logical money allocations plus reservation/settlement/release accounting, without performing any real game purchase.
+**Goal:** Lock the Production Dashboard tab architecture, operator-control boundaries, and agreed per-tab information model before visual layout or implementation.
 
-**Files / areas:** resource-budget contract/service; resource-budget feature docs and D-044 clarification; validation plan/registry/dashboard; new SAFE money-budget validation; immutable deployment manifest.
+**Files / areas:** Production Dashboard feature documentation; dashboard architecture/decisions/roadmap; current-state handoff. No runtime source, manifest, or deployment revision changes in this documentation-only step.
 
-**Decisions / constraints:** Budget Manager remains the sole durable owner of money allocation and reservation accounting. Money allocation is a logical ceiling, not permission to act on a target and not a game-money lock. Spending executors remain responsible for actual transactions. A reservation immediately reduces the owner's available budget; release returns it; settlement converts it to durable spent accounting. Reservation IDs and command request IDs are idempotent. First slice uses synthetic amounts only and does not spend player money. Reconciliation with canonical player money/manual spending remains required before real production spending is allowed.
+**Decisions / constraints:** Production and Validation remain distinct clients of shared structured state/telemetry. Production exposes operational state and concise reasoning, never controller logic or a competing source of truth. Core tabs are Overview, Hacking, Stocks, Stock Manipulation, Network, Progression, and Settings; capability tabs appear as their systems become relevant. Every production domain uses standard lifecycle command paths. Graceful Stop, Hard Stop, and Restart cannot affect persistent runtime units. Overview ESTOP is latched and stops non-persistent production only. Persistent lifecycle mutation remains reserved to updater/deployment and explicitly authorized disruptive validation. Existing dashboard sizing/docking infrastructure is reused; no second window coordinator is introduced.
 
-**Validation:** SAFE m3.budgets.money registered. It proves missing-budget fail-closed reservation, durable synthetic $1,000 allocation, $600 reservation/remaining capacity, over-budget denial without reservation creation, release restoring capacity, $700 reservation settled at $650 into durable spent accounting, unchanged actual home money, and clean allocation retirement.
+**Validation:** Documentation review only. Runtime validation is not required until a Production Dashboard implementation slice exists. Existing r29 four-side docking/anchor behavior remains the integration contract.
 
-**Exact next step:** Install r82, confirm resource-budget-manager and Aggregate Health are clean after schema migration, then run SAFE m3.budgets.money from the Validation Dashboard. Do not permit real spending yet.
+**Exact next step:** Finish the tab-by-tab visual/layout design beginning with Overview, then define the smallest read-only Production Dashboard implementation slice.
 
 ## Recently completed
+
+### M3 Resource Budget Manager — Money first vertical slice
+**Status:** Runtime validated through v0.6.0-r82
+
+SAFE `m3.budgets.money` passed 8/8 in 1893 ms. It proved missing-budget denial, durable synthetic $1,000 allocation, $600 reservation with $400 remaining, over-budget denial, release restoring capacity, $700 reservation settled at $650 with $350 remaining, unchanged actual game money, and clean budget retirement. No real spending is authorized by this proof.
 
 ### M3 Resource Budget Manager — RAM first vertical slice
 **Status:** Runtime validated through v0.6.0-r81
