@@ -366,3 +366,15 @@ Operator-visible polling cadence must describe the cadence of the reliability gu
 **Cause:** The repository source contained the two literal characters backslash+n between JavaScript declarations (`;\\nconst`). The first attempted r65 repair used an incorrectly escaped replacement pattern, so it changed adjacent integration logic but did not remove those literal characters. Review of the immutable r65 releaseRef confirmed the malformed source was still pinned into that release.
 
 **Fix / prevention:** Match generated escape sequences explicitly when repairing programmatically generated source and verify the exact immutable releaseRef contents before publishing the corrective release. For syntax-sensitive generated edits, inspect the exact changed source rather than relying on the mutation call succeeding.
+
+
+## FIX-013 — Validation fixture teardown was misclassified as a stale service
+**Status:** Corrective r69 implementation published for runtime validation
+
+**Symptom:** r68 diagnostics failure-correlation passed its 8 recovery assertions, then the Validation Dashboard returned to Attention because the validation-only fixture was killed after its final healthy heartbeat. Health retained the last instance and later marked it stale, which Diagnostics correctly reported as a new incident.
+
+**Cause:** Health had instance replacement/recovery semantics but no explicit intentional-retirement event. Killing an ephemeral producer was observationally indistinguishable from a crashed producer.
+
+**Fix:** Add versioned service-retirement telemetry. Health removes only the exact matching active instance and records informational SERVICE_RETIRED evidence. The fixture requests retirement and exits itself; the validation now proves the service remains absent and its prior diagnostic remains resolved after the stale window.
+
+**Prevention:** Any future ephemeral service that publishes health must explicitly retire its registered instance before normal exit. Do not suppress stale detection or special-case service names.
