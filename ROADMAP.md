@@ -114,3 +114,7 @@ Before Generic Authority, add structured diagnostic ingress, one durable diagnos
 **Status:** First direct-authority slice complete and runtime validated through v0.6.0-r70 (m3.authority.direct PASS 13/13)
 
 Establish capability-scoped durable authority before domain controllers. First slice: atomic direct leases, identical-claim conflicts, compatible capability coexistence, renewal/release/expiry, fail-closed direct checks, and the non-authorizing Work Order envelope. Later slices: restart recovery, delegated authority/work-order lifecycle, drain-first revocation/cleanup, handoff, and controller integration.
+
+
+### M3 authority/work-order contract status — r73
+The generic Authority Registry and Work Order contract slices are runtime proven through v0.6.0-r73: DIRECT leases, authority restart recovery, DELEGATED Work Order execution, and drain-first bounded CLEANUP all pass current validation. The next authority work should be integration into a real domain controller/executor rather than adding another abstract authority lifecycle layer.
