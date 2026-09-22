@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Execution Scheduler — first vertical slice
-**Status:** Scheduler-backed real-weaken validation implemented; r80 publication pending
+**Status:** Published as v0.6.0-r80; DISRUPTIVE scheduler-backed real-weaken validation pending
 
 **Goal:** Introduce the single durable owner of managed compute placement and execution leases so controllers no longer launch managed executors directly.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** Base SAFE proof PASS on r78: 8/8 in 2540 ms. DISRUPTIVE restart proof PASS on r79: 8/8 in 7663 ms. Real-weaken validation is now version 2 and no longer calls ns.exec() for its executor: it requests scheduler execution, requires scheduler-owned host/PID/RAM attribution, preserves executor-side DELEGATED authorization and measurable weaken evidence, then requires exact-process completion/reservation retirement before Work Order/Authority cleanup. Runtime proof pending.
 
-**Exact next step:** Publish immutable r80 after exact release-ref inspection, install it, then run DISRUPTIVE m3.authority.real-weaken version 2. A PASS must prove the full Canonical State → Authority → Work Order → Execution Scheduler → DELEGATED executor → real weaken → execution retirement → Work Order/Authority cleanup chain.
+**Exact next step:** Install r80, confirm normal Health, then run DISRUPTIVE m3.authority.real-weaken version 2. A PASS must prove the full Canonical State → Authority → Work Order → Execution Scheduler → DELEGATED executor → real weaken → execution retirement → Work Order/Authority cleanup chain.
 
 ## Recently completed
 
