@@ -4,6 +4,8 @@
 **M3 — Canonical State**
 
 ## Status
+**M3 Resource Budget Manager money accounting is runtime validated through v0.6.0-r82.** SAFE `m3.budgets.money` passed 8/8 in 1893 ms, proving fail-closed missing-budget reservation, durable synthetic allocation, reservation/availability accounting, over-budget denial, release, settlement below reserved amount, unchanged actual game money, and clean retirement. RAM budgeting was previously runtime validated through r81. Real spending integration and canonical player-money reconciliation remain required before production spending.
+
 **M3 Execution Scheduler first vertical slice is runtime validated through v0.6.0-r80.** DISRUPTIVE `m3.authority.real-weaken` validation version 2 passed 10/10 in 93926 ms. The complete real chain was exercised: canonical rooted target `max-hardware` → real `hacking-control` Authority → bounded ACTIVE Work Order → Execution Scheduler acceptance → scheduler-owned one-thread home executor (pid 400, 2 GB reserved) → executor-side DELEGATED authorization → real weaken reducing security 6.038 to 5.988 → exact process completion and RAM-reservation retirement → Work Order CLOSED → Authority/process/reservation cleanup. The Validation Dashboard reports no outstanding current-plan tests. This remains validation-only and does not establish a production hacking subsystem or Production Dashboard.
 
 **M3 Execution Scheduler restart/reconciliation is runtime validated through v0.6.0-r79.** DISRUPTIVE `m3.execution.restart` passed 8/8 in 7663 ms. One harmless scheduler-managed child remained RUNNING while only execution-scheduler restarted; the new scheduler recovered the exact pre-restart child PID, preserved the original absolute expiry, launched no duplicate, observed natural completion, and retired the RAM reservation. The Validation Dashboard reports no outstanding current-plan tests. The next slice is routing the existing validation-only real delegated weaken through the scheduler instead of direct executor launch.
@@ -53,27 +55,12 @@ M2 first vertical slice is runtime validated through v0.5.0-r22: shared cross-ho
 - r29 four-side dashboard docking runtime validated: followers snap to top/bottom/left/right of the selected anchor and anchor transfer preserves the physical relationship. Update-available width growth remains pending validation against the next presented release.
 
 ## Active feature
-**M3 — Canonical State — next slice pending**
+**Production Dashboard — approved information architecture; visual design next**
 
-The first M3 runtime slice is complete and runtime-proven through r55: M2 observations feed a persistent single-writer canonical owner, canonical state survives service restart through durable reconciliation, factual observation timestamps are preserved, revisions do not roll back, and freshness remains consumer-defined. The next planned M3 slice is consumer cadence-request handling; implementation has not started.
-
-### M3 handoff boundary
-- Producers already exist: player, network, market, infrastructure, and capabilities observation collectors.
-- M3 should define the information highway, not duplicate collection or make controller decisions.
-- Design default: state is durable/latest-state data exposed through canonical state interfaces/files; commands and events use bounded ports/queues.
-- A restarted consumer must be able to read current canonical state without replaying transient port history.
-- Canonical state uses single-writer/many-reader ownership. Future consumers depend on the state contract, not collector storage details.
-- Ports need an explicit reservation/allocation map before use. Message envelopes need type/kind, schema version, message/correlation ID, producer/owner, timestamp, payload, and validation/failure semantics.
-- Define queue capacity/backpressure/overflow and restart semantics before any command/event producer depends on a port.
-- Define state freshness/stale/unavailable semantics and source/observed/published metadata before consumers rely on state.
-- Direct process args remain startup configuration/identity; telemetry/history remains evidence; React bridges remain UI-local only.
-- Do not add hacking target selection, purchase decisions, scheduling policy, authority allocation, or other M4+ intelligence to M3.
-
-### Pre-M3 cleanup state
-M2 is complete through r49. Deployment hygiene is complete through r51. The obsolete standalone System Health and Update Watcher UI scripts were explicitly retired with stop → verify stopped → delete → verify absent and auditable terminal/report output. Their backend Health Collector and Update Watcher services remain. Validation Dashboard is the sole UI surface.
+The operator has approved the Production Dashboard's tab architecture and cross-tab control rules. No Production Dashboard runtime implementation exists yet. The next work is tab-by-tab visual/layout design using the established compact dark grey-blue language and existing dashboard sizing/docking coordinator. This design work does not create production hacking/trading/network/progression controllers ahead of their roadmap milestones.
 
 ## Exact next step
-1. Resume M3 with the already-deferred consumer cadence-request/control-plane design and implementation.
+1. Complete Production Dashboard visual/layout design one tab at a time, beginning with Overview, then define the smallest read-only implementation slice.
 
 ## Locked M1 behavior
 - Versions use `vX.Y.Z`; revisions are monotonically increasing and immutable once released.
