@@ -236,6 +236,38 @@
           "validationVersion": 1
         }
       ]
+    },
+    {
+      "id": "m3-execution-scheduler",
+      "milestone": "M3",
+      "title": "Execution Scheduler",
+      "revision": 78,
+      "requirements": [
+        {
+          "id": "execution-binding",
+          "title": "Execution admission is bound to an ACTIVE Work Order receiver/correlation",
+          "testId": "m3.execution.scheduler",
+          "validationVersion": 1
+        },
+        {
+          "id": "execution-attribution",
+          "title": "Managed execution is durably attributable to host/PID/RAM and Work Order",
+          "testId": "m3.execution.scheduler",
+          "validationVersion": 1
+        },
+        {
+          "id": "execution-idempotency",
+          "title": "Repeated request identity cannot duplicate managed execution",
+          "testId": "m3.execution.scheduler",
+          "validationVersion": 1
+        },
+        {
+          "id": "execution-retirement",
+          "title": "Completed execution retires its RAM reservation",
+          "testId": "m3.execution.scheduler",
+          "validationVersion": 1
+        }
+      ]
     }
   ]
 }
