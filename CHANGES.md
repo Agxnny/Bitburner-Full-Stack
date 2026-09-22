@@ -23,20 +23,18 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 generic authority + work-order contracts — restart recovery slice
-**Status:** Direct authority and disruptive durable restart/recovery runtime validated through v0.6.0-r71
+### M3 generic authority + work orders — delegated execution slice
+**Status:** Implementation started
 
-**Goal:** Establish one durable Authority Registry before domain controllers exist. The first runtime slice proves direct expiring authority over typed resource/capability claims, atomic multi-claim acquisition, compatible capability coexistence, conflict denial, renewal/release/expiry, and fail-closed direct authorization. Define the Work Order/delegation contract alongside it without yet implementing delegated execution.
+**Goal:** Add one durable Work Order owner and Authority-backed DELEGATED authorization without weakening the proven DIRECT lease contract. An authorized issuer may create a bounded outcome order for a named receiver; the receiver may act only while both the order and its parent authority remain current.
 
-**Files / areas:** authority contract/service/state, centralized ports, work-order contract, telemetry/diagnostics integration, validation plan/test registry, architecture/decisions, feature documentation, immutable release.
+**Files / areas:** centralized ports, authority contract, Work Order contract/service/state, validation registry/plan/dashboard, architecture/decisions, authority feature docs, immutable release.
 
-**Decisions / constraints:** Authority answers permission only; it does not schedule, execute, budget, or choose strategy. Claims are typed resource + capability pairs. Same resource may carry multiple compatible capabilities; first-slice conflict policy is exclusive only within the identical resource+capability key. Multi-claim acquisition is all-or-nothing. Leases are durable, expiring, owner/correlation attributable, and stale/invalid authority fails closed. Work orders request outcomes and never lend authority implicitly. Delegated authorization, drain-first revocation, cleanup authority, and cooperative handoff are contract-designed now but implemented in later slices. No real hacking/trading actions in validation.
+**Decisions / constraints:** Work Orders request outcomes and never duplicate domain functionality. A Work Order alone remains non-authorizing. Creation requires current DIRECT authority for the issuer over every requested claim. Delegated authorization validates receiver, requested claim, order ACTIVE state, order expiry, parent lease existence/owner/scope/expiry, and correlation binding. Order expiry is capped to the parent lease expiry. Parent authority release/expiry immediately fails delegated authorization even if the order record remains nominally active. This slice does not yet implement drain-first cleanup/revocation or real hacking/trading execution.
 
-**Validation:** PASS — m3.authority.direct 13/13 on r70. Authority service joined Health as the 11th healthy service. Runtime proved atomic two-claim grant, identical resource+capability conflict denial, distinct capability coexistence, DIRECT authorization, wrong-owner/out-of-scope fail-closed denial, owner renewal, release, all-or-nothing conflict denial, expiry reconciliation, Work Order contract distinction, Work Order-not-authority, and durable state validity.
+**Validation:** Pending SAFE synthetic runtime proof. No real stock/server authority or game action will be used.
 
-**Validation:** PASS — m3.authority.restart on r71. Runtime captured authority-service pid 316, persisted the synthetic live lease, restarted only authority-service at pid 331, recovered the same unexpired owner/correlation/claim, preserved original issuedAt and absolute expiry, retained DIRECT authorization and identical-claim conflict denial, expired on the original boundary, and failed closed after expiry. The Validation Dashboard reports no outstanding current-plan tests.
-
-**Exact next step:** Close the direct/restart authority slice in durable state documentation, then design the delegated Work Order execution slice without weakening the proven direct-authority boundary.
+**Exact next step:** Implement durable Work Order service plus Authority-backed delegated validation, register SAFE validation, publish r72 after immutable release-ref inspection, then runtime validate.
 
 ## Recently completed
 
