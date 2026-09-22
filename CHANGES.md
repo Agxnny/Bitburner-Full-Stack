@@ -34,9 +34,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** Documentation-only architecture lock. Repository docs now have an explicit Production Dashboard feature owner and D-045/D-046 remain the architectural decisions. No runtime validation is required until an implementation slice exists. Existing r29 four-side docking/anchor behavior remains the integration contract.
 
-**Visual design progress:** Overview and Hacking renders are approved and locked in `docs/production-dashboard.md`. Overview remains the shared visual baseline; Hacking locks the domain-workspace hierarchy for mode/status/target/performance/resources, target/batch/selection detail, and prep/spare-capacity behavior.
+**Visual design progress:** Overview, Hacking, and Stocks renders are approved and locked in `docs/production-dashboard.md`. Stocks locks the chart-dominant trading workspace, summary KPI row, opportunities panel, open-position/performance workspace, and compact trader policy/status area. Real-world ticker/news/control placeholders from the render are explicitly non-contractual; implementation uses Bitburner market data and supported trader contracts.
 
-**Exact next step:** Render and review the Stocks tab. After explicit operator confirmation, lock its approved layout before moving to Stock Manipulation. After all required tab visuals are approved, define the smallest honest implementation slice without creating future domain controllers early.
+**Exact next step:** Render and review the Stock Manipulation tab. After explicit operator confirmation, lock its approved layout before moving to Network. After all required tab visuals are approved, define the smallest honest implementation slice without creating future domain controllers early.
 
 ## Recently completed
 
