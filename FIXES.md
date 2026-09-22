@@ -369,7 +369,7 @@ Operator-visible polling cadence must describe the cadence of the reliability gu
 
 
 ## FIX-013 — Validation fixture teardown was misclassified as a stale service
-**Status:** Corrective r69 implementation published for runtime validation
+**Status:** Corrected and runtime validated through v0.6.0-r69
 
 **Symptom:** r68 diagnostics failure-correlation passed its 8 recovery assertions, then the Validation Dashboard returned to Attention because the validation-only fixture was killed after its final healthy heartbeat. Health retained the last instance and later marked it stale, which Diagnostics correctly reported as a new incident.
 
