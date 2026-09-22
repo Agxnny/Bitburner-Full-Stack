@@ -4,6 +4,7 @@ import {
     INCIDENTS_PATH,
     serviceHealth,
     validHealthRecord,
+    validRetirementRecord,
     validEventRecord,
 } from "./telemetry.js";
 
@@ -61,6 +62,17 @@ export async function main(ns) {
             if (validHealthRecord(record)) {
                 const result = ingestHealth(services, record, now);
                 for (const incident of result.incidents) incidents = addIncident(incidents, incident);
+                changed = true;
+            } else if (validRetirementRecord(record)) {
+                const retired = services.get(record.instanceId);
+                if (retired && retired.service === record.service) {
+                    services.delete(record.instanceId);
+                    incidents = addIncident(incidents, {
+                        at: now, service: record.service, severity: "info", code: "SERVICE_RETIRED",
+                        message: `Instance intentionally retired: ${record.reason}.`, host: record.host,
+                        instanceId: record.instanceId,
+                    });
+                }
                 changed = true;
             } else if (validEventRecord(record)) {
                 if (record.severity !== "info") incidents = addIncident(incidents, eventIncident(record));
