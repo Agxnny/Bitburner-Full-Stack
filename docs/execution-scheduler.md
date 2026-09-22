@@ -28,3 +28,7 @@ The first SAFE validation uses a synthetic Authority lease and Work Order plus a
 
 ## Controlled restart validation
 After the base contract is proven, DISRUPTIVE `m3.execution.restart` runs one harmless six-second scheduler-managed fixture, records its execution PID and absolute expiry, restarts only `execution-scheduler`, and verifies durable reconciliation recovers that exact still-running child. The test requires no duplicate fixture launch and no expiry extension, then waits for natural child exit and verifies the recovered execution becomes COMPLETE and no longer reserves RAM. The fixture restores the scheduler if the controlled test path fails.
+
+
+## Real delegated side-effect integration
+After the base and restart proofs pass, validation version 2 of `m3.authority.real-weaken` removes the controller's direct `ns.exec()` launch. The validation controller still owns target selection, Authority acquisition, and Work Order creation, but submits the executor to the Execution Scheduler. The proof requires a scheduler-owned execution record with host/PID/RAM attribution, executor-side DELEGATED authorization, one measurable real weaken, scheduler observation of the exact executor's natural exit, reservation retirement, Work Order closure, Authority release, and no live fixture resources. This remains validation-only and does not create a production hacking subsystem.
