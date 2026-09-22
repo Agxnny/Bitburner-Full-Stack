@@ -23,16 +23,16 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 real delegated execution proof — r75 invalid claim-shape correction
-**Status:** Published as v0.6.0-r76; DISRUPTIVE rerun pending
+### M3 real delegated execution proof — r76 timeout/cleanup correction
+**Status:** Root cause identified from r76 runtime; r77 correction implementation started
 
-**Observed r75 runtime:** DISRUPTIVE m3.authority.real-weaken again failed 6/8, now with precise executor denial reason `invalid-delegation-state`. Target selection, authority grant, ACTIVE Work Order, home executor launch, closure, and cleanup all passed.
+**Observed r76 runtime:** The test ran about 91.8 seconds. Target selection, authority grant, ACTIVE Work Order, and executor launch all passed, but the controller reported `no executor result` / `executor status=missing`. Cleanup then reported the executor still live when the assertion ran.
 
-**Root cause:** The temporary executor reconstructed its requested claim as `{kind,id,capability}`, but the canonical Authority claim contract is `{resource:{kind,id},capability}`. `delegatedAuthorization()` therefore rejected the executor input at `validClaim()` before evaluating the otherwise valid Authority and Work Order state. The Work Order itself carried the correct claim shape because the controller used `authorityClaim()`.
+**Root cause:** The controller capped its executor-result wait at 90 seconds while the selected target's real weaken can run longer. The Work Order TTL was also only 90 seconds, so even if the controller waited longer, the order could enter CLOSING before a long weaken returned. The final cleanup check also occurred before the finally block killed any still-running executor. This is a validation timing/lifecycle bug, not an authorization denial.
 
-**Correction:** The executor will construct the claim through the shared `authorityClaim()` helper rather than duplicating the schema. The broad `invalid-delegation-state` precondition response will also be split into precise invalid-authority-state / invalid-work-order-state / invalid-claim / invalid-time reasons so future failures identify the failed contract directly.
+**Correction:** Select only a canonical eligible target whose current `ns.getWeakenTime()` fits safely inside the Authority/Work Order maximum lease window, size the lease/order/wait from that measured duration with margin, and ensure cleanup kills/waits for any surviving fixture process before asserting cleanup. The test remains one real weaken only.
 
-**Exact next step:** Install r76, confirm normal Health, then rerun DISRUPTIVE m3.authority.real-weaken.
+**Exact next step:** Patch duration-aware target selection/lifetimes and cleanup ordering, publish immutable r77 after inspection, then rerun DISRUPTIVE m3.authority.real-weaken.
 
 ## Recently completed
 
