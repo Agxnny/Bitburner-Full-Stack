@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Resource Budget Manager — Money first vertical slice
-**Status:** Implementation started
+**Status:** Money budget first-slice implementation complete; SAFE runtime validation pending
 
 **Goal:** Extend the existing Resource Budget Manager with durable logical money allocations plus reservation/settlement/release accounting, without performing any real game purchase.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Budget Manager remains the sole durable owner of money allocation and reservation accounting. Money allocation is a logical ceiling, not permission to act on a target and not a game-money lock. Spending executors remain responsible for actual transactions. A reservation immediately reduces the owner's available budget; release returns it; settlement converts it to durable spent accounting. Reservation IDs and command request IDs are idempotent. First slice uses synthetic amounts only and does not spend player money. Reconciliation with canonical player money/manual spending remains required before real production spending is allowed.
 
-**Validation:** Pending. SAFE m3.budgets.money will prove missing-budget fail-closed reservation, durable allocation, bounded reservation, over-budget denial, release/returned capacity, settlement/spent accounting, and clean allocation retirement without changing game money.
+**Validation:** SAFE m3.budgets.money registered. It proves missing-budget fail-closed reservation, durable synthetic $1,000 allocation, $600 reservation/remaining capacity, over-budget denial without reservation creation, release restoring capacity, $700 reservation settled at $650 into durable spent accounting, unchanged actual home money, and clean allocation retirement.
 
-**Exact next step:** Implement the money contract/service and SAFE validation, update feature/architecture records, publish immutable r82 after exact source inspection, then run m3.budgets.money. Do not permit real spending yet.
+**Exact next step:** Publish immutable r82 after exact release-ref inspection, install it, confirm resource-budget-manager migrates cleanly and remains healthy, then run SAFE m3.budgets.money. Do not permit real spending yet.
 
 ## Recently completed
 
