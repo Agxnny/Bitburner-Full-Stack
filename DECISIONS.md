@@ -347,3 +347,23 @@ Budget allocation and physical availability are independent constraints: fitting
 
 ### D-044 clarification — Money uses reservation → settlement/release accounting
 Money remains under the same Resource Budget Manager ownership boundary. Unlike RAM, whose actual usage is owned by Execution Scheduler, money needs durable pre-transaction reservations because spending occurs through multiple future domain executors. A money reservation reduces logical availability immediately but is not itself a game transaction. Release returns unused capacity; settlement records actual committed spend against the allocation. Settlement may be lower than the reservation but cannot exceed it. Budget Manager never performs the purchase/trade and never substitutes for target Authority. Real spending integration must reconcile accounting against canonical player-money state/manual actions before production use.
+
+
+## D-045 — Production Dashboard is an operational client with bounded lifecycle controls
+**Status:** Locked
+
+The Production Dashboard consumes existing canonical/telemetry/control contracts and never becomes a competing source of truth or privileged administrative bypass. Permanent tabs are Overview, Hacking, Stocks, Stock Manipulation, Network, Progression, and Settings; capability-specific tabs appear when their corresponding systems exist.
+
+Every controllable production domain exposes Start/Graceful Stop/Hard Stop/Restart through standard command pathways. Overview additionally exposes a latched ESTOP for all non-persistent production activity. No Production Dashboard lifecycle command may stop, restart, replace, or retire a persistent runtime unit. Persistent lifecycle mutation remains reserved to updater/deployment and explicitly authorized disruptive validation/tests.
+
+Domain tabs expose immediate operational intent; Settings exposes supported policy/configuration parameters, including thresholds that influence controller decisions, but not editable controller logic or correctness invariants. Production may show concise controller-provided reasoning but not internal decision traces. Existing dashboard sizing/docking infrastructure is reused rather than duplicated.
+
+
+## D-046 — Market history is timestamped raw observation truth; chart candles are deterministic views
+**Status:** Locked
+
+Stock chart history is based on timestamped raw market observations stamped at observation time. OHLC candles are deterministic wall-clock aggregations over those observations. A sample's timestamp permanently determines its bucket for a chosen resolution; completed candles are immutable and samples never slide between candles as the visible chart window advances.
+
+The forming candle is visually distinct (grey). Collection gaps are factual missing-data intervals: they are rendered as empty elapsed-time space bounded by dashed orange start/end markers, never interpolated or bridged. Actual trade open/close markers use recorded execution timestamps/prices. The current-price tag represents the latest actual observation and becomes explicitly stale when observations stop.
+
+Named chart windows may use different fixed bucket durations and intentionally increase visible candle count as the displayed timespan grows. Historical may choose a coarser adaptive aggregation over the full known history, but aggregation never rewrites the underlying raw timestamped observations.
