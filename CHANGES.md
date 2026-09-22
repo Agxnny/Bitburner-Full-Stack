@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 diagnostics / incident intelligence
-**Status:** r68 isolated failure-correlation test PASS; post-test cleanup defect identified
+**Status:** Implementing explicit telemetry service retirement and validation teardown proof
 
 **Goal:** Add one durable diagnostics owner that turns structured runtime/deployment/health failures into evidence-backed incidents and concise Validation Dashboard explanations, so operators can distinguish observed symptoms, correlated evidence, and bounded inference without manually reconstructing failures.
 
@@ -40,7 +40,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Post-test issue:** After PASS, the validation driver killed the fixture. Health retains the last fixture instance and therefore marks it STALE again, leaving Health/Diagnostics Attention. The test proved recovery before teardown, but teardown itself is not health-aware. This is a validation-fixture cleanup defect, not a diagnostics correlation failure.
 
-**Exact next step:** Correct fixture teardown so the health owner can explicitly retire validation-only service instances, then publish a corrective validation revision and prove the dashboard returns fully healthy after test completion.
+**Exact next step:** Add explicit service-retirement telemetry, consume it in the health owner, update the r68 fixture test to prove retirement clears Health/Diagnostics, then publish r69.
 
 ## Recently completed
 
