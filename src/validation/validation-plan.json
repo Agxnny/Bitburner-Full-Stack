@@ -105,7 +105,7 @@
       "id": "m3-diagnostics",
       "milestone": "M3",
       "title": "Diagnostics & Incident Intelligence",
-      "revision": 67,
+      "revision": 68,
       "requirements": [
         {
           "id": "diagnostic-owner",
@@ -123,6 +123,18 @@
           "id": "diagnostic-dedup",
           "title": "Incident deduplication and explicit resolution",
           "testId": "m3.diagnostics.intelligence",
+          "validationVersion": 1
+        },
+        {
+          "id": "diagnostic-real-failure",
+          "title": "Real service failure correlation",
+          "testId": "m3.diagnostics.failure-correlation",
+          "validationVersion": 1
+        },
+        {
+          "id": "diagnostic-recovery",
+          "title": "Observed recovery automatically resolves diagnostic incident",
+          "testId": "m3.diagnostics.failure-correlation",
           "validationVersion": 1
         }
       ]
