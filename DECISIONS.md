@@ -323,3 +323,13 @@ Work Orders are durably owned separately from Authority. Creation requires the i
 **Status:** Locked
 
 Normal Work Order closure immediately ends permission for new objective work by moving ACTIVE to CLOSING. CLOSING may authorize only a distinct CLEANUP mode for the exact named receiver and original claim scope, until a fixed non-renewable cleanup deadline. CLEANUP is not a lease, cannot create/delegate work, and executors must route it only to predefined unwind/reduction operations rather than ordinary objective execution. It may survive loss or expiry of the parent authority solely so already-started effects can be retired safely. The receiver explicitly completes cleanup to CLOSED. Forced cancellation is immediate CANCELLED and provides no cleanup. An uncompleted cleanup window ends FAILED with no continuing authorization.
+
+
+## D-043 — Execution Scheduler exclusively owns managed compute placement and execution leases
+**Status:** Locked
+
+Managed controllers do not launch executors directly. The persistent `execution-scheduler` is the single durable owner of managed compute placement, bounded RAM reservations, process launch attribution, reconciliation, and reservation retirement. Authority answers whether game-resource work is permitted; Work Orders describe delegated outcomes; Execution Scheduler answers where authorized work may consume compute. An execution lease never grants target authority and is not a subsystem RAM budget.
+
+Every execution request binds to an existing ACTIVE Work Order, its named receiver, and correlation ID. The first slice is deterministic, FIFO, single-host and non-preemptive, with a bounded pending queue. `home` is the only placement host in the first slice; distributed placement is a later extension of the same contract. Canonical state informs later placement planning, while final admission must reconcile against actual available RAM immediately before launch.
+
+Every RUNNING managed executor is attributable to one durable execution record containing host, PID, Work Order, receiver, correlation, script, threads, RAM and absolute expiry. Scheduler restart must reconcile durable records against real processes without extending expiry or blindly relaunching RUNNING work. Missing processes become terminal; surviving exact PID/host processes are recovered. Work Order closure stops new admission and moves existing execution toward drain/termination semantics. Future subsystem RAM budgets remain a separate control-plane owner.
