@@ -381,7 +381,7 @@ Operator-visible polling cadence must describe the cadence of the reliability gu
 
 
 ### FIX-013 — Validation child executor inherited dashboard host and could not read home-owned control state
-**Status:** Corrected in source; runtime validation pending in r75
+**Status:** Corrected and runtime validated through r77
 
 **Symptom:** r74 `m3.authority.real-weaken` passed target selection, authority grant, Work Order activation, executor launch, terminal closure, and cleanup, but the temporary executor denied DELEGATED authorization and therefore did not call `ns.weaken()`.
 
@@ -393,7 +393,7 @@ Operator-visible polling cadence must describe the cadence of the reliability gu
 
 
 ### FIX-014 — Real delegated executor reconstructed an invalid authority claim shape
-**Status:** Corrected in source; runtime validation pending in r76
+**Status:** Corrected and runtime validated through r77
 
 **Symptom:** r75 `m3.authority.real-weaken` reached a home-hosted executor but `delegatedAuthorization()` denied with `invalid-delegation-state`.
 
@@ -405,7 +405,7 @@ Operator-visible polling cadence must describe the cadence of the reliability gu
 
 
 ### FIX-015 — Real weaken validation used fixed lifetimes shorter than the game action
-**Status:** Corrected in source; runtime validation pending in r77
+**Status:** Corrected and runtime validated in r77
 
 **Symptom:** r76 `m3.authority.real-weaken` ran for about 91.8 seconds, then reported no executor result and a still-live executor.
 
