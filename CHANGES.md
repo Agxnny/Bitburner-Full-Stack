@@ -23,26 +23,18 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 diagnostics / incident intelligence
-**Status:** Complete; v0.6.0-r69 corrective runtime validated
+### M3 generic authority + work-order contracts — first authority slice
+**Status:** Implementation started
 
-**Goal:** Add one durable diagnostics owner that turns structured runtime/deployment/health failures into evidence-backed incidents and concise Validation Dashboard explanations, so operators can distinguish observed symptoms, correlated evidence, and bounded inference without manually reconstructing failures.
+**Goal:** Establish one durable Authority Registry before domain controllers exist. The first runtime slice proves direct expiring authority over typed resource/capability claims, atomic multi-claim acquisition, compatible capability coexistence, conflict denial, renewal/release/expiry, and fail-closed direct authorization. Define the Work Order/delegation contract alongside it without yet implementing delegated execution.
 
-**Files / areas:** telemetry/error contract, diagnostics service/state, health/deployment correlation, Validation Dashboard diagnostics presentation, validation plan/tests, architecture/decisions, diagnostics feature documentation, immutable deployment release.
+**Files / areas:** authority contract/service/state, centralized ports, work-order contract, telemetry/diagnostics integration, validation plan/test registry, architecture/decisions, feature documentation, immutable release.
 
-**Decisions / constraints:** Diagnostics explains evidence; it does not invent root causes. Findings are classified as OBSERVED, CORRELATED, or INFERRED and carry confidence/evidence. Repeated failures deduplicate into durable incidents with occurrence counts. Telemetry remains transport; diagnostics durable state is the diagnostic truth. Existing canonical/health/deployment owners remain unchanged. Diagnostics must correlate deployment runtime reconciliation failures with changed runtime units/files when available. Dashboard remains a consumer.
+**Decisions / constraints:** Authority answers permission only; it does not schedule, execute, budget, or choose strategy. Claims are typed resource + capability pairs. Same resource may carry multiple compatible capabilities; first-slice conflict policy is exclusive only within the identical resource+capability key. Multi-claim acquisition is all-or-nothing. Leases are durable, expiring, owner/correlation attributable, and stale/invalid authority fails closed. Work orders request outcomes and never lend authority implicitly. Delegated authorization, drain-first revocation, cleanup authority, and cooperative handoff are contract-designed now but implemented in later slices. No real hacking/trading actions in validation.
 
-**Validation:** r67 SAFE contract validation passed 7/7. A second DISRUPTIVE-but-isolated validation is now being added using a dedicated validation-only service fixture; production collectors/state owners will not be stopped.
+**Validation:** Pending. SAFE synthetic validation will exercise direct authority only; no production resource or controller will be affected.
 
-**Runtime proof:** r67 reported 10 healthy services including diagnostics-service. Validation Dashboard Diagnostics view loaded with no active incidents. SAFE m3.diagnostics.intelligence PASS: 7/7 assertions; the synthetic incident resolved and remained visible under Recently Resolved with one occurrence.
-
-**Runtime proof:** m3.diagnostics.failure-correlation PASS 8/8: fixture healthy, real stale failure observed, OBSERVED incident correlated with service/PID evidence, explanation remained bounded, fixture recovered, and incident resolved during the test.
-
-**Post-test issue:** After PASS, the validation driver killed the fixture. Health retains the last fixture instance and therefore marks it STALE again, leaving Health/Diagnostics Attention. The test proved recovery before teardown, but teardown itself is not health-aware. This is a validation-fixture cleanup defect, not a diagnostics correlation failure.
-
-**Runtime proof:** m3.diagnostics.failure-correlation v2 PASS 10/10. fixture-retired and teardown-clean passed. After settling, Health remained HEALTHY with 10 services and no fixture in active placement; Diagnostics reported no active incidents. Historical fixture warnings remain only as Recent Incidents/Recently Resolved audit evidence.
-
-**Exact next step:** Close the diagnostics foundation and resume M3 Generic Authority + Work Order contract design/implementation.
+**Exact next step:** Implement contracts/service and SAFE validation, publish immutable r70, then runtime-validate the first authority slice.
 
 ## Recently completed
 
