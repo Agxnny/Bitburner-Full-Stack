@@ -190,3 +190,8 @@ Normal Work Order closure is two-phase. ACTIVE becomes CLOSING immediately, whic
 ### Execution Scheduler
 
 The persistent `execution-scheduler` is the single owner of managed compute placement and execution leases. A controller must first establish target permission through Authority and an ACTIVE Work Order; it then requests compute rather than directly launching a managed executor. The scheduler binds execution to Work Order receiver/correlation, maintains bounded durable execution records, performs final RAM admission, launches the process, attributes host/PID/RAM, and reconciles process reality on restart. Execution leases grant compute only and never substitute for target authority or future subsystem budgets. The first slice intentionally places only on `home`; distributed placement extends this contract later. See `docs/execution-scheduler.md`.
+
+
+### Resource Budget Manager
+
+The persistent `resource-budget-manager` is the single owner of logical consumption envelopes for divisible shared resources. The first implemented resource is RAM. Budget Manager owns per-owner ceilings only; Execution Scheduler owns actual process placement and RAM reservations and derives current usage from its own active execution records. Managed execution therefore requires both a valid Work Order/Authority chain and sufficient budget, while physical free RAM remains a separate scheduler constraint. See `docs/resource-budgets.md`.
