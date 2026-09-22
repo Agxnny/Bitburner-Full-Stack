@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 generic authority + work orders — drain-first closure / cleanup slice
-**Status:** Drain-first cleanup implementation complete; r73 publication pending
+**Status:** Published as v0.6.0-r73; SAFE cleanup runtime validation pending
 
 **Goal:** Make revocation safe for already-started delegated work. Ordinary closure stops all new objective work immediately, moves the Work Order to CLOSING, and gives only its named receiver a short bounded CLEANUP authorization for the order's existing claim scope. The receiver explicitly completes cleanup to reach CLOSED. Forced cancellation remains immediate and grants no cleanup.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** SAFE m3.authority.cleanup registered with synthetic leases/orders only. It covers CLOSING transition, immediate objective denial, receiver/scope-bound CLEANUP, explicit completion, parent-loss cleanup survival without ordinary authority, forced cancellation with no cleanup, and cleanup-timeout FAILED/fail-closed behavior.
 
-**Exact next step:** Publish immutable r73 after exact release-ref inspection, install it, confirm 12-service Health, then run SAFE m3.authority.cleanup.
+**Exact next step:** Install r73, confirm aggregate Health returns to 12/12, then run SAFE m3.authority.cleanup from the Validation Dashboard.
 
 ## Recently completed
 
