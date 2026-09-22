@@ -20,6 +20,8 @@ export async function main(ns){
   const grant=await authDecision(ns,tag+":grant",4000);check(a,"authority-granted",grant?.outcome==="GRANTED","Controller obtained real hacking-control authority.");if(grant?.outcome!=="GRANTED")throw new Error("Authority grant denied.");
   wo(ns,createWorkOrder({requestId:tag+":create",workOrderId:orderId,issuer,receiver,objective:"weaken-once",claims:[claim],authorityLeaseId:leaseId,correlationId:tag,constraints:{operation:"weaken",threads:1,target:target.hostname},ttlMs:orderTtlMs,cleanupTtlMs:3000}));
   const created=await woDecision(ns,tag+":create",4000);check(a,"work-order-active",created?.outcome==="GRANTED"&&findOrder(ns,orderId)?.state==="ACTIVE","Controller issued one bounded ACTIVE weaken Work Order.");if(created?.outcome!=="GRANTED")throw new Error("Work Order creation denied.");
+  budget(ns,setRamBudget({requestId:tag+":budget",allocationId:tag+":ram",owner:receiver,limitGb:4,correlationId:tag}));
+  if((await budgetDecision(ns,tag+":budget",3000))?.outcome!=="GRANTED")throw new Error("RAM budget allocation failed.");
   ns.rm(resultPath,"home");
   ex(ns,requestExecution({requestId:tag+":execute",executionId,workOrderId:orderId,receiver,correlationId:tag,budgetOwner:receiver,script:EXECUTOR,threads:1,args:[orderId,receiver,target.hostname,resultPath],ttlMs:orderTtlMs}));
   const executionDecision=await exDecision(ns,tag+":execute",4000);check(a,"execution-accepted",executionDecision?.outcome==="QUEUED","Execution Scheduler accepted the Work Order-bound weaken request.");if(executionDecision?.outcome!=="QUEUED")throw new Error("Execution request denied: "+(executionDecision?.reason??"unknown")+".");
