@@ -63,9 +63,24 @@ Persistent lifecycle mutation is reserved to the updater/deployment path and exp
 
 ## Overview
 
-Overview is the compact whole-stack operational summary.
+**Visual/layout status: APPROVED.** The first Overview render is the visual baseline for the remaining Production Dashboard tabs.
 
-It presents:
+Overview is the compact whole-stack operational summary and uses the established compact dark grey-blue dashboard language.
+
+### Approved physical hierarchy
+
+1. **Dashboard header** — `FULL STACK — PRODUCTION DASHBOARD`, release/milestone context, online state, and an isolated prominent red **ESTOP** control at the upper-right.
+2. **Primary tab bar** — same compact button/tab family as Validation, with Overview selected.
+3. **Top KPI row** — five compact cards for **Money**, **Managed RAM**, **Income**, **System Health**, and **Production State**. Cards favor the primary value/status first, with only concise supporting detail.
+4. **Operational middle row** — **Attention** on the left and **Current Activity** on the right. Attention contains only actionable production-impacting items with direct Review/View navigation. Current Activity summarizes what each available production domain is doing now, including concise state/progress where meaningful.
+5. **Subsystem summary row** — compact clickable cards for **Hacking**, **Stocks**, **Stock Manipulation**, **Network**, and **Progression**. Each card exposes only the small set of domain metrics needed to understand current production and provides direct navigation to that tab.
+6. **Low-priority utility/footer area** — bounded recent production events and other compact operator conveniences may occupy the bottom when useful, but must remain visually subordinate to production state and must not become a second Validation/diagnostics surface.
+
+The approved render establishes the target density, card/border treatment, typography hierarchy, cyan/teal/green operational accents, warning/error emphasis, tab proportions, and general Production Dashboard visual language for subsequent tab renders.
+
+### Information contract
+
+Overview presents:
 - player money;
 - managed RAM used/reserved/free;
 - overall production income/performance where meaningful;
@@ -75,7 +90,9 @@ It presents:
 - current activity by domain;
 - compact clickable summaries of each available production tab.
 
-Attention items should route to the relevant tab when possible. Overview does not duplicate Validation's service lists, detailed health evidence, freshness/invariant views, scheduler queues, authority leases, Work Orders, or diagnostics.
+Attention items route to the relevant tab when possible. Overview does not duplicate Validation's service lists, detailed health evidence, freshness/invariant views, scheduler queues, authority leases, Work Orders, or diagnostics.
+
+Overview is designed for the large workspace normally to the right of Validation. Its size remains dashboard-owned and content-driven; its placement uses the existing sizing/docking coordinator rather than fixed screen coordinates.
 
 ## Hacking
 
