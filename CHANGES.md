@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Resource Budget Manager — RAM first vertical slice
-**Status:** RAM budget first-slice implementation complete; SAFE runtime validation pending
+**Status:** Published as v0.6.0-r81; SAFE runtime validation pending
 
 **Goal:** Add the single durable owner of logical resource-consumption envelopes, beginning with RAM, and make Execution Scheduler enforce those envelopes against its own active reservations.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** SAFE m3.budgets.ram registered. It proves missing-budget denial, durable allocation, over-budget denial before execution creation, in-budget scheduler admission, active RAM attribution to the budget owner, capacity return after terminal execution, reuse of returned capacity, and clean allocation release. Existing execution validation fixtures now explicitly acquire/release RAM budgets so they remain valid under the new mandatory budgetOwner request contract.
 
-**Exact next step:** Publish immutable r81 after exact release-ref inspection, install it, confirm resource-budget-manager health, then run SAFE m3.budgets.ram. Do not begin money budgets until this RAM accounting/enforcement slice passes.
+**Exact next step:** Install r81, confirm Aggregate Health includes resource-budget-manager and execution-scheduler remains healthy, then run SAFE m3.budgets.ram from the Validation Dashboard. Do not begin money budgets until this RAM accounting/enforcement slice passes.
 
 ## Recently completed
 
