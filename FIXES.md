@@ -378,3 +378,15 @@ Operator-visible polling cadence must describe the cadence of the reliability gu
 **Fix:** Add versioned service-retirement telemetry. Health removes only the exact matching active instance and records informational SERVICE_RETIRED evidence. The fixture requests retirement and exits itself; the validation now proves the service remains absent and its prior diagnostic remains resolved after the stale window.
 
 **Prevention:** Any future ephemeral service that publishes health must explicitly retire its registered instance before normal exit. Do not suppress stale detection or special-case service names.
+
+
+### FIX-013 — Validation child executor inherited dashboard host and could not read home-owned control state
+**Status:** Corrected in source; runtime validation pending in r75
+
+**Symptom:** r74 `m3.authority.real-weaken` passed target selection, authority grant, Work Order activation, executor launch, terminal closure, and cleanup, but the temporary executor denied DELEGATED authorization and therefore did not call `ns.weaken()`.
+
+**Cause:** The validation test used `ns.run()`, which launches on the caller's current host. The Validation Dashboard may be placed on a purchased server. Authority and Work Order durable state are home-owned. The executor checked `fileExists(path, "home")` but then used `ns.read(path)`, which reads its current host, so a remotely launched fixture observed null control state and correctly failed closed.
+
+**Fix:** The fixture controller now uses `ns.exec(..., "home", ...)` for this home-state integration proof. The executor also explicitly fails closed when not running on home. Failed authorization assertions now preserve the actual denial reason instead of using success-only evidence wording.
+
+**Prevention:** Validation fixtures that depend on home-owned durable control state must either execute on home or use an explicit supported transport/state-access mechanism. Never combine a remote `fileExists(..., "home")` check with an implicit local `ns.read()` and assume the bytes came from home.
