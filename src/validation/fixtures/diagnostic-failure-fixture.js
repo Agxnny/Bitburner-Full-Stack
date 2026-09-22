@@ -1,4 +1,4 @@
-import { publishTelemetry, serviceHealth } from "../../core/telemetry.js";
+import { publishTelemetry, serviceHealth, serviceRetirement } from "../../core/telemetry.js";
 
 const SERVICE="validation-diagnostic-fixture";
 const CONTROL_PATH="data/validation/diagnostic-fixture-control.json";
@@ -10,6 +10,10 @@ export async function main(ns){
     const startedAt=Date.now();
     while(true){
         const control=read(ns,CONTROL_PATH);
+        if(control?.mode==="retire"){
+            publishTelemetry(ns,serviceRetirement(ns,SERVICE,{reason:"validation-complete"}));
+            return;
+        }
         if(control?.mode==="fail"){
             // Real runtime-health failure: remain alive but deliberately stop reporting
             // until the validation driver requests recovery.
