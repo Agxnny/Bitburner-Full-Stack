@@ -317,3 +317,9 @@ A higher-level coordinator requests an outcome from the domain controller that o
 **Status:** Locked
 
 Work Orders are durably owned separately from Authority. Creation requires the issuer's current DIRECT authority over every delegated claim and binds the order to the parent lease, correlation ID, named receiver, scope, and an expiry no later than the parent. Executors never inherit or copy the issuer lease. Each delegated authorization validates current Work Order state and current parent Authority state together and returns DELEGATED provenance. Order closure/expiry, parent release/expiry, owner/correlation mismatch, receiver mismatch, or scope mismatch denies new execution. Drain/cleanup authority remains a separate later lifecycle concern.
+
+
+## D-042 — Revocation is drain-first with bounded cleanup-only authority
+**Status:** Locked
+
+Normal Work Order closure immediately ends permission for new objective work by moving ACTIVE to CLOSING. CLOSING may authorize only a distinct CLEANUP mode for the exact named receiver and original claim scope, until a fixed non-renewable cleanup deadline. CLEANUP is not a lease, cannot create/delegate work, and executors must route it only to predefined unwind/reduction operations rather than ordinary objective execution. It may survive loss or expiry of the parent authority solely so already-started effects can be retired safely. The receiver explicitly completes cleanup to CLOSED. Forced cancellation is immediate CANCELLED and provides no cleanup. An uncompleted cleanup window ends FAILED with no continuing authorization.
