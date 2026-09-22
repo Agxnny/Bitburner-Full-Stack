@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Execution Scheduler — first vertical slice
-**Status:** Implementation started
+**Status:** First-slice implementation complete; SAFE runtime validation pending
 
 **Goal:** Introduce the single durable owner of managed compute placement and execution leases so controllers no longer launch managed executors directly.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Execution Scheduler owns placement, bounded RAM reservations, process launch attribution, reconciliation, and reservation retirement. It does not choose domain strategy, grant target authority, or enforce future subsystem budgets. Requests must bind to an ACTIVE Work Order and its named receiver/correlation. First placement is deterministic, single-host, bounded, and non-preemptive. Canonical state informs eligibility/planning; final launch checks real host RAM. Durable restart recovery must never blindly duplicate a RUNNING executor.
 
-**Validation:** Pending. First implementation will prove SAFE contract/rejection/idempotency/reconciliation behavior before replacing the already-proven real-weaken fixture's direct launch.
+**Validation:** SAFE m3.execution.scheduler registered. It uses synthetic Authority/Work Order state and a harmless 750 ms child to prove receiver binding fails closed, valid bounded admission, scheduler-owned PID/host/RAM attribution, duplicate requestId idempotency, natural completion, and reservation retirement. Restart recovery and conversion of the real-weaken fixture remain intentionally subsequent slices.
 
-**Exact next step:** Lock D-043 and implement the versioned execution request/lease contract plus persistent scheduler service and SAFE validation.
+**Exact next step:** Publish immutable r78 after exact release-ref inspection, install it, confirm the new execution-scheduler service is healthy, then run SAFE m3.execution.scheduler.
 
 ## Recently completed
 
