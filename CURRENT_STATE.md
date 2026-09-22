@@ -4,6 +4,8 @@
 **M3 — Canonical State**
 
 ## Status
+**M3 Authority/Work Order integration is runtime validated through v0.6.0-r77.** The DISRUPTIVE validation-only real weaken fixture passed 8/8: canonical target `max-hardware`, real `hacking-control` authority, bounded ACTIVE Work Order, home-hosted one-thread executor, DELEGATED authorization without a direct executor lease, measurable security reduction from 6.088 to 6.038, drain-close to CLOSED, authority release, and no live fixture lease/process. The Validation Dashboard has no outstanding tests. This does not establish a production hacking subsystem.
+
 **M3 canonical-state first slice and its plan/ledger validation lifecycle are runtime validated through v0.6.0-r55.** It introduces the shared wall-time contract, centralized port registry, versioned observation transport, a persistent single-writer canonical-state service, durable data/state domain snapshots, factual availability/timestamps, and Validation Dashboard canonical-state evidence. Freshness is consumer-defined from observedAt rather than stored as a universal producer judgement. Consumer cadence-request handling is intentionally deferred until this state path is runtime-proven.
 
 **M1 — Reliable Deployment is complete and runtime validated through v0.4.0-r20.** Bootstrap safety, persistent updater lifecycle behavior, redundant discovery, commit-pinned release content, exact-revision human approval, single-deployment concurrency protection, explicit persistent-unit retirement, dashboard geometry memory, and operator-visible deployment completion status have all been exercised in Bitburner v3.0.1.
