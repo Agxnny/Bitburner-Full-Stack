@@ -23,8 +23,8 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 generic authority + work-order contracts — first authority slice
-**Status:** First direct-authority slice complete; runtime validated through v0.6.0-r70
+### M3 generic authority + work-order contracts — restart recovery slice
+**Status:** Implementing disruptive durable lease restart/recovery validation
 
 **Goal:** Establish one durable Authority Registry before domain controllers exist. The first runtime slice proves direct expiring authority over typed resource/capability claims, atomic multi-claim acquisition, compatible capability coexistence, conflict denial, renewal/release/expiry, and fail-closed direct authorization. Define the Work Order/delegation contract alongside it without yet implementing delegated execution.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** PASS — m3.authority.direct 13/13 on r70. Authority service joined Health as the 11th healthy service. Runtime proved atomic two-claim grant, identical resource+capability conflict denial, distinct capability coexistence, DIRECT authorization, wrong-owner/out-of-scope fail-closed denial, owner renewal, release, all-or-nothing conflict denial, expiry reconciliation, Work Order contract distinction, Work Order-not-authority, and durable state validity.
 
-**Exact next step:** Build the next Authority slice: disruptive restart/durable lease recovery before implementing delegated Work Order execution.
+**Exact next step:** Implement m3.authority.restart, publish r71, and prove an unexpired authority lease survives only an authority-service restart without expiry extension, then still conflicts/authorizes correctly and expires fail-closed.
 
 ## Recently completed
 
