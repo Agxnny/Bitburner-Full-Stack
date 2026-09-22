@@ -1,9 +1,9 @@
-import { AUTHORITY_STATE_PATH } from "../../core/authority.js";
+import { AUTHORITY_STATE_PATH, authorityClaim } from "../../core/authority.js";
 import { WORK_ORDER_STATE_PATH, delegatedAuthorization } from "../../core/work-orders.js";
 
 export async function main(ns){
     const [workOrderId,receiver,target,resultPath]=ns.args.map(String);
-    const claim={kind:"server",id:target,capability:"hacking-control"};
+    const claim=authorityClaim("server",target,"hacking-control");
     const authority=read(ns,AUTHORITY_STATE_PATH),orders=read(ns,WORK_ORDER_STATE_PATH);
     const authorization=delegatedAuthorization(authority,orders,{workOrderId,receiver,claim,at:Date.now()});
     if(!authorization.authorized||authorization.mode!=="DELEGATED"){
