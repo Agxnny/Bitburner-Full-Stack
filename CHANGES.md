@@ -23,18 +23,24 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 real delegated execution proof — r76 timeout/cleanup correction
-**Status:** Published as v0.6.0-r77; DISRUPTIVE rerun pending
+### M3 post-authority next-slice design
+**Status:** Ready for next design step; no implementation active
 
-**Observed r76 runtime:** The test ran about 91.8 seconds. Target selection, authority grant, ACTIVE Work Order, and executor launch all passed, but the controller reported `no executor result` / `executor status=missing`. Cleanup then reported the executor still live when the assertion ran.
+**Goal:** Choose the next M3 consumer/control-plane slice now that the first real Authority → Work Order → DELEGATED executor integration is runtime-proven.
 
-**Root cause:** The controller capped its executor-result wait at 90 seconds while the selected target's real weaken can run longer. The Work Order TTL was also only 90 seconds, so even if the controller waited longer, the order could enter CLOSING before a long weaken returned. The final cleanup check also occurred before the finally block killed any still-running executor. This is a validation timing/lifecycle bug, not an authorization denial.
+**Validation:** v0.6.0-r77 DISRUPTIVE `m3.authority.real-weaken` PASS 8/8. The test selected `max-hardware`, obtained real `hacking-control` authority, activated one bounded Work Order, launched the temporary executor on home, passed DELEGATED authorization with no direct executor lease, performed one real weaken (security 6.088 → 6.038), drain-closed to CLOSED, released authority, and left no live fixture lease/process. Validation Dashboard reports no outstanding tests.
 
-**Correction:** Select only a canonical eligible target whose current `ns.getWeakenTime()` fits safely inside the Authority/Work Order maximum lease window, size the lease/order/wait from that measured duration with margin, and ensure cleanup kills/waits for any surviving fixture process before asserting cleanup. The test remains one real weaken only.
+**Constraint:** This proof remains validation-only. Do not turn it into a production hacking subsystem or add a hacking/Production Dashboard yet.
 
-**Exact next step:** Install r77, confirm normal Health, then rerun DISRUPTIVE m3.authority.real-weaken. The selected target must have a measured weaken time within the bounded lease window.
+**Exact next step:** Review M3 roadmap/current architecture and design the next foundational slice before repository mutation.
 
 ## Recently completed
+
+### M3 real Authority → Work Order → executor integration proof
+**Status:** Runtime validated through v0.6.0-r77
+
+The validation-only real hacking fixture passed 8/8 after exercising the complete managed execution chain against one actual weaken. It proved canonical target selection, real server hacking-control authority, bounded Work Order delegation, executor-side DELEGATED authorization without a direct lease, a measurable game side effect, drain-first terminal closure, authority release, and clean fixture retirement. No production hacking service or dashboard was introduced.
+
 
 ### M3 canonical state + validation lifecycle first slice
 **Status:** Runtime validated through v0.6.0-r55
