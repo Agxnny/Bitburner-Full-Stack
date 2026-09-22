@@ -21,7 +21,7 @@
 - Validation panel framework
 - Production dashboard shell
 
-## M3 — Canonical State — ACTIVE (canonical-state, collection-cadence, and resource-association slices runtime validated through v0.6.0-r66)
+## M3 — Canonical State — ACTIVE (control-plane foundation runtime validated through v0.6.0-r82)
 - Define port reservation/allocation and command/event transport rules
 - Define canonical latest-state interfaces, ownership, factual timestamps, and consumer freshness contracts
 - Reuse M2 collectors as producers; do not duplicate collection
@@ -99,6 +99,11 @@
 - Bladeburner
 - Corporation
 - BitNode-specific controllers
+
+## Production Dashboard design track
+**Status:** Information architecture approved and locked; visual/layout design next; runtime implementation not started.
+
+The permanent operator navigation is Overview, Hacking, Stocks, Stock Manipulation, Network, Progression, and Settings, with capability-specific tabs appearing when their systems exist. The approved per-tab contract, lifecycle/ESTOP boundary, configuration boundary, stock-chart history rules, and existing sizing/docking integration are owned by `docs/production-dashboard.md` and D-045/D-046. Dashboard implementation must not pull future domain-controller milestones forward merely to populate UI.
 
 ## Workflow rule
 Only one implementation milestone/feature is active at a time. Later ideas may be documented without interrupting the active feature unless they reveal a genuine blocker.
