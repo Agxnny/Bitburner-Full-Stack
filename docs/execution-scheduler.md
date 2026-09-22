@@ -8,7 +8,7 @@ The scheduler does not choose targets or strategy, grant game-resource authority
 ## First-slice contract
 Commands use port 9. Durable state is `data/control/execution-scheduler.json` and is protected runtime data.
 
-A request binds `executionId`, `workOrderId`, receiver, correlation ID, script, thread count, arguments, and bounded TTL. Admission requires the referenced Work Order to be ACTIVE with the same receiver/correlation. Request IDs are idempotent at the command-decision boundary and execution IDs cannot be reused.
+A request binds `executionId`, `workOrderId`, receiver, correlation ID, RAM budget owner, script, thread count, arguments, and bounded TTL. Admission requires the referenced Work Order to be ACTIVE with the same receiver/correlation and the named budget owner to have enough current RAM allocation for the requested reservation. Budget usage is derived from active scheduler records; the scheduler does not create a second usage ledger. Request IDs are idempotent at the command-decision boundary and execution IDs cannot be reused.
 
 The first placement policy is intentionally narrow: FIFO, bounded queue, one host per execution, `home` only, no preemption. The scheduler obtains script RAM from Netscript, keeps an 8 GB home reserve, and rechecks actual free RAM immediately before launch. Distributed placement and configurable reserves are later work.
 
