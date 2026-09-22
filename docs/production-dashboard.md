@@ -359,6 +359,19 @@ Show compact counts for unrooted, currently rootable, and newly eligible hosts, 
 
 ## Progression
 
+**Visual/layout status: APPROVED.** The accepted Progression render establishes the long-horizon player-development workspace. Specific mockup levels, BitNode/source-file recommendations, goals, milestones, and values are illustrative; runtime recommendations must come from the shared progression decision engine and factual canonical state.
+
+### Approved physical hierarchy
+
+1. **Shared dashboard header and tab bar** — retain the Production shell, Progression selected, and global ESTOP isolated at upper-right.
+2. **Progression summary row** — compact cards for **Player Progression**, **Money/Resource Progression**, **Reputation/Augmentation Progress**, and **BitNode/Run Progress** where those capabilities are available.
+3. **Domain detail row** — compact panels for **Skills**, **Augmentations**, **Factions**, and **Source Files / run-level progression**, adapting to actual capability availability.
+4. **Planning workspace** — a broad **Progression Timeline / trend** area paired with **Major Milestones** and **Next Goals / recommended objectives**. Recommendations must remain attributable to the single progression decision engine.
+5. **Supporting footer** — compact wealth/resource breakdown, income/source contribution, and bounded meaningful progression activity may sit below the planning workspace.
+
+The approved render is a visual hierarchy, not approval for UI-owned goal logic. The Progression controller/decision engine owns recommendations and automation policy.
+
+
 Progression is explicitly player-facing.
 
 It has three distinct policy modes:
