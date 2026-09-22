@@ -105,6 +105,6 @@ Only one implementation milestone/feature is active at a time. Later ideas may b
 
 
 ### M3 foundation insertion — Diagnostics & Incident Intelligence
-**Status:** First slice runtime validated through v0.6.0-r67; controlled real failure-correlation validation is next
+**Status:** Real failure correlation proved in r68 (8/8), but validation-fixture retirement cleanup must be corrected before the diagnostics slice closes
 
 Before Generic Authority, add structured diagnostic ingress, one durable diagnostics owner, evidence-backed health/deployment correlation, deduplicated incident lifecycle, and an explanatory Validation Dashboard view. SAFE validation must prove the contract without disrupting production services. Authority/Work Orders resume after this foundation slice is runtime validated.
