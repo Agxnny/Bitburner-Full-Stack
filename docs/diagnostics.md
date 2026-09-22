@@ -25,3 +25,7 @@ SAFE m3.diagnostics.intelligence publishes synthetic evidence, verifies durable 
 
 ## Controlled real-failure validation
 DISRUPTIVE m3.diagnostics.failure-correlation uses a validation-only service fixture. The fixture first reports healthy, then deliberately remains alive while withholding its own heartbeat until health marks it stale. The test requires diagnostics to create an OBSERVED SERVICE_STALE incident containing service/PID health evidence and no invented root cause. The fixture then resumes heartbeat; health must recover and diagnostics must automatically resolve the incident while retaining evidence. Production services are not stopped by this test.
+
+
+### r68 validation note
+The real failure/recovery assertions passed 8/8, including automatic incident resolution after heartbeat recovery. Test teardown then exposed a lifecycle gap: killing a validation-only producer leaves its last health instance registered, so Health later marks that retired fixture stale again. The corrective design must explicitly retire ephemeral validation service instances rather than treating silence after teardown as failure.
