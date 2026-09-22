@@ -101,6 +101,77 @@ Dashboard commands use standard command/authority pathways rather than privilege
 
 The first M1 dashboard slice is `src/ui/update-dashboard.jsx`. It reads protected update/deployment telemetry and emits update approval/decline commands. It never launches deployment code directly. `src/bootstrap/update-watcher.js` owns its process lifecycle during M1: watcher startup refreshes the dashboard process and heartbeat checks relaunch it if missing.
 
+## Production Dashboard information architecture
+
+The Production Dashboard is the operator-facing answer to “what is production doing?” It consumes canonical state, domain telemetry, budgets, and supported configuration; it never becomes a competing state owner, controller, scheduler, authority ledger, or diagnostic engine. Concise controller-provided reasoning may be shown, but internal formulas, decision trees, Work Orders, leases, scheduler records, and validation evidence remain outside the production UI unless reduced to a production-impacting status.
+
+### Navigation
+Permanent production tabs are:
+- **Overview**
+- **Hacking**
+- **Stocks**
+- **Stock Manipulation**
+- **Network**
+- **Progression**
+- **Settings**
+
+Capability-dependent tabs may appear when their systems exist and are relevant: **Hacknet, Sleeves, Gang, Bladeburner, Corporation**, and later BitNode-specific controllers. Network owns both discovered/rooted network presentation and purchased-server fleet presentation rather than creating a separate Purchased Servers top-level tab.
+
+### Shared operator controls
+Each controllable production domain exposes the same lifecycle intent through standard command pathways:
+- **Graceful Stop:** stop admitting new objective work, drain/clean up bounded in-flight work, release domain resources/authority as appropriate, then stop.
+- **Hard Stop:** immediately stop the domain's non-persistent managed production work and retire/cancel outstanding work as safely as the domain contract permits.
+- **Restart:** graceful stop followed by start; a failed/bounded shutdown is reported rather than silently escalating to hard stop.
+- **Start:** available when the domain is stopped.
+
+Overview additionally exposes a latched **ESTOP**. ESTOP immediately prevents/retires non-persistent production activity and blocks automatic production restart until explicitly cleared. Production lifecycle commands, including ESTOP, may not stop, restart, replace, or retire persistent runtime units. Persistent lifecycle mutation is reserved to the updater/deployment path and explicitly authorized disruptive validation/tests.
+
+### Overview
+Shows global money, managed RAM, production income/performance, a small aggregate health indicator, global production state, production-relevant attention items, current domain activity, and compact clickable summaries of available production tabs. It does not duplicate detailed validation/control-plane internals.
+
+### Hacking
+Shows operational mode (including player-facing Money/XP selection), production target(s), target-selection reasoning, money/max and security/min condition, workers/batches, ETA/drain state, performance ($/s or XP/s), and operational state. Multi-target presentation may abbreviate names while preserving full-name access.
+
+A dedicated preparation area shows targets being prepared/recovered with money/security condition, workers/RAM, prep state, and ETA. A spare-RAM/opportunistic summary explains capacity used for production, prep, XP/secondary work, policy reserve, and genuinely free RAM. Production UI shows concise reasons such as “spare RAM available; next-ranked viable target,” not target-scoring internals.
+
+### Stocks
+Stocks is the trader/operator workspace. The trader remains the sole trade execution path.
+
+**Price chart:** selectable symbol; 5m/15m/30m/1h/4h plus Historical. Raw market observations are timestamped at observation time and are the durable historical basis. OHLC candle membership is deterministic from fixed wall-clock buckets; completed candles never gain, lose, or move samples. The forming candle is grey. Historical incomplete candles are visually distinct. Longer views intentionally show progressively more candles while also increasing candle duration; exact scaling is presentation policy to be finalized against collector cadence. Historical may adapt aggregation to the known-history span without mutating raw observations.
+
+Collection gaps are never interpolated. A gap has dashed orange start/end boundaries and empty elapsed-time space between them. Trade open/close markers use actual execution time/price. The right edge carries the latest observed price tag; stale data freezes the last observed value and marks it stale.
+
+**Portfolio:** open positions only, with symbol, LONG/SHORT, shares, entry price, current observed price, unrealized P&L ($ and %), and current forecast score. Rows select the chart symbol; stale current prices are explicit.
+
+**Performance:** allocated trading capital, available capital, invested capital, portfolio value, realized/unrealized/total P&L and return. Performance history emphasizes cumulative realized P&L with total P&L available alongside it. Compact statistics include trades, wins/losses/flats, win rate, average/best/worst outcomes, with profit factor available when meaningful. Recent closed positions are split into winners and losers; flat closes remain valid outcomes and appear as a smaller side summary.
+
+**Forecast/opportunities:** separate strongest long and strongest short rankings. Raw forecast retains stable meaning (0.5 neutral, above upward, below downward) and is distinct from any future trader opportunity score. Rows may show strengthening/stable/weakening opportunity state, existing-position/reversal indicators, and select the chart symbol. Only defensible confidence metrics may be shown.
+
+**Trader status/activity:** compact current state and latest action with short human-readable reason; no full reasoning trace. Recent activity is bounded to meaningful trade actions, not scans/HOLD/heartbeat spam.
+
+**Position limits:** normal position cap constrains ordinary exposure but is a ceiling, not a target size. Exceptional coordinated exposure (for example stock manipulation) requires a scoped, temporary, attributable override naming symbol/direction/maximum exposure/operation provenance/expiry. It never bypasses the trader's total money budget and does not allow the manipulation controller to execute trades directly.
+
+### Stock Manipulation
+Shows selected operation/symbol, PUMP/DUMP direction, phase and elapsed time, concise selection reason, **true position versus desired position**, normal cap plus any active scoped override, current price/forecast and movement since start, associated server condition, committed hacking workers/RAM/in-flight work, ETA, position P&L, and manipulation-attributed result/P&L where defensible. The intended lifecycle is readable as acquiring → manipulating → exiting → complete. Multiple operations may be selectable later without requiring the first implementation to support concurrency. Internal manipulation logic is not exposed.
+
+### Network
+Combines network discovery/rooting and purchased-server capacity. Summary includes discovered/rooted/usable hosts, total/used/reserved/free RAM, and utilization. Purchased servers are grouped by RAM tier (for example “8 × 64 TB”) with tier utilization rather than printing identical server rows; exceptional individual hosts may be expanded or surfaced as attention items. Capacity/upgrade presentation includes slots, current tiers, next meaningful upgrade/replacement, expected capacity gain, cost/budget state, and controller state. Rooting/discovery presentation shows unrooted/rootable/newly eligible hosts.
+
+### Progression
+Progression is explicitly player-facing and has three policy modes:
+- **OFF:** no progression analysis, recommendations, or automated progression actions.
+- **MANUAL:** the same progression decision engine continues analysis and presents the next suggested action, concise reason, requirements/cost/impact, and limited look-ahead, but does not autonomously execute progression actions.
+- **AUTOMATED:** the same decision engine may execute eligible actions through normal authority/budget/command paths; actions requiring the player remain recommendations.
+
+Manual and Automated must not use separate decision logic. Progression eventually covers programs, factions/augmentations, player work, home upgrades, and reset planning.
+
+### Settings
+Settings is the supported surface-level configuration center. It may expose policy parameters and thresholds that influence decisions—such as target eligibility thresholds, stock position caps, reserve percentages, spending limits, concurrency limits, or safe collection/display preferences—without exposing arbitrary implementation constants, formulas, state-machine transitions, schema/correctness invariants, or editable controller logic. Immediate operational intent (for example Hacking Money/XP mode or Progression OFF/MANUAL/AUTOMATED) stays on the relevant domain tab. Settings are grouped by subsystem and indicate whether changes apply live or require a domain restart.
+
+### Presentation/window integration
+Production reuses the established shared dashboard visual language and the existing measured sizing/docking coordinator. It does not create a second window manager. Production may be docked/anchored to Validation (normally on its right) through the existing four-side relationship contract, and tab content may drive dashboard-owned dynamic size while docking preserves the established relationship.
+
+
 ## Update architecture
 
 The deployment descriptor is a small mutable discovery pointer. Production descriptors identify semantic version, monotonic revision, revision-specific manifest path, and an immutable Git commit SHA `releaseRef`.
