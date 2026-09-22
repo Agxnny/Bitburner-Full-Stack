@@ -1,5 +1,11 @@
 export const TESTS = [
     {
+        id:"m3.execution.scheduler", subsystem:"Execution Scheduler", title:"Execution scheduler contract", risk:"SAFE",
+        runner:"src/validation/tests/execution-scheduler-test.js",
+        description:"Uses synthetic Authority/Work Order state and a harmless short-lived executor to prove Work Order binding, bounded scheduler admission, managed PID/host/RAM attribution, request idempotency, process completion, and reservation retirement.",
+        validates:["Work Order-bound compute admission","Single-owner managed launch attribution","Idempotent bounded execution lifecycle","Reservation retirement after process exit"],
+    },
+    {
         id:"m3.authority.real-weaken", subsystem:"Authority", title:"Real delegated weaken execution", risk:"DISRUPTIVE",
         runner:"src/validation/tests/real-delegated-weaken-test.js",
         description:"Temporarily selects one rooted non-purchased canonical server above minimum security, acquires real hacking-control authority, issues one bounded Work Order, and runs one one-thread weaken through an executor that has DELEGATED but no DIRECT authority. It then closes the order, releases authority, and verifies fixture cleanup.",
