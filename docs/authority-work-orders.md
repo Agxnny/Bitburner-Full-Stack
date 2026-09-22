@@ -34,3 +34,9 @@ The first direct-authority slice is runtime validated. authority-service joined 
 
 ## Authority restart/recovery validation
 DISRUPTIVE m3.authority.restart uses a synthetic claim only. It grants a bounded live lease, captures its issuedAt/expiresAt/owner/correlation/claims, restarts only authority-service, and requires the restarted owner to recover that exact durable lease. Recovery must not renew or extend authority. The recovered lease must still authorize DIRECT use by its owner and deny an identical conflicting claim. The test then waits for the original absolute expiry and proves authorization fails closed. Other persistent services remain running.
+
+
+## Delegated execution slice
+work-order-service is the single durable owner of Work Order lifecycle state. Creation is a command, not an authority transfer: the service reads current durable Authority state and activates an order only when the issuer currently owns DIRECT authority for every requested claim and the correlation ID matches the parent lease. Order expiry is capped to the parent lease expiry.
+
+At execution time, delegatedAuthorization validates both durable owners again. It requires an ACTIVE unexpired order, the exact named receiver, an in-scope claim, a present unexpired parent lease still owned by the issuer, matching correlation, and current DIRECT authorization of the parent claim. Success is explicitly DELEGATED. Parent release/expiry therefore invalidates delegation immediately even if the Work Order has not yet reconciled its own lifecycle. Closing an order also denies new delegated work. This slice does not provide cleanup authority after closure; drain-first revocation remains the next lifecycle slice.
