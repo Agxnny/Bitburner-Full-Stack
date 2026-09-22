@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 generic authority + work orders — delegated execution slice
-**Status:** Implementation started
+**Status:** Delegated execution implementation complete; r72 publication pending
 
 **Goal:** Add one durable Work Order owner and Authority-backed DELEGATED authorization without weakening the proven DIRECT lease contract. An authorized issuer may create a bounded outcome order for a named receiver; the receiver may act only while both the order and its parent authority remain current.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Work Orders request outcomes and never duplicate domain functionality. A Work Order alone remains non-authorizing. Creation requires current DIRECT authority for the issuer over every requested claim. Delegated authorization validates receiver, requested claim, order ACTIVE state, order expiry, parent lease existence/owner/scope/expiry, and correlation binding. Order expiry is capped to the parent lease expiry. Parent authority release/expiry immediately fails delegated authorization even if the order record remains nominally active. This slice does not yet implement drain-first cleanup/revocation or real hacking/trading execution.
 
-**Validation:** Pending SAFE synthetic runtime proof. No real stock/server authority or game action will be used.
+**Validation:** SAFE m3.authority.delegated registered using only synthetic claims. It proves authorized activation, DELEGATED receiver execution, receiver/scope bounds, issuer cannot over-delegate, order expiry capped by parent, closed-order denial, and immediate fail-closed behavior after parent authority release.
 
-**Exact next step:** Implement durable Work Order service plus Authority-backed delegated validation, register SAFE validation, publish r72 after immutable release-ref inspection, then runtime validate.
+**Exact next step:** Publish immutable r72 after exact release-ref inspection, install it, confirm work-order-service joins Health, then run SAFE m3.authority.delegated.
 
 ## Recently completed
 
