@@ -1,5 +1,12 @@
 export const TESTS = [
     {
+        id:"m3.execution.restart", subsystem:"Execution Scheduler", title:"Execution scheduler restart recovery", risk:"DISRUPTIVE",
+        runner:"src/validation/tests/execution-scheduler-restart-test.js",
+        description:"Runs one harmless managed child, restarts only execution-scheduler, and proves durable recovery of the exact PID without relaunch or expiry extension before natural completion and reservation retirement.",
+        validates:["Durable execution restart recovery","No duplicate managed launch","Restart preserves absolute expiry","Post-restart completion and reservation retirement"],
+        confirmation:"Temporarily restarts only execution-scheduler while one harmless six-second validation child is running. Authority, Work Orders, collectors, updater, and dashboards remain running.",
+    },
+    {
         id:"m3.execution.scheduler", subsystem:"Execution Scheduler", title:"Execution scheduler contract", risk:"SAFE",
         runner:"src/validation/tests/execution-scheduler-test.js",
         description:"Uses synthetic Authority/Work Order state and a harmless short-lived executor to prove Work Order binding, bounded scheduler admission, managed PID/host/RAM attribution, request idempotency, process completion, and reservation retirement.",
