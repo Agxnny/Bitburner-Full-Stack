@@ -286,6 +286,44 @@
           "validationVersion": 2
         }
       ]
+    },
+    {
+      "id": "m3-resource-budgets",
+      "milestone": "M3",
+      "title": "Resource Budgets",
+      "revision": 81,
+      "requirements": [
+        {
+          "id": "ram-budget-owner",
+          "title": "Resource Budget Manager durably owns one logical RAM ceiling per owner",
+          "testId": "m3.budgets.ram",
+          "validationVersion": 1
+        },
+        {
+          "id": "ram-budget-fail-closed",
+          "title": "Managed execution without sufficient RAM budget fails closed before launch",
+          "testId": "m3.budgets.ram",
+          "validationVersion": 1
+        },
+        {
+          "id": "ram-budget-usage",
+          "title": "Execution Scheduler attributes active RAM usage to the named budget owner without a duplicate usage ledger",
+          "testId": "m3.budgets.ram",
+          "validationVersion": 1
+        },
+        {
+          "id": "ram-budget-return",
+          "title": "Terminal execution returns logical RAM capacity for later managed work",
+          "testId": "m3.budgets.ram",
+          "validationVersion": 1
+        },
+        {
+          "id": "ram-budget-release",
+          "title": "RAM allocation release is owner-bound and leaves no continuing allocation",
+          "testId": "m3.budgets.ram",
+          "validationVersion": 1
+        }
+      ]
     }
   ]
 }
