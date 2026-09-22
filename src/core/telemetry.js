@@ -47,6 +47,20 @@ export function serviceEvent(ns, service, severity, code, message, options = {})
     };
 }
 
+export function serviceRetirement(ns, service, options = {}) {
+    return {
+        schemaVersion: 1,
+        kind: "service-retirement",
+        emittedAt: Date.now(),
+        service,
+        instanceId: options.instanceId ?? `${service}:${ns.getHostname()}:${ns.pid}`,
+        host: ns.getHostname(),
+        pid: ns.pid,
+        lifecycle: options.lifecycle ?? "ephemeral",
+        reason: options.reason ?? "intentional-retirement",
+    };
+}
+
 export function publishTelemetry(ns, record) {
     const payload = JSON.stringify(record);
     const result = ns.tryWritePort(TELEMETRY_PORT, payload);
@@ -65,6 +79,18 @@ export function validHealthRecord(value) {
         && Number.isFinite(value.emittedAt)
         && Number.isFinite(value.staleAfterMs)
         && value.staleAfterMs >= 1_000,
+    );
+}
+
+export function validRetirementRecord(value) {
+    return Boolean(
+        value
+        && value.schemaVersion === 1
+        && value.kind === "service-retirement"
+        && validIdentity(value)
+        && typeof value.reason === "string"
+        && value.reason.length > 0
+        && Number.isFinite(value.emittedAt)
     );
 }
 
