@@ -148,8 +148,8 @@
     {
       "id": "m3-authority-direct",
       "milestone": "M3",
-      "title": "Generic Authority — Direct Lease Slice",
-      "revision": 71,
+      "title": "Generic Authority & Work Orders",
+      "revision": 72,
       "requirements": [
         {
           "id": "authority-atomic",
@@ -185,6 +185,24 @@
           "id": "authority-restart-expiry",
           "title": "Restart does not extend authority and recovered lease expires fail-closed",
           "testId": "m3.authority.restart",
+          "validationVersion": 1
+        },
+        {
+          "id": "delegated-authorization",
+          "title": "Named receiver gains DELEGATED authorization only through current parent authority",
+          "testId": "m3.authority.delegated",
+          "validationVersion": 1
+        },
+        {
+          "id": "delegated-bounds",
+          "title": "Delegation is receiver/scope/expiry bounded and cannot exceed issuer authority",
+          "testId": "m3.authority.delegated",
+          "validationVersion": 1
+        },
+        {
+          "id": "delegated-parent-loss",
+          "title": "Closing the order or losing parent authority immediately fails delegated execution closed",
+          "testId": "m3.authority.delegated",
           "validationVersion": 1
         }
       ]
