@@ -1,5 +1,6 @@
 import { PORTS } from "./ports.js";
 import { WORK_ORDER_STATE_PATH } from "./work-orders.js";
+import { BUDGET_STATE_PATH, ramBudgetFor } from "./resource-budgets.js";
 import { EXECUTION_QUEUE_LIMIT, EXECUTION_STATE_PATH, activeExecution, validExecutionCommand } from "./execution-scheduler.js";
 import { publishTelemetry, serviceHealth } from "./telemetry.js";
 
@@ -41,9 +42,13 @@ function request(ns,state,cmd,now){
     if(reason){decision(state,{requestId:cmd.requestId,action:"request",outcome:"DENIED",reason,executionId:cmd.executionId,at:now});return;}
     const scriptRam=ns.getScriptRam(cmd.script,"home");
     if(!(scriptRam>0)){decision(state,{requestId:cmd.requestId,action:"request",outcome:"DENIED",reason:"script-unavailable",executionId:cmd.executionId,at:now});return;}
+    const ramRequired=scriptRam*cmd.threads,budget=ramBudgetFor(read(ns,BUDGET_STATE_PATH),cmd.budgetOwner);
+    if(!budget){decision(state,{requestId:cmd.requestId,action:"request",outcome:"DENIED",reason:"ram-budget-missing",executionId:cmd.executionId,budgetOwner:cmd.budgetOwner,at:now});return;}
+    const used=ramUsedBy(state,cmd.budgetOwner);
+    if(used+ramRequired>budget.limitGb+1e-9){decision(state,{requestId:cmd.requestId,action:"request",outcome:"DENIED",reason:"ram-budget-exceeded",executionId:cmd.executionId,budgetOwner:cmd.budgetOwner,ramRequired,ramUsed:used,ramLimit:budget.limitGb,at:now});return;}
     const expiresAt=Math.min(now+cmd.ttlMs,order.expiresAt);
     if(expiresAt<=now){decision(state,{requestId:cmd.requestId,action:"request",outcome:"DENIED",reason:"work-order-expired",executionId:cmd.executionId,at:now});return;}
-    state.executions.push({schemaVersion:1,kind:"execution-lease",executionId:cmd.executionId,requestId:cmd.requestId,workOrderId:cmd.workOrderId,receiver:cmd.receiver,correlationId:cmd.correlationId,script:cmd.script,args:cmd.args,threads:cmd.threads,ramRequired:scriptRam*cmd.threads,host:null,pid:0,state:"REQUESTED",createdAt:now,updatedAt:now,expiresAt,terminalReason:null});
+    state.executions.push({schemaVersion:1,kind:"execution-lease",executionId:cmd.executionId,requestId:cmd.requestId,workOrderId:cmd.workOrderId,receiver:cmd.receiver,correlationId:cmd.correlationId,budgetOwner:cmd.budgetOwner,script:cmd.script,args:cmd.args,threads:cmd.threads,ramRequired,host:null,pid:0,state:"REQUESTED",createdAt:now,updatedAt:now,expiresAt,terminalReason:null});
     decision(state,{requestId:cmd.requestId,action:"request",outcome:"QUEUED",reason:"accepted",executionId:cmd.executionId,expiresAt,at:now});
 }
 function admit(ns,state,now){
@@ -52,6 +57,8 @@ function admit(ns,state,now){
         const order=findOrder(ns,e.workOrderId),problem=orderProblem(order,e,now);
         if(problem){terminal(e,"FAILED",problem,now);changed=1;continue;}
         if(e.expiresAt<=now){terminal(e,"EXPIRED","execution-expired",now);changed=1;continue;}
+        const budget=ramBudgetFor(read(ns,BUDGET_STATE_PATH),e.budgetOwner),usedOther=ramUsedBy(state,e.budgetOwner,e.executionId);
+        if(!budget||usedOther+e.ramRequired>budget.limitGb+1e-9){terminal(e,"FAILED",budget?"ram-budget-exceeded":"ram-budget-missing",now);changed=1;continue;}
         const available=Math.max(0,ns.getServerMaxRam("home")-ns.getServerUsedRam("home")-HOME_RESERVE_GB);
         if(available<e.ramRequired)continue;
         e.state="RESERVED";e.host="home";e.updatedAt=now;changed=1;
@@ -100,7 +107,7 @@ function orderProblem(order,cmd,now){
 }
 function findOrder(ns,id){const s=read(ns,WORK_ORDER_STATE_PATH);return s?.orders?.find(x=>x.workOrderId===id)??null;}
 function terminal(e,state,reason,now){e.state=state;e.terminalReason=reason;e.updatedAt=now;e.host=e.host??null;}
-function sumReserved(state){return state.executions.filter(activeExecution).reduce((n,e)=>n+(Number(e.ramRequired)||0),0);}
+function sumReserved(state){return state.executions.filter(activeExecution).reduce((n,e)=>n+(Number(e.ramRequired)||0),0);} function ramUsedBy(state,owner,excludeId=null){return state.executions.filter(e=>activeExecution(e)&&e.budgetOwner===owner&&e.executionId!==excludeId).reduce((n,e)=>n+(Number(e.ramRequired)||0),0);}
 function decision(state,d){state.decisions.unshift(d);if(state.decisions.length>DECISION_LIMIT)state.decisions.length=DECISION_LIMIT;}
 function persist(ns,state){state.generatedAt=Date.now();ns.write(EXECUTION_STATE_PATH,JSON.stringify(state,null,2),"w");}
 function load(ns){if(ns.fileExists(EXECUTION_STATE_PATH,"home"))try{const v=JSON.parse(ns.read(EXECUTION_STATE_PATH));if(v?.schemaVersion===1&&v?.kind==="execution-scheduler-state"&&v?.owner===SERVICE&&Array.isArray(v.executions)&&Array.isArray(v.decisions))return v;}catch{}return {schemaVersion:1,kind:"execution-scheduler-state",owner:SERVICE,generatedAt:Date.now(),executions:[],decisions:[]};}
