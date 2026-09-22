@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 real delegated execution proof — r75 invalid claim-shape correction
-**Status:** Root cause corrected; r76 publication pending
+**Status:** Published as v0.6.0-r76; DISRUPTIVE rerun pending
 
 **Observed r75 runtime:** DISRUPTIVE m3.authority.real-weaken again failed 6/8, now with precise executor denial reason `invalid-delegation-state`. Target selection, authority grant, ACTIVE Work Order, home executor launch, closure, and cleanup all passed.
 
@@ -32,7 +32,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Correction:** The executor will construct the claim through the shared `authorityClaim()` helper rather than duplicating the schema. The broad `invalid-delegation-state` precondition response will also be split into precise invalid-authority-state / invalid-work-order-state / invalid-claim / invalid-time reasons so future failures identify the failed contract directly.
 
-**Exact next step:** Publish immutable r76 after exact release-ref inspection, install it, then rerun DISRUPTIVE m3.authority.real-weaken.
+**Exact next step:** Install r76, confirm normal Health, then rerun DISRUPTIVE m3.authority.real-weaken.
 
 ## Recently completed
 
