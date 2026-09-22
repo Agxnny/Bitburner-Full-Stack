@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Execution Scheduler — first vertical slice
-**Status:** Published as v0.6.0-r78; SAFE runtime validation pending
+**Status:** Base contract runtime validated on v0.6.0-r78; restart slice implementation next
 
 **Goal:** Introduce the single durable owner of managed compute placement and execution leases so controllers no longer launch managed executors directly.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Execution Scheduler owns placement, bounded RAM reservations, process launch attribution, reconciliation, and reservation retirement. It does not choose domain strategy, grant target authority, or enforce future subsystem budgets. Requests must bind to an ACTIVE Work Order and its named receiver/correlation. First placement is deterministic, single-host, bounded, and non-preemptive. Canonical state informs eligibility/planning; final launch checks real host RAM. Durable restart recovery must never blindly duplicate a RUNNING executor.
 
-**Validation:** SAFE m3.execution.scheduler registered. It uses synthetic Authority/Work Order state and a harmless 750 ms child to prove receiver binding fails closed, valid bounded admission, scheduler-owned PID/host/RAM attribution, duplicate requestId idempotency, natural completion, and reservation retirement. Restart recovery and conversion of the real-weaken fixture remain intentionally subsequent slices.
+**Validation:** Runtime PASS on r78: 8/8 assertions in 2540 ms. Proven: synthetic parent authority, ACTIVE Work Order, receiver mismatch fail-closed, bounded request admission, scheduler-owned home PID/host/RAM attribution, requestId idempotency, natural COMPLETE transition, and reservation retirement. Dashboard reports no outstanding current-plan tests. Restart recovery and conversion of the real-weaken fixture remain subsequent slices.
 
-**Exact next step:** Install r78, confirm Aggregate Health includes the new execution-scheduler service, then run SAFE m3.execution.scheduler from the Validation Dashboard. Do not convert the real-weaken fixture until this base scheduler contract passes.
+**Exact next step:** Add a controlled DISRUPTIVE execution-scheduler restart/reconciliation proof. It must restart only execution-scheduler while a harmless managed fixture is RUNNING, prove the exact PID survives without duplicate launch or expiry extension, then prove natural completion and reservation retirement. Do not convert real-weaken until restart recovery passes.
 
 ## Recently completed
 
