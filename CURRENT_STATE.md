@@ -161,3 +161,7 @@ The generic Authority Registry direct lease slice is runtime validated through v
 
 ## r72 delegated Work Order runtime proof
 v0.6.0-r72 installed with aggregate Health at 12/12 reporting services, including the new persistent work-order-service. SAFE m3.authority.delegated passed 9/9. Runtime proved that a receiver without a direct lease receives DELEGATED authorization only through an ACTIVE bounded Work Order backed by the issuer's current parent authority; receiver/scope boundaries fail closed; issuers cannot over-delegate; order expiry is capped by parent expiry; closing an order denies new work; and releasing parent authority invalidates delegation immediately. No current validation-plan tests remain outstanding. The next authority lifecycle concern is drain-first revocation / cleanup authority.
+
+
+### v0.6.0-r73 — drain-first Work Order cleanup authority runtime proof
+Runtime validation passed `m3.authority.cleanup` 10/10. Normal close entered CLOSING and immediately denied new DELEGATED objective work; CLEANUP was separately receiver/scope-bound and ended on receiver completion. Parent authority loss automatically entered CLOSING while preserving only bounded cleanup, forced cancellation granted no cleanup, and cleanup timeout ended FAILED/fail-closed. Aggregate runtime health was 12/12 and the current validation plan had no outstanding tests.
