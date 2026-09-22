@@ -60,3 +60,7 @@ The first non-synthetic consumer is intentionally validation-only rather than a 
 
 ### Validation fixture placement rule
 The one-shot real delegated execution fixture is explicitly launched on `home` because this integration proof reads the durable Authority and Work Order control files directly. Dashboard placement is not an execution-placement contract: a validation dashboard may run on another host, so validation children must not inherit its host accidentally. Future production executors intended to run remotely must consume authority/work-order state through an explicit supported transport or replicated read model rather than assuming `ns.read()` can read a file from another server.
+
+
+### Claim construction rule
+Authority consumers must construct claims through the shared `authorityClaim(kind,id,capability)` contract helper (or consume an already validated claim) rather than manually reproducing its object shape. The canonical claim shape is `{resource:{kind,id},capability}`. Delegated authorization reports invalid authority state, Work Order state, claim, and time inputs as distinct denial reasons so integration failures remain explainable.
