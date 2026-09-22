@@ -308,6 +308,28 @@ The UI may later select among multiple operations without requiring the first co
 
 ## Network
 
+**Visual/layout status: APPROVED.** The accepted Network render establishes the combined discovery/rooting/capacity workspace, including an interactive topology map. Mockup backdoor/tool actions and individual-host details remain subject to actual Bitburner APIs and controller authority; the visual hierarchy is approved.
+
+### Approved physical hierarchy
+
+1. **Shared dashboard header and tab bar** — retain the Production shell, Network selected, and global ESTOP isolated at upper-right.
+2. **Network summary row** — compact cards for **Network Overview**, **Execution/Hacking Capacity**, **Access/Rooting Progress**, and **Purchased Servers**.
+3. **Primary workspace** — an interactive **Network Map** on the left/center and a filterable **Server List** on the right. Map and list share one selected-server state.
+4. **Supporting workspace** — recent discovery/rooting results, tools/requirements, useful Network actions, and optional operator conveniences remain subordinate to topology/capacity state.
+5. **Purchased-fleet detail** — identical purchased servers remain aggregated by RAM tier for fleet/capacity planning; individual hosts are exposed only through selection/expansion or when exceptional.
+
+### Interactive network-map contract
+
+The map is an operator navigation tool, not decorative topology.
+
+- **Single click** on a server node selects that server, highlights it on the map, and focuses/synchronizes the corresponding server detail/list state.
+- **Hover** provides a compact factual tooltip such as hostname, access/root state, RAM, applicable money/security facts, and known connection/path information.
+- The route from `home` to the selected server is visually emphasized when known.
+- **Connect / Go to Server** is an explicit action for the selected server and uses the supported Bitburner connection/navigation capability.
+- A direct gesture such as **double-click** may invoke Connect when implementation proves reliable, but ordinary single-click selection must never unexpectedly move the player's terminal connection.
+- Selection from the server list and selection from the map remain synchronized.
+
+
 Network combines discovery/rooting and purchased-server capacity.
 
 ### Network summary
