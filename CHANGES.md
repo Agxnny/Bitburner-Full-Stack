@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 generic authority + work-order contracts — first authority slice
-**Status:** Implementation started
+**Status:** Direct authority slice implemented; immutable r70 publication pending
 
 **Goal:** Establish one durable Authority Registry before domain controllers exist. The first runtime slice proves direct expiring authority over typed resource/capability claims, atomic multi-claim acquisition, compatible capability coexistence, conflict denial, renewal/release/expiry, and fail-closed direct authorization. Define the Work Order/delegation contract alongside it without yet implementing delegated execution.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Authority answers permission only; it does not schedule, execute, budget, or choose strategy. Claims are typed resource + capability pairs. Same resource may carry multiple compatible capabilities; first-slice conflict policy is exclusive only within the identical resource+capability key. Multi-claim acquisition is all-or-nothing. Leases are durable, expiring, owner/correlation attributable, and stale/invalid authority fails closed. Work orders request outcomes and never lend authority implicitly. Delegated authorization, drain-first revocation, cleanup authority, and cooperative handoff are contract-designed now but implemented in later slices. No real hacking/trading actions in validation.
 
-**Validation:** Pending. SAFE synthetic validation will exercise direct authority only; no production resource or controller will be affected.
+**Validation:** SAFE m3.authority.direct registered with synthetic resources/controllers only. It covers atomic grant/conflict, compatible capability coexistence, owner/scope fail-closed checks, renewal/release/expiry, durable state validity, and the non-authorizing Work Order envelope. Runtime proof pending.
 
-**Exact next step:** Implement contracts/service and SAFE validation, publish immutable r70, then runtime-validate the first authority slice.
+**Exact next step:** Publish immutable r70 after exact release-ref source inspection, install it, confirm authority-service health, then run SAFE m3.authority.direct.
 
 ## Recently completed
 
