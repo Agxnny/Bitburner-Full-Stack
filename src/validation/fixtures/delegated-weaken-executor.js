@@ -15,5 +15,5 @@ export async function main(ns){
     const after=ns.getServerSecurityLevel(target);
     write(ns,resultPath,{schemaVersion:1,kind:"validation-hacking-result",status:"COMPLETED",workOrderId,receiver,target,before,after,weakenResult,authorization:{mode:authorization.mode,workOrderId:authorization.workOrderId,authorityLeaseId:authorization.authorityLeaseId,correlationId:authorization.correlationId},at:Date.now()});
 }
-function read(ns,path){if(!ns.fileExists(path,"home"))return null;try{return JSON.parse(ns.read(path));}catch{return null;}}
+function read(ns,path){if(ns.getHostname()!=="home"||!ns.fileExists(path,"home"))return null;try{return JSON.parse(ns.read(path));}catch{return null;}}
 function write(ns,path,value){ns.write(path,JSON.stringify(value,null,2),"w");}
