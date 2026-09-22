@@ -23,18 +23,16 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 real delegated execution proof — one-shot weaken validation fixture
-**Status:** Published as v0.6.0-r74; DISRUPTIVE runtime validation pending
+### M3 real delegated execution proof — r74 failure correction
+**Status:** Root cause identified; r75 correction implementation started
 
-**Goal:** Prove the production Authority → Work Order → executor path can authorize and perform one real Bitburner side effect without building a production hacking subsystem or dashboard.
+**Observed r74 runtime:** DISRUPTIVE m3.authority.real-weaken failed 6/8. Target selection, real authority grant, ACTIVE Work Order creation, executor launch, terminal Work Order closure, and fixture cleanup all passed. The executor denied DELEGATED authorization, therefore the real weaken correctly did not execute.
 
-**Files / areas:** validation hacking fixture/controller, one-shot executor, validation registry/plan/dashboard, authority/work-order feature docs, immutable release.
+**Root cause:** The r74 fixture called ns.run(EXECUTOR, 1, ...) from the Validation Dashboard process. In Bitburner, ns.run starts the child on the caller's current host. The validation dashboard can run on a purchased server, while the fixture files and durable authority/work-order state are deployed/read on home. The executor's read helper explicitly checks home for state but then uses ns.read(path), which reads the current host. On a non-home dashboard host this produces null authority/work-order state and delegatedAuthorization fails closed. This is a validation-fixture placement/read bug, not an Authority Registry grant/delegation defect.
 
-**Decisions / constraints:** DISRUPTIVE validation only. The test controller reads canonical network state and selects a rooted, non-home, non-purchased server with security above minimum. It acquires a real server:hacking-control authority lease, creates one bounded Work Order for a named validation executor, and launches that executor for exactly one thread/one weaken. The executor owns no direct lease and must obtain DELEGATED authorization immediately before calling ns.weaken(). No target scoring, rooting, batching, RAM scheduler, money strategy, persistent hacking service, hacking telemetry service, or production dashboard is introduced. Cleanup must release authority and leave no fixture process or live test Work Order.
+**Correction:** Launch the temporary executor explicitly on home using ns.exec, and improve executor/test evidence so a denial preserves the exact authorization reason in the validation assertion rather than printing success wording on a failed assertion.
 
-**Validation:** DISRUPTIVE m3.authority.real-weaken registered. It requires an eligible canonical rooted/non-purchased target above minimum security, proves real authority grant and bounded Work Order creation, launches exactly one one-thread executor, requires DELEGATED authorization immediately before ns.weaken(), verifies a real security decrease, then closes/releases and checks no live fixture lease/process remains.
-
-**Exact next step:** Install r74, confirm normal 12/12 Health, then run DISRUPTIVE m3.authority.real-weaken from the Validation Dashboard.
+**Exact next step:** Patch the fixture, preserve denial evidence, publish immutable r75 after exact release-ref inspection, then rerun the same DISRUPTIVE test.
 
 ## Recently completed
 
