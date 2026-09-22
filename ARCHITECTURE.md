@@ -164,3 +164,7 @@ Canonical state includes a derived `associations` domain owned by `canonical-sta
 ### Diagnostics and incident intelligence
 
 Diagnostics-service is the single durable owner of explanatory incident state. Structured diagnostic reports use the centrally reserved diagnostics ingress port; the port is transport, never truth. The service correlates direct reports with health and deployment evidence and persists bounded incidents under data/diagnostics. Findings explicitly distinguish OBSERVED facts, CORRELATED conclusions, and INFERRED hypotheses with evidence/confidence. Unknown causes remain unknown. The Validation Dashboard consumes this state through its Diagnostics view and does not perform its own root-cause inference. See docs/diagnostics.md.
+
+
+#### Service retirement telemetry
+A service that has registered health and is intentionally ending may publish an explicit service-retirement record for its exact instance identity. Health removes that instance from active service state. Absence without a valid retirement record remains subject to stale detection. Retirement is an event, not a replacement health state.
