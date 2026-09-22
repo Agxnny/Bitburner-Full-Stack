@@ -23,18 +23,18 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 generic authority + work orders — drain-first closure / cleanup slice
-**Status:** Complete; drain-first cleanup runtime validated through v0.6.0-r73
+### M3 real delegated execution proof — one-shot weaken validation fixture
+**Status:** Implementation started
 
-**Goal:** Make revocation safe for already-started delegated work. Ordinary closure stops all new objective work immediately, moves the Work Order to CLOSING, and gives only its named receiver a short bounded CLEANUP authorization for the order's existing claim scope. The receiver explicitly completes cleanup to reach CLOSED. Forced cancellation remains immediate and grants no cleanup.
+**Goal:** Prove the production Authority → Work Order → executor path can authorize and perform one real Bitburner side effect without building a production hacking subsystem or dashboard.
 
-**Files / areas:** Work Order contract/service, delegated/cleanup authorization, validation registry/plan/dashboard, authority architecture/decisions/docs, immutable release.
+**Files / areas:** validation hacking fixture/controller, one-shot executor, validation registry/plan/dashboard, authority/work-order feature docs, immutable release.
 
-**Decisions / constraints:** ACTIVE alone permits DELEGATED objective work. CLOSING never permits DELEGATED work. CLEANUP is a distinct authorization mode and is not a lease, does not transfer authority, cannot create child work, cannot renew itself, is receiver-bound and claim-bound, and expires at a fixed cleanup deadline. Cleanup authorization may survive loss/release/expiry of the parent lease only because its purpose is to reduce/retire already-started effects; executors must expose separate cleanup-only operations and must never route CLEANUP through ordinary objective execution. Parent loss automatically transitions ACTIVE orders to CLOSING. Normal close is drain-first; explicit cancel is forced/fail-closed and immediately CANCELLED. Receiver completion closes the order early. This slice validates contracts only and performs no real hacking/trading.
+**Decisions / constraints:** DISRUPTIVE validation only. The test controller reads canonical network state and selects a rooted, non-home, non-purchased server with security above minimum. It acquires a real server:hacking-control authority lease, creates one bounded Work Order for a named validation executor, and launches that executor for exactly one thread/one weaken. The executor owns no direct lease and must obtain DELEGATED authorization immediately before calling ns.weaken(). No target scoring, rooting, batching, RAM scheduler, money strategy, persistent hacking service, hacking telemetry service, or production dashboard is introduced. Cleanup must release authority and leave no fixture process or live test Work Order.
 
-**Validation:** PASS — m3.authority.cleanup 10/10 on r73. Runtime also showed 12/12 reporting services healthy and the Validation Dashboard reported no outstanding current-plan tests. Proof covers CLOSING transition, immediate objective denial, receiver/scope-bound CLEANUP, explicit completion, parent-loss cleanup survival without ordinary authority, forced cancellation with no cleanup, and cleanup-timeout FAILED/fail-closed behavior.
+**Validation:** Pending DISRUPTIVE runtime proof. Expected observable game effect is a real security decrease on the selected target.
 
-**Exact next step:** Close the generic Authority + Work Order contract slice and move to the first real controller/executor integration that consumes DIRECT/DELEGATED/CLEANUP authorization.
+**Exact next step:** Implement the temporary controller/executor fixture and registered test, publish r74 after immutable release-ref inspection, then run only with operator confirmation.
 
 ## Recently completed
 
