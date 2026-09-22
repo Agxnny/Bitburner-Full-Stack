@@ -311,3 +311,9 @@ Use one persistent Authority Registry as the durable owner of permission. A clai
 **Status:** Locked
 
 A higher-level coordinator requests an outcome from the domain controller that owns that function. Work Orders carry issuer/receiver/objective/scope/parent-authority/correlation provenance and an explicit lifecycle including CLOSING. A Work Order alone is not permission; delegated execution requires a separately validated authority chain. Normal revocation is designed as drain-first with bounded cleanup authority; forced revocation is immediate/fail-closed. These delegation/revocation mechanics are implemented only after the direct authority slice is proven.
+
+
+## D-041 — Delegation is a live authorization chain, not transferred authority
+**Status:** Locked
+
+Work Orders are durably owned separately from Authority. Creation requires the issuer's current DIRECT authority over every delegated claim and binds the order to the parent lease, correlation ID, named receiver, scope, and an expiry no later than the parent. Executors never inherit or copy the issuer lease. Each delegated authorization validates current Work Order state and current parent Authority state together and returns DELEGATED provenance. Order closure/expiry, parent release/expiry, owner/correlation mismatch, receiver mismatch, or scope mismatch denies new execution. Drain/cleanup authority remains a separate later lifecycle concern.
