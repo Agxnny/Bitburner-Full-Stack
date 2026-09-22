@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Execution Scheduler — first vertical slice
-**Status:** Real-weaken scheduler integration implementation started
+**Status:** Scheduler-backed real-weaken validation implemented; r80 publication pending
 
 **Goal:** Introduce the single durable owner of managed compute placement and execution leases so controllers no longer launch managed executors directly.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Execution Scheduler owns placement, bounded RAM reservations, process launch attribution, reconciliation, and reservation retirement. It does not choose domain strategy, grant target authority, or enforce future subsystem budgets. Requests must bind to an ACTIVE Work Order and its named receiver/correlation. First placement is deterministic, single-host, bounded, and non-preemptive. Canonical state informs eligibility/planning; final launch checks real host RAM. Durable restart recovery must never blindly duplicate a RUNNING executor.
 
-**Validation:** Base SAFE proof PASS on r78: 8/8 in 2540 ms. DISRUPTIVE restart proof PASS on r79: 8/8 in 7663 ms. Restart test proved scheduler was running, managed child RUNNING before restart, only scheduler restarted with a new PID, exact child PID recovered, original expiry preserved, no duplicate launch, natural completion after restart, and reservation retirement. Dashboard reports no outstanding current-plan tests. Real-weaken conversion is next.
+**Validation:** Base SAFE proof PASS on r78: 8/8 in 2540 ms. DISRUPTIVE restart proof PASS on r79: 8/8 in 7663 ms. Real-weaken validation is now version 2 and no longer calls ns.exec() for its executor: it requests scheduler execution, requires scheduler-owned host/PID/RAM attribution, preserves executor-side DELEGATED authorization and measurable weaken evidence, then requires exact-process completion/reservation retirement before Work Order/Authority cleanup. Runtime proof pending.
 
-**Exact next step:** Route m3.authority.real-weaken through requestExecution(), add scheduler attribution/retirement assertions, update its validation version, publish immutable r80 after inspection, then rerun the DISRUPTIVE proof.
+**Exact next step:** Publish immutable r80 after exact release-ref inspection, install it, then run DISRUPTIVE m3.authority.real-weaken version 2. A PASS must prove the full Canonical State → Authority → Work Order → Execution Scheduler → DELEGATED executor → real weaken → execution retirement → Work Order/Authority cleanup chain.
 
 ## Recently completed
 
