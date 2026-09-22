@@ -185,3 +185,8 @@ A persistent work-order-service owns durable outcome-request lifecycle state. It
 
 #### Drain-first closure and cleanup authority
 Normal Work Order closure is two-phase. ACTIVE becomes CLOSING immediately, which denies all new DELEGATED objective execution. During CLOSING only the named receiver may obtain CLEANUP authorization, limited to the order's original claims and a fixed short deadline. CLEANUP is a distinct execution mode for executor-defined unwind operations; it is not a lease and cannot authorize ordinary objective work or new delegation. It may remain valid after parent authority disappears solely to retire effects already started under valid authority. Receiver completion ends cleanup early at CLOSED. Forced cancellation is immediate CANCELLED with no cleanup. Cleanup deadline exhaustion becomes FAILED and fails closed.
+
+
+### Execution Scheduler
+
+The persistent `execution-scheduler` is the single owner of managed compute placement and execution leases. A controller must first establish target permission through Authority and an ACTIVE Work Order; it then requests compute rather than directly launching a managed executor. The scheduler binds execution to Work Order receiver/correlation, maintains bounded durable execution records, performs final RAM admission, launches the process, attributes host/PID/RAM, and reconciles process reality on restart. Execution leases grant compute only and never substitute for target authority or future subsystem budgets. The first slice intentionally places only on `home`; distributed placement extends this contract later. See `docs/execution-scheduler.md`.
