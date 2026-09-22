@@ -144,6 +144,38 @@
           "validationVersion": 2
         }
       ]
+    },
+    {
+      "id": "m3-authority-direct",
+      "milestone": "M3",
+      "title": "Generic Authority — Direct Lease Slice",
+      "revision": 70,
+      "requirements": [
+        {
+          "id": "authority-atomic",
+          "title": "Atomic typed resource/capability authority lifecycle",
+          "testId": "m3.authority.direct",
+          "validationVersion": 1
+        },
+        {
+          "id": "authority-compatibility",
+          "title": "Same capability conflicts while independent capabilities coexist",
+          "testId": "m3.authority.direct",
+          "validationVersion": 1
+        },
+        {
+          "id": "authority-fail-closed",
+          "title": "Direct authorization fails closed outside current owner/scope/expiry",
+          "testId": "m3.authority.direct",
+          "validationVersion": 1
+        },
+        {
+          "id": "work-order-boundary",
+          "title": "Work Order envelope is distinct and does not implicitly lend authority",
+          "testId": "m3.authority.direct",
+          "validationVersion": 1
+        }
+      ]
     }
   ]
 }
