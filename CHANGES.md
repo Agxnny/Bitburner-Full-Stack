@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 diagnostics / incident intelligence
-**Status:** v0.6.0-r69 published; corrective runtime validation pending
+**Status:** Complete; v0.6.0-r69 corrective runtime validated
 
 **Goal:** Add one durable diagnostics owner that turns structured runtime/deployment/health failures into evidence-backed incidents and concise Validation Dashboard explanations, so operators can distinguish observed symptoms, correlated evidence, and bounded inference without manually reconstructing failures.
 
@@ -40,7 +40,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Post-test issue:** After PASS, the validation driver killed the fixture. Health retains the last fixture instance and therefore marks it STALE again, leaving Health/Diagnostics Attention. The test proved recovery before teardown, but teardown itself is not health-aware. This is a validation-fixture cleanup defect, not a diagnostics correlation failure.
 
-**Exact next step:** Install r69. Confirm the existing stale validation fixture disappears after the health-collector restart, then rerun m3.diagnostics.failure-correlation v2 and verify 10/10 assertions plus a fully healthy/clean dashboard after completion.
+**Runtime proof:** m3.diagnostics.failure-correlation v2 PASS 10/10. fixture-retired and teardown-clean passed. After settling, Health remained HEALTHY with 10 services and no fixture in active placement; Diagnostics reported no active incidents. Historical fixture warnings remain only as Recent Incidents/Recently Resolved audit evidence.
+
+**Exact next step:** Close the diagnostics foundation and resume M3 Generic Authority + Work Order contract design/implementation.
 
 ## Recently completed
 
