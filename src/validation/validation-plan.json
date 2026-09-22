@@ -227,13 +227,13 @@
           "id": "real-delegated-action",
           "title": "A real game action executes only through the Authority → Work Order → DELEGATED executor chain",
           "testId": "m3.authority.real-weaken",
-          "validationVersion": 1
+          "validationVersion": 2
         },
         {
           "id": "real-execution-cleanup",
           "title": "The temporary real-action fixture retires its executor and authority cleanly",
           "testId": "m3.authority.real-weaken",
-          "validationVersion": 1
+          "validationVersion": 2
         }
       ]
     },
@@ -241,7 +241,7 @@
       "id": "m3-execution-scheduler",
       "milestone": "M3",
       "title": "Execution Scheduler",
-      "revision": 79,
+      "revision": 80,
       "requirements": [
         {
           "id": "execution-binding",
@@ -278,6 +278,12 @@
           "title": "Scheduler restart does not extend execution expiry and recovered work retires normally",
           "testId": "m3.execution.restart",
           "validationVersion": 1
+        },
+        {
+          "id": "execution-real-side-effect",
+          "title": "Execution Scheduler launches a real Work Order-bound delegated executor and retires its reservation after the game action",
+          "testId": "m3.authority.real-weaken",
+          "validationVersion": 2
         }
       ]
     }
