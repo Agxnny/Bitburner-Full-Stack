@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 generic authority + work-order contracts — first authority slice
-**Status:** Published as v0.6.0-r70; SAFE runtime validation pending
+**Status:** First direct-authority slice complete; runtime validated through v0.6.0-r70
 
 **Goal:** Establish one durable Authority Registry before domain controllers exist. The first runtime slice proves direct expiring authority over typed resource/capability claims, atomic multi-claim acquisition, compatible capability coexistence, conflict denial, renewal/release/expiry, and fail-closed direct authorization. Define the Work Order/delegation contract alongside it without yet implementing delegated execution.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Authority answers permission only; it does not schedule, execute, budget, or choose strategy. Claims are typed resource + capability pairs. Same resource may carry multiple compatible capabilities; first-slice conflict policy is exclusive only within the identical resource+capability key. Multi-claim acquisition is all-or-nothing. Leases are durable, expiring, owner/correlation attributable, and stale/invalid authority fails closed. Work orders request outcomes and never lend authority implicitly. Delegated authorization, drain-first revocation, cleanup authority, and cooperative handoff are contract-designed now but implemented in later slices. No real hacking/trading actions in validation.
 
-**Validation:** SAFE m3.authority.direct registered with synthetic resources/controllers only. It covers atomic grant/conflict, compatible capability coexistence, owner/scope fail-closed checks, renewal/release/expiry, durable state validity, and the non-authorizing Work Order envelope. Runtime proof pending.
+**Validation:** PASS — m3.authority.direct 13/13 on r70. Authority service joined Health as the 11th healthy service. Runtime proved atomic two-claim grant, identical resource+capability conflict denial, distinct capability coexistence, DIRECT authorization, wrong-owner/out-of-scope fail-closed denial, owner renewal, release, all-or-nothing conflict denial, expiry reconciliation, Work Order contract distinction, Work Order-not-authority, and durable state validity.
 
-**Exact next step:** Install r70, confirm authority-service joins Health cleanly, then run SAFE m3.authority.direct from the Validation Dashboard.
+**Exact next step:** Build the next Authority slice: disruptive restart/durable lease recovery before implementing delegated Work Order execution.
 
 ## Recently completed
 
