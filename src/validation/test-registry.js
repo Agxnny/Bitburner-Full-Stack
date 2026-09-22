@@ -15,7 +15,7 @@ export const TESTS = [
     {
         id:"m3.authority.real-weaken", subsystem:"Authority", title:"Real delegated weaken execution", risk:"DISRUPTIVE",
         runner:"src/validation/tests/real-delegated-weaken-test.js",
-        description:"Temporarily selects one rooted non-purchased canonical server above minimum security, acquires real hacking-control authority, issues one bounded Work Order, and runs one one-thread weaken through an executor that has DELEGATED but no DIRECT authority. It then closes the order, releases authority, and verifies fixture cleanup.",
+        description:"Temporarily selects one rooted non-purchased canonical server above minimum security, acquires real hacking-control authority, issues one bounded Work Order, submits its one-thread weaken to the Execution Scheduler, and proves the scheduler-launched executor has DELEGATED but no DIRECT authority. It then verifies the real weaken, scheduler reservation retirement, Work Order closure, authority release, and fixture cleanup.",
         validates:["Real controller-to-executor authority path","Real DELEGATED side effect","Terminal Work Order and lease/process cleanup"],
     },
     {
