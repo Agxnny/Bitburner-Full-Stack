@@ -1,5 +1,12 @@
 export const TESTS = [
     {
+        id:"m3.authority.restart", subsystem:"Authority", title:"Authority owner restart recovery", risk:"DISRUPTIVE",
+        runner:"src/validation/tests/authority-restart-test.js",
+        description:"Creates a synthetic live authority lease, restarts only authority-service, verifies exact durable recovery without extending expiry, confirms conflict and DIRECT authorization remain correct, then proves expiry still fails closed on the original boundary.",
+        validates:["Durable authority lease restart recovery","Restart does not renew or extend authority","Post-restart conflict and fail-closed expiry"],
+        confirmation:"Temporarily restarts only authority-service while a synthetic validation lease is active. No real hacking/trading resource is claimed and all other persistent services remain running.",
+    },
+    {
         id:"m3.authority.direct", subsystem:"Authority", title:"Direct authority lease contract", risk:"SAFE",
         runner:"src/validation/tests/authority-direct-test.js",
         description:"Uses synthetic resources/controllers to prove atomic authority grants, identical-capability conflict denial, compatible capability coexistence, direct fail-closed checks, renewal/release/expiry, and the non-authorizing Work Order envelope.",
