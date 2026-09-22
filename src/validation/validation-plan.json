@@ -149,7 +149,7 @@
       "id": "m3-authority-direct",
       "milestone": "M3",
       "title": "Generic Authority & Work Orders",
-      "revision": 73,
+      "revision": 74,
       "requirements": [
         {
           "id": "authority-atomic",
@@ -221,6 +221,18 @@
           "id": "cleanup-fail-closed",
           "title": "Forced cancellation and cleanup timeout provide no continuing authority",
           "testId": "m3.authority.cleanup",
+          "validationVersion": 1
+        },
+        {
+          "id": "real-delegated-action",
+          "title": "A real game action executes only through the Authority → Work Order → DELEGATED executor chain",
+          "testId": "m3.authority.real-weaken",
+          "validationVersion": 1
+        },
+        {
+          "id": "real-execution-cleanup",
+          "title": "The temporary real-action fixture retires its executor and authority cleanly",
+          "testId": "m3.authority.real-weaken",
           "validationVersion": 1
         }
       ]
