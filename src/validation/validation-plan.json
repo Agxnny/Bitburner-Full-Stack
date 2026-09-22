@@ -105,7 +105,7 @@
       "id": "m3-diagnostics",
       "milestone": "M3",
       "title": "Diagnostics & Incident Intelligence",
-      "revision": 68,
+      "revision": 69,
       "requirements": [
         {
           "id": "diagnostic-owner",
@@ -129,13 +129,19 @@
           "id": "diagnostic-real-failure",
           "title": "Real service failure correlation",
           "testId": "m3.diagnostics.failure-correlation",
-          "validationVersion": 1
+          "validationVersion": 2
         },
         {
           "id": "diagnostic-recovery",
           "title": "Observed recovery automatically resolves diagnostic incident",
           "testId": "m3.diagnostics.failure-correlation",
-          "validationVersion": 1
+          "validationVersion": 2
+        },
+        {
+          "id": "diagnostic-fixture-retirement",
+          "title": "Intentional ephemeral service retirement leaves Health and Diagnostics clean",
+          "testId": "m3.diagnostics.failure-correlation",
+          "validationVersion": 2
         }
       ]
     }
