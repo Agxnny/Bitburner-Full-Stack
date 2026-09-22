@@ -146,3 +146,10 @@ A fresh development chat should read `PROJECT_RULES.md`, `CHANGES.md`, this file
 - Post-test Health: HEALTHY, 10 active services, no validation fixture in Service Placement.
 - Post-test Diagnostics: no active incidents. Historical fixture failures remain only as retained audit evidence (Health Recent Incidents / Diagnostics Recently Resolved), which is intentional.
 - Diagnostics / Incident Intelligence foundation is complete through v0.6.0-r69.
+
+
+### Generic Authority — direct lease slice r70
+- v0.6.0-r70 installed cleanly; authority-service joined Health as the 11th healthy service.
+- SAFE m3.authority.direct PASS: 13/13 assertions.
+- Runtime proof covers atomic multi-claim grant, identical claim conflict, distinct-capability coexistence, DIRECT authorization, wrong-owner/out-of-scope fail-closed checks, owner renewal, release, atomic conflict denial with no partial lease, expiry reconciliation, valid durable state, and the Work Order/non-authority boundary.
+- First direct-authority slice is complete. Next authority proof is durable lease recovery across authority-service restart; delegated Work Order execution remains intentionally unimplemented until that passes.
