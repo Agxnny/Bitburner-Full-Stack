@@ -333,3 +333,13 @@ Managed controllers do not launch executors directly. The persistent `execution-
 Every execution request binds to an existing ACTIVE Work Order, its named receiver, and correlation ID. The first slice is deterministic, FIFO, single-host and non-preemptive, with a bounded pending queue. `home` is the only placement host in the first slice; distributed placement is a later extension of the same contract. Canonical state informs later placement planning, while final admission must reconcile against actual available RAM immediately before launch.
 
 Every RUNNING managed executor is attributable to one durable execution record containing host, PID, Work Order, receiver, correlation, script, threads, RAM and absolute expiry. Scheduler restart must reconcile durable records against real processes without extending expiry or blindly relaunching RUNNING work. Missing processes become terminal; surviving exact PID/host processes are recovered. Work Order closure stops new admission and moves existing execution toward drain/termination semantics. Future subsystem RAM budgets remain a separate control-plane owner.
+
+
+## D-044 — Resource Budget Manager owns logical consumption envelopes; executors own no budget ledger
+**Status:** Locked
+
+Divisible shared resources require an explicit budget before managed consumption. The persistent `resource-budget-manager` is the single durable owner of allocation ceilings. The first implemented resource is RAM. A RAM allocation binds one allocation ID to one budget owner and a logical GB ceiling; it does not reserve a host, grant target Authority, launch work, or maintain a second per-process usage ledger.
+
+Execution Scheduler remains the single owner of actual RAM reservations. Every managed execution request names a budget owner. Admission fails closed when that owner has no RAM allocation or when the requested reservation plus that owner's currently active scheduler reservations would exceed the allocation. The scheduler rechecks the budget immediately before launch. When execution becomes terminal, its scheduler reservation ceases to count against usage, so budget capacity becomes available again without a separate release transaction to the Budget Manager.
+
+Budget allocation and physical availability are independent constraints: fitting a logical budget does not guarantee host RAM, and visible/free host RAM does not grant budget authority. First-slice RAM budgets are durable explicit ceilings rather than expiring leases; release prevents new admission, while existing managed work follows scheduler drain/termination lifecycle. Money budgets, dynamic allocation policy, priority/preemption, and Production Dashboard controls are deferred.
