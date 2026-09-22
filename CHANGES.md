@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 diagnostics / incident intelligence
-**Status:** Published as v0.6.0-r68; disruptive isolated runtime validation pending
+**Status:** r68 isolated failure-correlation test PASS; post-test cleanup defect identified
 
 **Goal:** Add one durable diagnostics owner that turns structured runtime/deployment/health failures into evidence-backed incidents and concise Validation Dashboard explanations, so operators can distinguish observed symptoms, correlated evidence, and bounded inference without manually reconstructing failures.
 
@@ -36,7 +36,11 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Runtime proof:** r67 reported 10 healthy services including diagnostics-service. Validation Dashboard Diagnostics view loaded with no active incidents. SAFE m3.diagnostics.intelligence PASS: 7/7 assertions; the synthetic incident resolved and remained visible under Recently Resolved with one occurrence.
 
-**Exact next step:** Install r68 cleanly, confirm normal service health, then run DISRUPTIVE m3.diagnostics.failure-correlation from the Validation Dashboard.
+**Runtime proof:** m3.diagnostics.failure-correlation PASS 8/8: fixture healthy, real stale failure observed, OBSERVED incident correlated with service/PID evidence, explanation remained bounded, fixture recovered, and incident resolved during the test.
+
+**Post-test issue:** After PASS, the validation driver killed the fixture. Health retains the last fixture instance and therefore marks it STALE again, leaving Health/Diagnostics Attention. The test proved recovery before teardown, but teardown itself is not health-aware. This is a validation-fixture cleanup defect, not a diagnostics correlation failure.
+
+**Exact next step:** Correct fixture teardown so the health owner can explicitly retire validation-only service instances, then publish a corrective validation revision and prove the dashboard returns fully healthy after test completion.
 
 ## Recently completed
 
