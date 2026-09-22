@@ -130,3 +130,10 @@ A fresh development chat should read `PROJECT_RULES.md`, `CHANGES.md`, this file
 - SAFE m3.diagnostics.intelligence PASS: 7/7 assertions.
 - Synthetic incident was durably recorded, evidence/classification preserved, duplicate report bounded, explicit resolution accepted, and resolved evidence remained visible as one Recently Resolved occurrence.
 - Current validation plan has no outstanding tests after the SAFE proof.
+
+
+### Diagnostics real failure correlation — r68 runtime proof and cleanup defect
+- DISRUPTIVE isolated m3.diagnostics.failure-correlation PASS: 8/8 assertions.
+- The validation-only fixture became genuinely STALE while remaining alive; Diagnostics produced an OBSERVED / high-confidence SERVICE_STALE incident with service, host, PID, stale state, and heartbeat reason evidence.
+- The fixture resumed heartbeats; Health returned healthy and Diagnostics resolved the incident during the test.
+- After PASS, test teardown killed the fixture. Health currently has no explicit service-retirement mechanism, so the last known fixture instance becomes stale again and leaves Health/Diagnostics in Attention. This is a test cleanup/lifecycle gap; production services remain healthy.
