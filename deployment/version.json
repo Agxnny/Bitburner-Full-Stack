@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "version": "v0.6.0",
-  "revision": 72,
-  "manifest": "deployment/releases/r72-manifest.json",
-  "releaseRef": "6717c6cc3ecd00fa880bada32e120a53f00cf6bc",
-  "releasedAt": "2026-09-22T11:28:00+10:00"
+  "revision": 73,
+  "manifest": "deployment/releases/r73-manifest.json",
+  "releaseRef": "6b49133890e87439d9e613cc3f3c48aa44f65a42",
+  "releasedAt": "2026-09-22T12:00:00+10:00"
 }
