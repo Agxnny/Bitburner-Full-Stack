@@ -29,3 +29,7 @@ DISRUPTIVE m3.diagnostics.failure-correlation uses a validation-only service fix
 
 ### r68 validation note
 The real failure/recovery assertions passed 8/8, including automatic incident resolution after heartbeat recovery. Test teardown then exposed a lifecycle gap: killing a validation-only producer leaves its last health instance registered, so Health later marks that retired fixture stale again. The corrective design must explicitly retire ephemeral validation service instances rather than treating silence after teardown as failure.
+
+
+## Intentional service retirement
+Ephemeral or validation-only service instances must explicitly publish a service-retirement telemetry record before exiting normally. The Health owner removes only the exact matching instance ID and records informational SERVICE_RETIRED evidence. Silence without retirement remains a failure signal and will still become stale. This prevents intentional teardown from being confused with a crashed service.
