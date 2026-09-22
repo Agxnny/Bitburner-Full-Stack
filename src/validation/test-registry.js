@@ -1,5 +1,11 @@
 export const TESTS = [
     {
+        id:"m3.budgets.ram", subsystem:"Resource Budgets", title:"RAM budget enforcement", risk:"SAFE",
+        runner:"src/validation/tests/ram-budget-test.js",
+        description:"Allocates one small durable RAM envelope and uses harmless Work Order-bound scheduler fixtures to prove missing/over-budget admission fails closed, in-budget RAM is attributed to the correct owner, terminal execution returns capacity, returned capacity is reusable, and allocation release is clean.",
+        validates:["Durable per-owner RAM allocation","Missing and over-budget fail-closed admission","Scheduler-owned usage attribution","Capacity return and reuse","Owner-bound allocation release"],
+    },
+    {
         id:"m3.execution.restart", subsystem:"Execution Scheduler", title:"Execution scheduler restart recovery", risk:"DISRUPTIVE",
         runner:"src/validation/tests/execution-scheduler-restart-test.js",
         description:"Runs one harmless managed child, restarts only execution-scheduler, and proves durable recovery of the exact PID without relaunch or expiry extension before natural completion and reservation retirement.",
