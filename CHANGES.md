@@ -23,16 +23,16 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 real delegated execution proof — r74 failure correction
-**Status:** Published as v0.6.0-r75; DISRUPTIVE rerun pending
+### M3 real delegated execution proof — r75 invalid claim-shape correction
+**Status:** Root cause identified from r75 diagnostic evidence; r76 correction implementation started
 
-**Observed r74 runtime:** DISRUPTIVE m3.authority.real-weaken failed 6/8. Target selection, real authority grant, ACTIVE Work Order creation, executor launch, terminal Work Order closure, and fixture cleanup all passed. The executor denied DELEGATED authorization, therefore the real weaken correctly did not execute.
+**Observed r75 runtime:** DISRUPTIVE m3.authority.real-weaken again failed 6/8, now with precise executor denial reason `invalid-delegation-state`. Target selection, authority grant, ACTIVE Work Order, home executor launch, closure, and cleanup all passed.
 
-**Root cause:** The r74 fixture called ns.run(EXECUTOR, 1, ...) from the Validation Dashboard process. In Bitburner, ns.run starts the child on the caller's current host. The validation dashboard can run on a purchased server, while the fixture files and durable authority/work-order state are deployed/read on home. The executor's read helper explicitly checks home for state but then uses ns.read(path), which reads the current host. On a non-home dashboard host this produces null authority/work-order state and delegatedAuthorization fails closed. This is a validation-fixture placement/read bug, not an Authority Registry grant/delegation defect.
+**Root cause:** The temporary executor reconstructed its requested claim as `{kind,id,capability}`, but the canonical Authority claim contract is `{resource:{kind,id},capability}`. `delegatedAuthorization()` therefore rejected the executor input at `validClaim()` before evaluating the otherwise valid Authority and Work Order state. The Work Order itself carried the correct claim shape because the controller used `authorityClaim()`.
 
-**Correction:** Launch the temporary executor explicitly on home using ns.exec, and improve executor/test evidence so a denial preserves the exact authorization reason in the validation assertion rather than printing success wording on a failed assertion.
+**Correction:** The executor will construct the claim through the shared `authorityClaim()` helper rather than duplicating the schema. The broad `invalid-delegation-state` precondition response will also be split into precise invalid-authority-state / invalid-work-order-state / invalid-claim / invalid-time reasons so future failures identify the failed contract directly.
 
-**Exact next step:** Install r75, confirm normal Health, then rerun DISRUPTIVE m3.authority.real-weaken. If authorization still denies, the result now preserves the exact denial reason.
+**Exact next step:** Patch the executor and diagnostic reason granularity, publish immutable r76 after exact release-ref inspection, then rerun DISRUPTIVE m3.authority.real-weaken.
 
 ## Recently completed
 
