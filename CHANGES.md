@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 real delegated execution proof — one-shot weaken validation fixture
-**Status:** Implementation started
+**Status:** Validation fixture implemented; r74 publication pending
 
 **Goal:** Prove the production Authority → Work Order → executor path can authorize and perform one real Bitburner side effect without building a production hacking subsystem or dashboard.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** DISRUPTIVE validation only. The test controller reads canonical network state and selects a rooted, non-home, non-purchased server with security above minimum. It acquires a real server:hacking-control authority lease, creates one bounded Work Order for a named validation executor, and launches that executor for exactly one thread/one weaken. The executor owns no direct lease and must obtain DELEGATED authorization immediately before calling ns.weaken(). No target scoring, rooting, batching, RAM scheduler, money strategy, persistent hacking service, hacking telemetry service, or production dashboard is introduced. Cleanup must release authority and leave no fixture process or live test Work Order.
 
-**Validation:** Pending DISRUPTIVE runtime proof. Expected observable game effect is a real security decrease on the selected target.
+**Validation:** DISRUPTIVE m3.authority.real-weaken registered. It requires an eligible canonical rooted/non-purchased target above minimum security, proves real authority grant and bounded Work Order creation, launches exactly one one-thread executor, requires DELEGATED authorization immediately before ns.weaken(), verifies a real security decrease, then closes/releases and checks no live fixture lease/process remains.
 
-**Exact next step:** Implement the temporary controller/executor fixture and registered test, publish r74 after immutable release-ref inspection, then run only with operator confirmation.
+**Exact next step:** Publish immutable r74 after exact release-ref inspection, install it, then run DISRUPTIVE m3.authority.real-weaken with operator confirmation.
 
 ## Recently completed
 
