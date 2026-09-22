@@ -153,3 +153,7 @@ A fresh development chat should read `PROJECT_RULES.md`, `CHANGES.md`, this file
 - SAFE m3.authority.direct PASS: 13/13 assertions.
 - Runtime proof covers atomic multi-claim grant, identical claim conflict, distinct-capability coexistence, DIRECT authorization, wrong-owner/out-of-scope fail-closed checks, owner renewal, release, atomic conflict denial with no partial lease, expiry reconciliation, valid durable state, and the Work Order/non-authority boundary.
 - First direct-authority slice is complete. Next authority proof is durable lease recovery across authority-service restart; delegated Work Order execution remains intentionally unimplemented until that passes.
+
+
+## M3 authority validation through r71
+The generic Authority Registry direct lease slice is runtime validated through v0.6.0-r71. SAFE m3.authority.direct previously proved atomic typed resource/capability grants, compatibility/conflict rules, DIRECT authorization, owner-only lifecycle operations, expiry, and the Work Order-not-authority boundary. DISRUPTIVE m3.authority.restart then restarted only authority-service while a synthetic lease was live and proved exact durable recovery without extending authority: owner/correlation/claim and original issuedAt/expiresAt survived, DIRECT authorization and identical-claim conflict denial remained effective, the lease expired on its original absolute boundary, and authorization failed closed afterward. The current validation plan has no outstanding tests.
