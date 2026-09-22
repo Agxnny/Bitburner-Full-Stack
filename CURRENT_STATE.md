@@ -57,7 +57,7 @@ M2 first vertical slice is runtime validated through v0.5.0-r22: shared cross-ho
 ## Active feature
 **Production Dashboard — approved information architecture; visual design next**
 
-The operator has approved the Production Dashboard's tab architecture and cross-tab control rules. No Production Dashboard runtime implementation exists yet. The next work is tab-by-tab visual/layout design using the established compact dark grey-blue language and existing dashboard sizing/docking coordinator. This design work does not create production hacking/trading/network/progression controllers ahead of their roadmap milestones.
+The operator has approved and locked the Production Dashboard's tab architecture and cross-tab control rules. `docs/production-dashboard.md` is the feature-document owner for the detailed contract, with D-045/D-046 holding the architectural decisions. No Production Dashboard runtime implementation exists yet. The next work is tab-by-tab visual/layout design using the established compact dark grey-blue language and existing dashboard sizing/docking coordinator. This design work does not create production hacking/trading/network/progression controllers ahead of their roadmap milestones.
 
 ## Exact next step
 1. Complete Production Dashboard visual/layout design one tab at a time, beginning with Overview, then define the smallest read-only implementation slice.
