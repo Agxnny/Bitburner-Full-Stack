@@ -177,3 +177,7 @@ The persistent authority-service is the single durable owner of permission lease
 
 #### Delegated Work Order execution
 A persistent work-order-service owns durable outcome-request lifecycle state. It may activate an order only against current DIRECT issuer authority, and it caps order lifetime to the parent lease. Executors do not receive or copy leases. They present Work Order identity and are authorized as DELEGATED only after current Authority and Work Order state are jointly validated. Receiver, claim scope, correlation, order state/expiry, parent ownership/scope/expiry all fail closed.
+
+
+#### Delegated Work Order execution
+A persistent work-order-service owns durable outcome-request lifecycle state. It activates an order only against current DIRECT issuer authority and caps order lifetime to the parent lease. Executors do not receive or copy leases. They receive DELEGATED authorization only after current Authority and Work Order state are jointly validated for receiver, claim scope, correlation, order state/expiry, and parent ownership/scope/expiry.
