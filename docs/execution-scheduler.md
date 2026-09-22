@@ -24,3 +24,7 @@ State is durable. Startup reconciles records before normal admission. A durable 
 
 ## Validation
 The first SAFE validation uses a synthetic Authority lease and Work Order plus a harmless short-lived executor. It proves binding, managed launch attribution, duplicate/idempotent request behavior, process completion and reservation retirement. A separate restart proof and conversion of the real-weaken fixture to scheduler launch follow after the base contract passes.
+
+
+## Controlled restart validation
+After the base contract is proven, DISRUPTIVE `m3.execution.restart` runs one harmless six-second scheduler-managed fixture, records its execution PID and absolute expiry, restarts only `execution-scheduler`, and verifies durable reconciliation recovers that exact still-running child. The test requires no duplicate fixture launch and no expiry extension, then waits for natural child exit and verifies the recovered execution becomes COMPLETE and no longer reserves RAM. The fixture restores the scheduler if the controlled test path fails.
