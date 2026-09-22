@@ -270,6 +270,19 @@ An override never bypasses the trader's total money budget and never authorizes 
 
 ## Stock Manipulation
 
+**Visual/layout status: APPROVED.** The accepted Stock Manipulation render establishes the coordinated-operation workspace. Illustrative multi-target counts, automatic controls, direct trader buttons, and mockup values are presentation examples only; runtime behavior remains bound to Authority, Work Orders, budgets, the trader-only execution path, and the controller contracts.
+
+### Approved physical hierarchy
+
+1. **Shared dashboard header and tab bar** — retain the Production shell, Manipulation selected, and global ESTOP isolated at upper-right.
+2. **Operation summary row** — compact cards for **Manipulation Status**, **Available/Eligible Targets**, **Manipulation Effect / Result**, **Cycle/Operation Performance**, and **Trader Coordination**. Final labels adapt to the implemented controller while preserving this hierarchy.
+3. **Active operations workspace** — a wide primary table/list of active manipulation operations, showing symbol/company, PUMP/DUMP or phase/state, progress, expected/current effect, price context, exposure/true-vs-desired position, trader state, and direct View/select navigation.
+4. **Selection/opportunity workspace** — concise target-selection policy/status, a ranked potential-target/opportunity list, and selected-symbol/operation detail. Internal scoring formulas remain outside Production.
+5. **Supporting footer** — bounded meaningful manipulation events, supported controller controls, coordination/handoff state, and optional notes/operator conveniences. Controls in the mockup do not authorize bypassing the trader or direct manipulation-owned trading.
+
+The approved render permits a future multi-operation selector/list while the first controller implementation may remain single-operation. The UI must truthfully adapt to actual concurrency support.
+
+
 The manipulation workspace shows the active/selected coordinated operation without exposing its internal strategy.
 
 Show:
