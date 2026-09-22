@@ -30,3 +30,7 @@ SAFE m3.authority.direct uses only synthetic owners/resources. It proves atomic 
 
 ## r70 runtime proof
 The first direct-authority slice is runtime validated. authority-service joined aggregate Health as the 11th healthy service and SAFE m3.authority.direct passed 13/13. The proof exercised atomic grant/conflict behavior, compatible capability coexistence, DIRECT authorization, owner/scope fail-closed checks, renewal, release, expiry, durable state validity, and confirmed that a valid Work Order envelope alone does not authorize execution.
+
+
+## Authority restart/recovery validation
+DISRUPTIVE m3.authority.restart uses a synthetic claim only. It grants a bounded live lease, captures its issuedAt/expiresAt/owner/correlation/claims, restarts only authority-service, and requires the restarted owner to recover that exact durable lease. Recovery must not renew or extend authority. The recovered lease must still authorize DIRECT use by its owner and deny an identical conflicting claim. The test then waits for the original absolute expiry and proves authorization fails closed. Other persistent services remain running.
