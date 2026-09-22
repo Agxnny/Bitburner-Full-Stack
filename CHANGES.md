@@ -34,9 +34,11 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** Documentation-only architecture lock. Repository docs now have an explicit Production Dashboard feature owner and D-045/D-046 remain the architectural decisions. No runtime validation is required until an implementation slice exists. Existing r29 four-side docking/anchor behavior remains the integration contract.
 
-**Visual design progress:** Overview, Hacking, Stocks, Stock Manipulation, Network, and Progression renders are approved and locked in `docs/production-dashboard.md`. Progression locks the player/money/reputation/run summary hierarchy, skills/augmentations/factions/source-file detail, timeline plus milestones/goals planning workspace, and compact supporting progression history. Mockup goals/recommendations are illustrative; the shared progression decision engine remains the sole owner of recommendations and automation policy.
+**Visual design progress:** All seven permanent Production Dashboard tabs are approved and locked in `docs/production-dashboard.md`: Overview, Hacking, Stocks, Stock Manipulation, Network, Progression, and Settings. Settings locks the dense grouped-configuration workspace while explicitly preserving the supported-policy boundary: mockup service/update/persistent-process controls are illustrative and do not create privileged lifecycle or implementation access.
 
-**Exact next step:** Render and review the Settings tab. After explicit operator confirmation, lock its approved layout. After the permanent-tab visual set is complete, decide whether capability-specific tabs need generic visual contracts now or remain deferred until their systems exist, then define the smallest honest implementation slice without creating future domain controllers early.
+**Permanent-tab visual design:** COMPLETE. The approved renders establish the Production shell, compact dark grey-blue visual language, tab-specific hierarchy/density, global ESTOP placement, and existing sizing/docking integration.
+
+**Exact next step:** Decide whether capability-specific tabs (Hacknet, Sleeves, Gang, Bladeburner, Corporation, later BitNode-specific systems) need generic visual contracts now or should remain deferred until their systems exist. Then define the smallest honest Production Dashboard implementation slice without creating future domain controllers early.
 
 ## Recently completed
 
