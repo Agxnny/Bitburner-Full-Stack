@@ -294,3 +294,9 @@ The derived state's provenance includes both source revisions/timestamps and its
 **Status:** Locked
 
 Use one persistent diagnostics service to own explanatory incident state. Producers report structured evidence; diagnostics may correlate existing health/deployment facts, while the Validation Dashboard only presents the resulting durable state. Findings are explicitly classified OBSERVED, CORRELATED, or INFERRED and retain supporting evidence/confidence. The system must not present an inferred root cause as observed fact. Stable incident identities deduplicate repeated symptoms, and explicit resolution preserves evidence history.
+
+
+## D-038 — Intentional service retirement is explicit
+**Status:** Locked
+
+Once an instance has entered Health state, normal/intentional termination must be distinguishable from heartbeat loss. Ephemeral services publish a versioned retirement event for their exact service/instance identity before exit. Health may remove only that exact registered instance. Missing heartbeats without retirement continue to fail stale. Retirement is not encoded as a permanent health status.
