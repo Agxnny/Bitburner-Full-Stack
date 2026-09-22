@@ -1,6 +1,7 @@
 import { AUTHORITY_STATE_PATH, acquireAuthority, authorityClaim, publishAuthorityCommand, releaseAuthority } from "../../core/authority.js";
 import { WORK_ORDER_STATE_PATH, closeWorkOrder, completeWorkOrder, createWorkOrder, publishWorkOrderCommand } from "../../core/work-orders.js";
 import { EXECUTION_STATE_PATH, publishExecutionCommand, requestExecution } from "../../core/execution-scheduler.js";
+import { BUDGET_STATE_PATH, publishBudgetCommand, releaseRamBudget, setRamBudget } from "../../core/resource-budgets.js";
 import { appendEvidence, evidenceRecord } from "../evidence-store.js";
 import { readValidationPlan, recordValidationResult, requiredValidationVersion } from "../validation-state.js";
 const RESULT_PATH="data/validation/latest-result.json", EXECUTOR="src/validation/fixtures/delegated-weaken-executor.js";
@@ -20,7 +21,7 @@ export async function main(ns){
   wo(ns,createWorkOrder({requestId:tag+":create",workOrderId:orderId,issuer,receiver,objective:"weaken-once",claims:[claim],authorityLeaseId:leaseId,correlationId:tag,constraints:{operation:"weaken",threads:1,target:target.hostname},ttlMs:orderTtlMs,cleanupTtlMs:3000}));
   const created=await woDecision(ns,tag+":create",4000);check(a,"work-order-active",created?.outcome==="GRANTED"&&findOrder(ns,orderId)?.state==="ACTIVE","Controller issued one bounded ACTIVE weaken Work Order.");if(created?.outcome!=="GRANTED")throw new Error("Work Order creation denied.");
   ns.rm(resultPath,"home");
-  ex(ns,requestExecution({requestId:tag+":execute",executionId,workOrderId:orderId,receiver,correlationId:tag,script:EXECUTOR,threads:1,args:[orderId,receiver,target.hostname,resultPath],ttlMs:orderTtlMs}));
+  ex(ns,requestExecution({requestId:tag+":execute",executionId,workOrderId:orderId,receiver,correlationId:tag,budgetOwner:receiver,script:EXECUTOR,threads:1,args:[orderId,receiver,target.hostname,resultPath],ttlMs:orderTtlMs}));
   const executionDecision=await exDecision(ns,tag+":execute",4000);check(a,"execution-accepted",executionDecision?.outcome==="QUEUED","Execution Scheduler accepted the Work Order-bound weaken request.");if(executionDecision?.outcome!=="QUEUED")throw new Error("Execution request denied: "+(executionDecision?.reason??"unknown")+".");
   const running=await wait(ns,()=>{const e=findExecution(ns,executionId);return e?.state==="RUNNING"&&e.pid>0&&e.host==="home"?e:null;},4000);pid=running?.pid??0;
   check(a,"executor-started",Boolean(running),"Execution Scheduler launched one-thread delegated executor on "+(running?.host??"?")+" at pid "+(running?.pid??"?")+" with "+(running?.ramRequired??"?")+" GB reserved.");if(!running)throw new Error("Scheduler did not launch executor.");
@@ -38,6 +39,7 @@ export async function main(ns){
   check(a,"cleanup-clean",!read(ns,AUTHORITY_STATE_PATH)?.leases?.some(x=>x.leaseId===leaseId)&&findOrder(ns,orderId)?.state==="CLOSED"&&findExecution(ns,executionId)?.state==="COMPLETE"&&(pid<=0||!ns.isRunning(pid,"home")),"No live authority lease, RAM reservation, or executor remains; Work Order is terminal CLOSED.");
  }catch(error){check(a,"fixture-error",false,String(error?.message??error));}
  finally{
+  budget(ns,releaseRamBudget({requestId:tag+":budget-release",allocationId:tag+":ram",owner:receiver}));await ns.sleep(250);
   if(pid>0&&ns.isRunning(pid,"home"))ns.kill(pid);
   wo(ns,closeWorkOrder({requestId:tag+":finally-close",workOrderId:orderId,actor:issuer}));await ns.sleep(250);
   if(findOrder(ns,orderId)?.state==="CLOSING"){wo(ns,completeWorkOrder({requestId:tag+":finally-complete",workOrderId:orderId,actor:receiver}));await ns.sleep(250);}
@@ -48,7 +50,7 @@ export async function main(ns){
  const ev=evidenceRecord({testId,validationVersion:version,status,kind:"automated",summary,assertions:a,at:finishedAt});appendEvidence(ns,ev);recordValidationResult(ns,{testId,validationVersion:version,status,evidenceId:ev.id,kind:ev.kind,summary:ev.summary,at:finishedAt});
 }
 function chooseTarget(ns,network,hackingLevel){if(!network||network.kind!=="canonical-state"||network.domain!=="network"||network.availability!=="available"||!Array.isArray(network.data?.servers))return null;return network.data.servers.filter(s=>s.hostname!=="home"&&s.hasAdminRights&&!s.purchasedByPlayer&&s.isOnline!==false&&s.requiredHackingSkill<=hackingLevel&&Number.isFinite(s.hackDifficulty)&&Number.isFinite(s.minDifficulty)&&s.hackDifficulty>s.minDifficulty+0.0001&&ns.getWeakenTime(s.hostname)<=270000).sort((a,b)=>ns.getWeakenTime(a.hostname)-ns.getWeakenTime(b.hostname)||(b.hackDifficulty-b.minDifficulty)-(a.hackDifficulty-a.minDifficulty)||a.hostname.localeCompare(b.hostname))[0]??null;}
-function auth(ns,c){if(!publishAuthorityCommand(ns,c))throw new Error("Authority command queue full.");} function wo(ns,c){if(!publishWorkOrderCommand(ns,c))throw new Error("Work Order command queue full.");} function ex(ns,c){if(!publishExecutionCommand(ns,c))throw new Error("Execution Scheduler command queue full.");}
-async function authDecision(ns,id,t){return wait(ns,()=>read(ns,AUTHORITY_STATE_PATH)?.decisions?.find(x=>x.requestId===id),t);} async function woDecision(ns,id,t){return wait(ns,()=>read(ns,WORK_ORDER_STATE_PATH)?.decisions?.find(x=>x.requestId===id),t);} async function exDecision(ns,id,t){return wait(ns,()=>read(ns,EXECUTION_STATE_PATH)?.decisions?.find(x=>x.requestId===id),t);}
+function budget(ns,c){if(!publishBudgetCommand(ns,c))throw new Error("Budget queue full.");} function auth(ns,c){if(!publishAuthorityCommand(ns,c))throw new Error("Authority command queue full.");} function wo(ns,c){if(!publishWorkOrderCommand(ns,c))throw new Error("Work Order command queue full.");} function ex(ns,c){if(!publishExecutionCommand(ns,c))throw new Error("Execution Scheduler command queue full.");}
+async function budgetDecision(ns,id,t){return wait(ns,()=>read(ns,BUDGET_STATE_PATH)?.decisions?.find(x=>x.requestId===id),t);} async function authDecision(ns,id,t){return wait(ns,()=>read(ns,AUTHORITY_STATE_PATH)?.decisions?.find(x=>x.requestId===id),t);} async function woDecision(ns,id,t){return wait(ns,()=>read(ns,WORK_ORDER_STATE_PATH)?.decisions?.find(x=>x.requestId===id),t);} async function exDecision(ns,id,t){return wait(ns,()=>read(ns,EXECUTION_STATE_PATH)?.decisions?.find(x=>x.requestId===id),t);}
 async function wait(ns,get,t){const end=Date.now()+t;while(Date.now()<end){const v=get();if(v)return v;await ns.sleep(50);}return null;} function findOrder(ns,id){return read(ns,WORK_ORDER_STATE_PATH)?.orders?.find(x=>x.workOrderId===id);} function findExecution(ns,id){return read(ns,EXECUTION_STATE_PATH)?.executions?.find(x=>x.executionId===id);}
 function check(a,id,pass,evidence){a.push({id,pass:Boolean(pass),evidence});} function read(ns,path){if(!ns.fileExists(path,"home"))return null;try{return JSON.parse(ns.read(path));}catch{return null;}}
