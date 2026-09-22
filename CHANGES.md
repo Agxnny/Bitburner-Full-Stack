@@ -34,7 +34,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** Documentation-only architecture lock. Repository docs now have an explicit Production Dashboard feature owner and D-045/D-046 remain the architectural decisions. No runtime validation is required until an implementation slice exists. Existing r29 four-side docking/anchor behavior remains the integration contract.
 
-**Exact next step:** Continue tab-by-tab visual/layout design beginning with Overview using the established compact dark grey-blue Validation Dashboard language and the available workspace to its right. After visual design is approved, define the smallest honest implementation slice without creating future domain controllers early.
+**Visual design progress:** Overview render approved and locked in `docs/production-dashboard.md`; it is now the visual baseline for the remaining tabs.
+
+**Exact next step:** Render and review the Hacking tab. After explicit operator confirmation, lock its approved layout before moving to Stocks. After all required tab visuals are approved, define the smallest honest implementation slice without creating future domain controllers early.
 
 ## Recently completed
 
