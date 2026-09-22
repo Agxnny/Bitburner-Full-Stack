@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 generic authority + work orders — delegated execution slice
-**Status:** Published as v0.6.0-r72; SAFE delegated execution runtime validation pending
+**Status:** Complete; delegated execution runtime validated through v0.6.0-r72
 
 **Goal:** Add one durable Work Order owner and Authority-backed DELEGATED authorization without weakening the proven DIRECT lease contract. An authorized issuer may create a bounded outcome order for a named receiver; the receiver may act only while both the order and its parent authority remain current.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Work Orders request outcomes and never duplicate domain functionality. A Work Order alone remains non-authorizing. Creation requires current DIRECT authority for the issuer over every requested claim. Delegated authorization validates receiver, requested claim, order ACTIVE state, order expiry, parent lease existence/owner/scope/expiry, and correlation binding. Order expiry is capped to the parent lease expiry. Parent authority release/expiry immediately fails delegated authorization even if the order record remains nominally active. This slice does not yet implement drain-first cleanup/revocation or real hacking/trading execution.
 
-**Validation:** SAFE m3.authority.delegated registered using only synthetic claims. It proves authorized activation, DELEGATED receiver execution, receiver/scope bounds, issuer cannot over-delegate, order expiry capped by parent, closed-order denial, and immediate fail-closed behavior after parent authority release.
+**Validation:** PASS — m3.authority.delegated 9/9 on r72. Runtime showed 12/12 services healthy with work-order-service integrated. The SAFE test proved parent authority, ACTIVE bounded order creation, DELEGATED authorization for a receiver without a direct lease, receiver and scope binding, over-delegation denial, expiry capping, closed-order denial, and immediate invalidation when parent authority is released. Validation Dashboard reports no outstanding current-plan tests.
 
-**Exact next step:** Install r72, confirm work-order-service joins aggregate Health as the 12th service, then run SAFE m3.authority.delegated.
+**Exact next step:** Design the drain-first revocation / cleanup-authority lifecycle so in-flight delegated work can stop safely without creating an authority bypass.
 
 ## Recently completed
 
