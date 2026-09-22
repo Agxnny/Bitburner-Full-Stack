@@ -23,18 +23,18 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 generic authority + work orders — delegated execution slice
-**Status:** Complete; delegated execution runtime validated through v0.6.0-r72
+### M3 generic authority + work orders — drain-first closure / cleanup slice
+**Status:** Design approved; implementation started
 
-**Goal:** Add one durable Work Order owner and Authority-backed DELEGATED authorization without weakening the proven DIRECT lease contract. An authorized issuer may create a bounded outcome order for a named receiver; the receiver may act only while both the order and its parent authority remain current.
+**Goal:** Make revocation safe for already-started delegated work. Ordinary closure stops all new objective work immediately, moves the Work Order to CLOSING, and gives only its named receiver a short bounded CLEANUP authorization for the order's existing claim scope. The receiver explicitly completes cleanup to reach CLOSED. Forced cancellation remains immediate and grants no cleanup.
 
-**Files / areas:** centralized ports, authority contract, Work Order contract/service/state, validation registry/plan/dashboard, architecture/decisions, authority feature docs, immutable release.
+**Files / areas:** Work Order contract/service, delegated/cleanup authorization, validation registry/plan/dashboard, authority architecture/decisions/docs, immutable release.
 
-**Decisions / constraints:** Work Orders request outcomes and never duplicate domain functionality. A Work Order alone remains non-authorizing. Creation requires current DIRECT authority for the issuer over every requested claim. Delegated authorization validates receiver, requested claim, order ACTIVE state, order expiry, parent lease existence/owner/scope/expiry, and correlation binding. Order expiry is capped to the parent lease expiry. Parent authority release/expiry immediately fails delegated authorization even if the order record remains nominally active. This slice does not yet implement drain-first cleanup/revocation or real hacking/trading execution.
+**Decisions / constraints:** ACTIVE alone permits DELEGATED objective work. CLOSING never permits DELEGATED work. CLEANUP is a distinct authorization mode and is not a lease, does not transfer authority, cannot create child work, cannot renew itself, is receiver-bound and claim-bound, and expires at a fixed cleanup deadline. Cleanup authorization may survive loss/release/expiry of the parent lease only because its purpose is to reduce/retire already-started effects; executors must expose separate cleanup-only operations and must never route CLEANUP through ordinary objective execution. Parent loss automatically transitions ACTIVE orders to CLOSING. Normal close is drain-first; explicit cancel is forced/fail-closed and immediately CANCELLED. Receiver completion closes the order early. This slice validates contracts only and performs no real hacking/trading.
 
-**Validation:** PASS — m3.authority.delegated 9/9 on r72. Runtime showed 12/12 services healthy with work-order-service integrated. The SAFE test proved parent authority, ACTIVE bounded order creation, DELEGATED authorization for a receiver without a direct lease, receiver and scope binding, over-delegation denial, expiry capping, closed-order denial, and immediate invalidation when parent authority is released. Validation Dashboard reports no outstanding current-plan tests.
+**Validation:** Pending SAFE synthetic validation.
 
-**Exact next step:** Design the drain-first revocation / cleanup-authority lifecycle so in-flight delegated work can stop safely without creating an authority bypass.
+**Exact next step:** Implement lifecycle/authorization changes, register SAFE cleanup validation, publish r73 after immutable release-ref inspection, then runtime validate.
 
 ## Recently completed
 
