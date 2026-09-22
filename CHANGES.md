@@ -23,20 +23,26 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### M3 Resource Budget Manager — RAM first vertical slice
-**Status:** Published as v0.6.0-r81; SAFE runtime validation pending
+### M3 Resource Budget Manager — Money first vertical slice
+**Status:** Implementation started
 
-**Goal:** Add the single durable owner of logical resource-consumption envelopes, beginning with RAM, and make Execution Scheduler enforce those envelopes against its own active reservations.
+**Goal:** Extend the existing Resource Budget Manager with durable logical money allocations plus reservation/settlement/release accounting, without performing any real game purchase.
 
-**Files / areas:** core ports; resource-budget contract/service; Execution Scheduler request/admission contract; architecture/decisions/feature docs; validation plan/registry/tests; persistent runtime manifest.
+**Files / areas:** resource-budget contract/service; resource-budget feature docs and D-044 clarification; validation plan/registry/dashboard; new SAFE money-budget validation; immutable deployment manifest.
 
-**Decisions / constraints:** Budget Manager owns allocation ceilings, not physical placement or per-process usage. Execution Scheduler remains the sole owner of actual RAM reservations and computes an owner's current usage from its own active execution records. A RAM budget never grants target Authority and never reserves a particular host. First slice supports explicit durable RAM allocations by owner, bounded command/idempotency behavior, release, and scheduler fail-closed admission when a request lacks or exceeds its owner's budget. Money budgets, dynamic policy, priorities, and Production Dashboard behavior are deferred.
+**Decisions / constraints:** Budget Manager remains the sole durable owner of money allocation and reservation accounting. Money allocation is a logical ceiling, not permission to act on a target and not a game-money lock. Spending executors remain responsible for actual transactions. A reservation immediately reduces the owner's available budget; release returns it; settlement converts it to durable spent accounting. Reservation IDs and command request IDs are idempotent. First slice uses synthetic amounts only and does not spend player money. Reconciliation with canonical player money/manual spending remains required before real production spending is allowed.
 
-**Validation:** SAFE m3.budgets.ram registered. It proves missing-budget denial, durable allocation, over-budget denial before execution creation, in-budget scheduler admission, active RAM attribution to the budget owner, capacity return after terminal execution, reuse of returned capacity, and clean allocation release. Existing execution validation fixtures now explicitly acquire/release RAM budgets so they remain valid under the new mandatory budgetOwner request contract.
+**Validation:** Pending. SAFE m3.budgets.money will prove missing-budget fail-closed reservation, durable allocation, bounded reservation, over-budget denial, release/returned capacity, settlement/spent accounting, and clean allocation retirement without changing game money.
 
-**Exact next step:** Install r81, confirm Aggregate Health includes resource-budget-manager and execution-scheduler remains healthy, then run SAFE m3.budgets.ram from the Validation Dashboard. Do not begin money budgets until this RAM accounting/enforcement slice passes.
+**Exact next step:** Implement the money contract/service and SAFE validation, update feature/architecture records, publish immutable r82 after exact source inspection, then run m3.budgets.money. Do not permit real spending yet.
 
 ## Recently completed
+
+### M3 Resource Budget Manager — RAM first vertical slice
+**Status:** Runtime validated through v0.6.0-r81
+
+SAFE `m3.budgets.ram` passed 8/8 in 4456 ms. It proved missing-budget denial, durable 2.4 GB allocation, over-budget denial before execution lease creation, in-budget scheduler admission, 1.6 GB active usage attribution, automatic capacity return, reuse of returned capacity, and clean allocation release.
+
 
 ### M3 Execution Scheduler — first vertical slice
 **Status:** Runtime validated through v0.6.0-r80
