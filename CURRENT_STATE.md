@@ -137,3 +137,12 @@ A fresh development chat should read `PROJECT_RULES.md`, `CHANGES.md`, this file
 - The validation-only fixture became genuinely STALE while remaining alive; Diagnostics produced an OBSERVED / high-confidence SERVICE_STALE incident with service, host, PID, stale state, and heartbeat reason evidence.
 - The fixture resumed heartbeats; Health returned healthy and Diagnostics resolved the incident during the test.
 - After PASS, test teardown killed the fixture. Health currently has no explicit service-retirement mechanism, so the last known fixture instance becomes stale again and leaves Health/Diagnostics in Attention. This is a test cleanup/lifecycle gap; production services remain healthy.
+
+
+### Diagnostics service-retirement correction — r69 runtime proof
+- m3.diagnostics.failure-correlation validationVersion 2 PASS: 10/10 assertions.
+- New fixture-retired assertion passed: the validation fixture explicitly retired itself and Health removed the ephemeral instance.
+- New teardown-clean assertion passed after the stale window: fixture stayed absent and its diagnostic remained resolved.
+- Post-test Health: HEALTHY, 10 active services, no validation fixture in Service Placement.
+- Post-test Diagnostics: no active incidents. Historical fixture failures remain only as retained audit evidence (Health Recent Incidents / Diagnostics Recently Resolved), which is intentional.
+- Diagnostics / Incident Intelligence foundation is complete through v0.6.0-r69.
