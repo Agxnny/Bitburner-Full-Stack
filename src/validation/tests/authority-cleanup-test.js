@@ -22,6 +22,7 @@ export async function main(ns){
         check(a,"cleanup-bounded",!cleanupAuthorization(read(ns,WORK_ORDER_STATE_PATH),{workOrderId:orders[0],receiver:other,claim}).authorized&&!cleanupAuthorization(read(ns,WORK_ORDER_STATE_PATH),{workOrderId:orders[0],receiver,claim:outside}).authorized,"Cleanup is receiver-bound and cannot exceed original claim scope.");
         wo(ns,completeWorkOrder({requestId:tag+":complete-a",workOrderId:orders[0],actor:receiver}));await woDecision(ns,tag+":complete-a");
         check(a,"receiver-completes",findOrder(ns,orders[0])?.state==="CLOSED"&&!cleanupAuthorization(read(ns,WORK_ORDER_STATE_PATH),{workOrderId:orders[0],receiver,claim}).authorized,"Receiver completion closes early and removes cleanup authorization.");
+        auth(ns,releaseAuthority({requestId:tag+":release-a",leaseId:leases[0],owner:issuer}));await authDecision(ns,tag+":release-a");
 
         await grant(ns,tag+":grant-b",leases[1],issuer,claim,tag,9000);
         await create(ns,tag+":create-b",orders[1],issuer,receiver,claim,leases[1],tag,7000,1500);
