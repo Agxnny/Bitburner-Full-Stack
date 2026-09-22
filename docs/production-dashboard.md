@@ -96,9 +96,21 @@ Overview is designed for the large workspace normally to the right of Validation
 
 ## Hacking
 
-The Hacking tab presents current hacking production and useful secondary use of capacity.
+**Visual/layout status: APPROVED.** The accepted Hacking render follows the Overview visual baseline and is now the reference layout for this workspace.
 
-### Primary production
+### Approved physical hierarchy
+
+1. **Shared dashboard header and tab bar** — retain the approved Production shell, with Hacking selected and the global ESTOP isolated at upper-right.
+2. **Primary operational row** — compact cards for **Hacking Mode**, **Hacking Status**, **Current Target**, **Hacking Performance**, and **Resource Usage**. This row answers what mode is active, whether the controller is working, what it is targeting, what it is producing, and how much compute it is consuming.
+3. **Primary detail row** — **Target Details**, **Batch Information**, and **Target Selection**. Target condition and timing remain separate from execution/batch summary, while selection exposes only concise operator-facing reasoning and useful alternatives.
+4. **Preparation/capacity row** — **Target Preparation**, **Opportunistic Work / Spare RAM**, and a compact opportunity/candidate list where useful. This makes secondary use of capacity visible without competing with the primary target.
+5. **Supporting footer** — bounded recent production events and useful Hacking actions may sit below the operational panels, but remain subordinate to the controller state.
+
+The approved render establishes a dense but readable Hacking workspace: primary operating state first, target/execution reasoning second, preparation/spare-capacity behavior third.
+
+### Information and control contract
+
+#### Primary production
 Show:
 - operational mode, including player-facing **Money / XP** selection;
 - operational state such as Selecting, Preparing, Running, Draining, Paused, or Waiting for RAM;
@@ -109,9 +121,19 @@ Show:
 - in-flight workers and, when applicable, batches;
 - next significant completion and drain/all-clear ETA;
 - performance as $/s in Money mode or XP/s in XP mode;
-- concise target-selection reason.
+- concise target-selection reason;
+- managed RAM/worker usage relevant to Hacking.
 
-### Target preparation and recovery
+The mode selector is immediate operational intent and belongs on Hacking, not Settings. Domain lifecycle controls must use the shared Start/Graceful Stop/Hard Stop/Restart contract; visual labels such as Pause/Stop in mockups do not create a second lifecycle API.
+
+#### Target details and batching
+Target detail may show useful operator facts such as required/current hacking level, minimum/current security, maximum/current money, growth, and relevant action timing.
+
+Batch presentation may show the active HGW/HWGW strategy, thread composition, total/in-flight work, batch count, duration, next completion, and a compact timing sequence. Advanced batching may add richer pipeline state later without changing the tab's hierarchy.
+
+Target-selection presentation may show the current concise reason, evaluation age, and useful alternative targets/rankings. Internal scoring formulas and controller decision traces remain outside Production.
+
+#### Target preparation and recovery
 A dedicated compact area shows targets being prepared or recovered:
 - target;
 - prep/recovery state;
@@ -120,9 +142,9 @@ A dedicated compact area shows targets being prepared or recovered:
 - committed workers/RAM;
 - ETA.
 
-Preparation may use spare capacity for likely future targets and does not imply that every prepared server must become a production target.
+Preparation may use spare capacity for likely future targets and does not imply that every prepared server must become a production target. The workspace may show current-target preparation as completion/progress plus a compact multi-target prep list when multiple candidates are active.
 
-### Spare RAM / opportunistic work
+#### Spare RAM / opportunistic work
 Summarize RAM assigned to:
 - primary production;
 - target preparation/recovery;
@@ -130,7 +152,10 @@ Summarize RAM assigned to:
 - policy reserve;
 - genuinely free RAM.
 
-When useful, explain why capacity is idle, for example “no eligible prep targets” or “reserved by policy.” Internal target-scoring logic remains outside Production.
+When useful, explain why capacity is idle, for example “no eligible prep targets” or “reserved by policy.” Candidate/opportunity lists may show where spare capacity could be directed when that feature is enabled. Internal target-scoring logic remains outside Production.
+
+#### Supporting activity/actions
+Recent Events is bounded to meaningful Hacking production changes/completions rather than scheduler/debug noise. Quick actions, if exposed, must route through supported controller commands and never bypass authority, budgets, Work Orders, or the Execution Scheduler.
 
 ## Stocks
 
