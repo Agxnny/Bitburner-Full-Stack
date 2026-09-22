@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Execution Scheduler — first vertical slice
-**Status:** Base contract runtime validated on v0.6.0-r78; restart slice implementation next
+**Status:** Restart/reconciliation test implemented; r79 publication pending
 
 **Goal:** Introduce the single durable owner of managed compute placement and execution leases so controllers no longer launch managed executors directly.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** Runtime PASS on r78: 8/8 assertions in 2540 ms. Proven: synthetic parent authority, ACTIVE Work Order, receiver mismatch fail-closed, bounded request admission, scheduler-owned home PID/host/RAM attribution, requestId idempotency, natural COMPLETE transition, and reservation retirement. Dashboard reports no outstanding current-plan tests. Restart recovery and conversion of the real-weaken fixture remain subsequent slices.
 
-**Exact next step:** Add a controlled DISRUPTIVE execution-scheduler restart/reconciliation proof. It must restart only execution-scheduler while a harmless managed fixture is RUNNING, prove the exact PID survives without duplicate launch or expiry extension, then prove natural completion and reservation retirement. Do not convert real-weaken until restart recovery passes.
+**Exact next step:** Publish immutable r79 after exact release-ref inspection, install it, then run DISRUPTIVE m3.execution.restart. Do not convert real-weaken until restart recovery passes.
 
 ## Recently completed
 
