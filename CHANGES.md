@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Execution Scheduler — first vertical slice
-**Status:** First-slice implementation complete; SAFE runtime validation pending
+**Status:** Published as v0.6.0-r78; SAFE runtime validation pending
 
 **Goal:** Introduce the single durable owner of managed compute placement and execution leases so controllers no longer launch managed executors directly.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** SAFE m3.execution.scheduler registered. It uses synthetic Authority/Work Order state and a harmless 750 ms child to prove receiver binding fails closed, valid bounded admission, scheduler-owned PID/host/RAM attribution, duplicate requestId idempotency, natural completion, and reservation retirement. Restart recovery and conversion of the real-weaken fixture remain intentionally subsequent slices.
 
-**Exact next step:** Publish immutable r78 after exact release-ref inspection, install it, confirm the new execution-scheduler service is healthy, then run SAFE m3.execution.scheduler.
+**Exact next step:** Install r78, confirm Aggregate Health includes the new execution-scheduler service, then run SAFE m3.execution.scheduler from the Validation Dashboard. Do not convert the real-weaken fixture until this base scheduler contract passes.
 
 ## Recently completed
 
