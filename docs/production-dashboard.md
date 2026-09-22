@@ -409,6 +409,19 @@ Their detailed layout is intentionally deferred until the corresponding system e
 
 ## Settings
 
+**Visual/layout status: APPROVED.** The accepted Settings render establishes the dense grouped-configuration workspace. Individual mockup controls are illustrative unless separately supported by the architecture/configuration contract; the visual approval does not authorize arbitrary service management, updater-policy changes, persistent-process controls, or editable implementation internals.
+
+### Approved physical hierarchy
+
+1. **Shared dashboard header and tab bar** — retain the Production shell, Settings selected, and global ESTOP isolated at upper-right.
+2. **Grouped configuration grid** — use compact, clearly titled cards for supported configuration domains such as **General/UI**, **Resource/Budget Policy**, **Hacking**, **Stocks**, **Manipulation**, **Network**, **Progression**, **Notifications**, and **Dashboard Layout** as those settings become available.
+3. **Control presentation** — use concise toggles, bounded numeric fields, selectors, and sliders where appropriate, with clear units/ranges and Apply/Save actions only when changes are not immediate.
+4. **Operational metadata** — settings that require a domain restart versus applying live must say so visibly. Invalid/out-of-contract values are rejected rather than accepted and silently corrected.
+5. **Safety-sensitive area** — destructive/reset actions, when genuinely supported, are visually isolated and require confirmation. This area must not create a second ESTOP or a bypass around the shared lifecycle/persistent-process boundary.
+
+The approved render's examples for service restart/autostart, update behavior, data cleanup, and danger-zone actions are not automatically part of the Production Settings contract. Persistent service lifecycle remains updater/deployment-owned except for explicitly authorized disruptive validation.
+
+
 Settings is the supported surface-level configuration center.
 
 It may expose parameters and policy thresholds that influence controller decisions without exposing or rewriting the decision logic itself. Examples include:
