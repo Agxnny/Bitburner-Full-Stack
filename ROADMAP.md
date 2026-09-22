@@ -108,3 +108,9 @@ Only one implementation milestone/feature is active at a time. Later ideas may b
 **Status:** Complete through v0.6.0-r69 — SAFE contract proof 7/7; real failure/recovery/retirement proof 10/10; post-test Health and Diagnostics clean
 
 Before Generic Authority, add structured diagnostic ingress, one durable diagnostics owner, evidence-backed health/deployment correlation, deduplicated incident lifecycle, and an explanatory Validation Dashboard view. SAFE validation must prove the contract without disrupting production services. Authority/Work Orders resume after this foundation slice is runtime validated.
+
+
+### M3 Generic Authority + Work Orders
+**Status:** First direct-authority slice implemented; target r70 SAFE runtime validation
+
+Establish capability-scoped durable authority before domain controllers. First slice: atomic direct leases, identical-claim conflicts, compatible capability coexistence, renewal/release/expiry, fail-closed direct checks, and the non-authorizing Work Order envelope. Later slices: restart recovery, delegated authority/work-order lifecycle, drain-first revocation/cleanup, handoff, and controller integration.
