@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 generic authority + work-order contracts — restart recovery slice
-**Status:** Authority restart/recovery validation implemented; r71 publication pending
+**Status:** Published as v0.6.0-r71; disruptive authority restart runtime validation pending
 
 **Goal:** Establish one durable Authority Registry before domain controllers exist. The first runtime slice proves direct expiring authority over typed resource/capability claims, atomic multi-claim acquisition, compatible capability coexistence, conflict denial, renewal/release/expiry, and fail-closed direct authorization. Define the Work Order/delegation contract alongside it without yet implementing delegated execution.
 
@@ -36,7 +36,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** DISRUPTIVE m3.authority.restart is registered against synthetic authority only. It restarts only authority-service and checks exact lease recovery, unchanged absolute expiry, DIRECT authorization/conflict behavior after restart, original-boundary expiry, and post-expiry fail-closed denial.
 
-**Exact next step:** Publish immutable r71 after exact release-ref inspection, install it, then run m3.authority.restart.
+**Exact next step:** Install r71, confirm the normal 11-service Health state, then run DISRUPTIVE m3.authority.restart from the Validation Dashboard.
 
 ## Recently completed
 
