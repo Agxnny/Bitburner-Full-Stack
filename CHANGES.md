@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 generic authority + work orders — drain-first closure / cleanup slice
-**Status:** Design approved; implementation started
+**Status:** Drain-first cleanup implementation complete; r73 publication pending
 
 **Goal:** Make revocation safe for already-started delegated work. Ordinary closure stops all new objective work immediately, moves the Work Order to CLOSING, and gives only its named receiver a short bounded CLEANUP authorization for the order's existing claim scope. The receiver explicitly completes cleanup to reach CLOSED. Forced cancellation remains immediate and grants no cleanup.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** ACTIVE alone permits DELEGATED objective work. CLOSING never permits DELEGATED work. CLEANUP is a distinct authorization mode and is not a lease, does not transfer authority, cannot create child work, cannot renew itself, is receiver-bound and claim-bound, and expires at a fixed cleanup deadline. Cleanup authorization may survive loss/release/expiry of the parent lease only because its purpose is to reduce/retire already-started effects; executors must expose separate cleanup-only operations and must never route CLEANUP through ordinary objective execution. Parent loss automatically transitions ACTIVE orders to CLOSING. Normal close is drain-first; explicit cancel is forced/fail-closed and immediately CANCELLED. Receiver completion closes the order early. This slice validates contracts only and performs no real hacking/trading.
 
-**Validation:** Pending SAFE synthetic validation.
+**Validation:** SAFE m3.authority.cleanup registered with synthetic leases/orders only. It covers CLOSING transition, immediate objective denial, receiver/scope-bound CLEANUP, explicit completion, parent-loss cleanup survival without ordinary authority, forced cancellation with no cleanup, and cleanup-timeout FAILED/fail-closed behavior.
 
-**Exact next step:** Implement lifecycle/authorization changes, register SAFE cleanup validation, publish r73 after immutable release-ref inspection, then runtime validate.
+**Exact next step:** Publish immutable r73 after exact release-ref inspection, install it, confirm 12-service Health, then run SAFE m3.authority.cleanup.
 
 ## Recently completed
 
