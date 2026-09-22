@@ -1,0 +1,410 @@
+{
+  "schemaVersion": 1,
+  "version": "v0.6.0",
+  "revision": 69,
+  "files": [
+    {
+      "source": "src/bootstrap/git-pull.js",
+      "target": "src/bootstrap/git-pull.js"
+    },
+    {
+      "source": "src/bootstrap/git-pull-self-update.js",
+      "target": "src/bootstrap/git-pull-self-update.js"
+    },
+    {
+      "source": "src/bootstrap/update-watcher.js",
+      "target": "src/bootstrap/update-watcher.js"
+    },
+    {
+      "source": "src/core/telemetry.js",
+      "target": "src/core/telemetry.js"
+    },
+    {
+      "source": "src/core/canonical-state-service.js",
+      "target": "src/core/canonical-state-service.js"
+    },
+    {
+      "source": "src/core/state-contract.js",
+      "target": "src/core/state-contract.js"
+    },
+    {
+      "source": "src/core/ports.js",
+      "target": "src/core/ports.js"
+    },
+    {
+      "source": "src/core/time.js",
+      "target": "src/core/time.js"
+    },
+    {
+      "source": "src/core/health-collector.js",
+      "target": "src/core/health-collector.js"
+    },
+    {
+      "source": "src/core/observation-store.js",
+      "target": "src/core/observation-store.js"
+    },
+    {
+      "source": "src/collectors/collector-runtime.js",
+      "target": "src/collectors/collector-runtime.js"
+    },
+    {
+      "source": "src/collectors/player-collector.js",
+      "target": "src/collectors/player-collector.js"
+    },
+    {
+      "source": "src/collectors/network-collector.js",
+      "target": "src/collectors/network-collector.js"
+    },
+    {
+      "source": "src/collectors/market-collector.js",
+      "target": "src/collectors/market-collector.js"
+    },
+    {
+      "source": "src/collectors/infrastructure-collector.js",
+      "target": "src/collectors/infrastructure-collector.js"
+    },
+    {
+      "source": "src/collectors/capabilities-collector.js",
+      "target": "src/collectors/capabilities-collector.js"
+    },
+    {
+      "source": "src/ui/dashboard-window-memory.js",
+      "target": "src/ui/dashboard-window-memory.js"
+    },
+    {
+      "source": "src/ui/dashboard-layout-coordinator.js",
+      "target": "src/ui/dashboard-layout-coordinator.js"
+    },
+    {
+      "source": "src/ui/dashboard-anchor-control.jsx",
+      "target": "src/ui/dashboard-anchor-control.jsx"
+    },
+    {
+      "source": "src/ui/dashboard-geometry-calibration.jsx",
+      "target": "src/ui/dashboard-geometry-calibration.jsx"
+    },
+    {
+      "source": "src/ui/validation-theme.js",
+      "target": "src/ui/validation-theme.js"
+    },
+    {
+      "source": "src/ui/validation-catalog.js",
+      "target": "src/ui/validation-catalog.js"
+    },
+    {
+      "source": "src/ui/validation-dashboard.jsx",
+      "target": "src/ui/validation-dashboard.jsx"
+    },
+    {
+      "source": "src/ui/validation-overview-tab.jsx",
+      "target": "src/ui/validation-overview-tab.jsx"
+    },
+    {
+      "source": "src/ui/validation-work-tab.jsx",
+      "target": "src/ui/validation-work-tab.jsx"
+    },
+    {
+      "source": "src/ui/validation-health-tab.jsx",
+      "target": "src/ui/validation-health-tab.jsx"
+    },
+    {
+      "source": "src/ui/validation-updater-tab.jsx",
+      "target": "src/ui/validation-updater-tab.jsx"
+    },
+    {
+      "source": "src/ui/validation-data-tab.jsx",
+      "target": "src/ui/validation-data-tab.jsx"
+    },
+    {
+      "source": "src/validation/tests/canonical-restart-test.js",
+      "target": "src/validation/tests/canonical-restart-test.js"
+    },
+    {
+      "source": "src/validation/tests/canonical-state-test.js",
+      "target": "src/validation/tests/canonical-state-test.js"
+    },
+    {
+      "source": "src/validation/validation-state.js",
+      "target": "src/validation/validation-state.js"
+    },
+    {
+      "source": "src/validation/validation-plan.json",
+      "target": "src/validation/validation-plan.json"
+    },
+    {
+      "source": "src/validation/test-registry.js",
+      "target": "src/validation/test-registry.js"
+    },
+    {
+      "source": "src/validation/tests/dashboard-smoke-test.js",
+      "target": "src/validation/tests/dashboard-smoke-test.js"
+    },
+    {
+      "source": "src/ui/validation-tests-tab.jsx",
+      "target": "src/ui/validation-tests-tab.jsx"
+    },
+    {
+      "source": "src/validation/evidence-store.js",
+      "target": "src/validation/evidence-store.js"
+    },
+    {
+      "source": "src/validation/tests/emergency-focus-test.js",
+      "target": "src/validation/tests/emergency-focus-test.js"
+    },
+    {
+      "source": "src/core/collection-control.js",
+      "target": "src/core/collection-control.js"
+    },
+    {
+      "source": "src/core/collection-control-service.js",
+      "target": "src/core/collection-control-service.js"
+    },
+    {
+      "source": "src/validation/tests/cadence-control-test.js",
+      "target": "src/validation/tests/cadence-control-test.js"
+    },
+    {
+      "source": "src/validation/tests/cadence-restart-test.js",
+      "target": "src/validation/tests/cadence-restart-test.js"
+    },
+    {
+      "source": "src/validation/tests/resource-associations-test.js",
+      "target": "src/validation/tests/resource-associations-test.js"
+    },
+    {
+      "source": "src/core/diagnostics.js",
+      "target": "src/core/diagnostics.js"
+    },
+    {
+      "source": "src/core/diagnostics-service.js",
+      "target": "src/core/diagnostics-service.js"
+    },
+    {
+      "source": "src/ui/validation-diagnostics-tab.jsx",
+      "target": "src/ui/validation-diagnostics-tab.jsx"
+    },
+    {
+      "source": "src/validation/tests/diagnostics-intelligence-test.js",
+      "target": "src/validation/tests/diagnostics-intelligence-test.js"
+    },
+    {
+      "source": "src/validation/fixtures/diagnostic-failure-fixture.js",
+      "target": "src/validation/fixtures/diagnostic-failure-fixture.js"
+    },
+    {
+      "source": "src/validation/tests/diagnostics-failure-correlation-test.js",
+      "target": "src/validation/tests/diagnostics-failure-correlation-test.js"
+    }
+  ],
+  "runtimeUnits": [
+    {
+      "id": "diagnostics-service",
+      "lifecycle": "persistent",
+      "script": "src/core/diagnostics-service.js",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/core/telemetry.js",
+        "src/core/ports.js",
+        "src/core/diagnostics.js",
+        "src/core/diagnostics-service.js"
+      ],
+      "restartOrder": 430
+    },
+    {
+      "id": "collection-control",
+      "lifecycle": "persistent",
+      "script": "src/core/collection-control-service.js",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/core/telemetry.js",
+        "src/core/ports.js",
+        "src/core/collection-control.js",
+        "src/core/collection-control-service.js"
+      ],
+      "restartOrder": 440
+    },
+    {
+      "id": "canonical-state",
+      "lifecycle": "persistent",
+      "script": "src/core/canonical-state-service.js",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/core/telemetry.js",
+        "src/core/time.js",
+        "src/core/ports.js",
+        "src/core/observation-store.js",
+        "src/core/state-contract.js",
+        "src/core/canonical-state-service.js"
+      ],
+      "restartOrder": 450
+    },
+    {
+      "id": "player-collector",
+      "lifecycle": "persistent",
+      "script": "src/collectors/player-collector.js",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/core/telemetry.js",
+        "src/core/ports.js",
+        "src/core/time.js",
+        "src/core/observation-store.js",
+        "src/core/collection-control.js",
+        "src/collectors/collector-runtime.js",
+        "src/collectors/player-collector.js"
+      ],
+      "restartOrder": 500
+    },
+    {
+      "id": "network-collector",
+      "lifecycle": "persistent",
+      "script": "src/collectors/network-collector.js",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/core/telemetry.js",
+        "src/core/ports.js",
+        "src/core/time.js",
+        "src/core/observation-store.js",
+        "src/core/collection-control.js",
+        "src/collectors/collector-runtime.js",
+        "src/collectors/network-collector.js"
+      ],
+      "restartOrder": 510
+    },
+    {
+      "id": "market-collector",
+      "lifecycle": "persistent",
+      "script": "src/collectors/market-collector.js",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/core/telemetry.js",
+        "src/core/ports.js",
+        "src/core/time.js",
+        "src/core/observation-store.js",
+        "src/core/collection-control.js",
+        "src/collectors/collector-runtime.js",
+        "src/collectors/market-collector.js"
+      ],
+      "restartOrder": 520
+    },
+    {
+      "id": "infrastructure-collector",
+      "lifecycle": "persistent",
+      "script": "src/collectors/infrastructure-collector.js",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/core/telemetry.js",
+        "src/core/ports.js",
+        "src/core/time.js",
+        "src/core/observation-store.js",
+        "src/core/collection-control.js",
+        "src/collectors/collector-runtime.js",
+        "src/collectors/infrastructure-collector.js"
+      ],
+      "restartOrder": 530
+    },
+    {
+      "id": "capabilities-collector",
+      "lifecycle": "persistent",
+      "script": "src/collectors/capabilities-collector.js",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/core/telemetry.js",
+        "src/core/ports.js",
+        "src/core/time.js",
+        "src/core/observation-store.js",
+        "src/core/collection-control.js",
+        "src/collectors/collector-runtime.js",
+        "src/collectors/capabilities-collector.js"
+      ],
+      "restartOrder": 540
+    },
+    {
+      "id": "health-collector",
+      "lifecycle": "persistent",
+      "script": "src/core/health-collector.js",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/core/telemetry.js",
+        "src/core/ports.js",
+        "src/core/time.js",
+        "src/core/health-collector.js",
+        "src/ui/dashboard-window-memory.js",
+        "src/ui/dashboard-layout-coordinator.js",
+        "src/core/collection-control.js",
+        "src/ui/dashboard-anchor-control.jsx"
+      ],
+      "restartOrder": 900
+    },
+    {
+      "id": "update-watcher",
+      "lifecycle": "persistent",
+      "script": "src/bootstrap/update-watcher.js",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/bootstrap/update-watcher.js",
+        "src/core/telemetry.js",
+        "src/ui/dashboard-window-memory.js",
+        "src/ui/dashboard-layout-coordinator.js",
+        "src/ui/dashboard-anchor-control.jsx"
+      ],
+      "restartOrder": 1000
+    },
+    {
+      "id": "validation-dashboard",
+      "lifecycle": "persistent",
+      "script": "src/ui/validation-dashboard.jsx",
+      "host": "home",
+      "threads": 1,
+      "args": [],
+      "files": [
+        "src/ui/validation-dashboard.jsx",
+        "src/ui/validation-theme.js",
+        "src/ui/validation-catalog.js",
+        "src/ui/validation-overview-tab.jsx",
+        "src/ui/validation-work-tab.jsx",
+        "src/ui/validation-health-tab.jsx",
+        "src/ui/validation-updater-tab.jsx",
+        "src/ui/validation-data-tab.jsx",
+        "src/ui/dashboard-window-memory.js",
+        "src/ui/validation-tests-tab.jsx",
+        "src/validation/test-registry.js",
+        "src/validation/evidence-store.js",
+        "src/validation/validation-plan.json",
+        "src/validation/validation-state.js",
+        "src/validation/tests/canonical-state-test.js",
+        "src/validation/tests/canonical-restart-test.js",
+        "src/core/collection-control.js",
+        "src/validation/tests/cadence-control-test.js",
+        "src/validation/tests/cadence-restart-test.js",
+        "src/validation/tests/resource-associations-test.js",
+        "src/ui/validation-diagnostics-tab.jsx",
+        "src/core/diagnostics.js",
+        "src/validation/tests/diagnostics-intelligence-test.js",
+        "src/validation/fixtures/diagnostic-failure-fixture.js",
+        "src/validation/tests/diagnostics-failure-correlation-test.js",
+        "src/core/telemetry.js"
+      ],
+      "restartOrder": 1100
+    }
+  ]
+}
