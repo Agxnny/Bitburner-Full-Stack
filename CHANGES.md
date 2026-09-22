@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Execution Scheduler — first vertical slice
-**Status:** Published as v0.6.0-r79; DISRUPTIVE restart validation pending
+**Status:** Restart/reconciliation runtime validated on v0.6.0-r79; real-weaken scheduler integration next
 
 **Goal:** Introduce the single durable owner of managed compute placement and execution leases so controllers no longer launch managed executors directly.
 
@@ -32,9 +32,9 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Decisions / constraints:** Execution Scheduler owns placement, bounded RAM reservations, process launch attribution, reconciliation, and reservation retirement. It does not choose domain strategy, grant target authority, or enforce future subsystem budgets. Requests must bind to an ACTIVE Work Order and its named receiver/correlation. First placement is deterministic, single-host, bounded, and non-preemptive. Canonical state informs eligibility/planning; final launch checks real host RAM. Durable restart recovery must never blindly duplicate a RUNNING executor.
 
-**Validation:** Runtime PASS on r78: 8/8 assertions in 2540 ms. Proven: synthetic parent authority, ACTIVE Work Order, receiver mismatch fail-closed, bounded request admission, scheduler-owned home PID/host/RAM attribution, requestId idempotency, natural COMPLETE transition, and reservation retirement. Dashboard reports no outstanding current-plan tests. Restart recovery and conversion of the real-weaken fixture remain subsequent slices.
+**Validation:** Base SAFE proof PASS on r78: 8/8 in 2540 ms. DISRUPTIVE restart proof PASS on r79: 8/8 in 7663 ms. Restart test proved scheduler was running, managed child RUNNING before restart, only scheduler restarted with a new PID, exact child PID recovered, original expiry preserved, no duplicate launch, natural completion after restart, and reservation retirement. Dashboard reports no outstanding current-plan tests. Real-weaken conversion is next.
 
-**Exact next step:** Install r79, confirm normal Health, then run DISRUPTIVE m3.execution.restart from the Validation Dashboard. Do not convert real-weaken until restart recovery passes.
+**Exact next step:** Replace the validation-only real delegated weaken fixture's direct executor launch with an Execution Scheduler request, preserving the existing Authority/Work Order and executor-side DELEGATED authorization proof. Then publish and rerun that DISRUPTIVE real-weaken validation.
 
 ## Recently completed
 
