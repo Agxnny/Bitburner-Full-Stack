@@ -168,3 +168,8 @@ Diagnostics-service is the single durable owner of explanatory incident state. S
 
 #### Service retirement telemetry
 A service that has registered health and is intentionally ending may publish an explicit service-retirement record for its exact instance identity. Health removes that instance from active service state. Absence without a valid retirement record remains subject to stale detection. Retirement is an event, not a replacement health state.
+
+
+### Generic authority and work orders
+
+The persistent authority-service is the single durable owner of permission leases. Authority claims are typed resource + capability pairs; identical claims conflict while distinct capabilities may coexist unless a later explicit compatibility policy says otherwise. Multi-claim acquisition is atomic and authority expiry fails closed. Work Orders are a separate outcome-request contract and never implicitly transfer authority. Delegated execution must later validate a complete authority-to-work-order chain. Domain functionality is never duplicated by coordinators. See docs/authority-work-orders.md.
