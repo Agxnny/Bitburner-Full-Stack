@@ -1,5 +1,11 @@
 export const TESTS = [
     {
+        id:"m3.authority.direct", subsystem:"Authority", title:"Direct authority lease contract", risk:"SAFE",
+        runner:"src/validation/tests/authority-direct-test.js",
+        description:"Uses synthetic resources/controllers to prove atomic authority grants, identical-capability conflict denial, compatible capability coexistence, direct fail-closed checks, renewal/release/expiry, and the non-authorizing Work Order envelope.",
+        validates:["Atomic direct authority lifecycle","Capability-scoped compatibility and conflict","Fail-closed authorization","Work order does not implicitly lend authority"],
+    },
+    {
         id:"m3.diagnostics.failure-correlation", subsystem:"Diagnostics", title:"Real failure correlation and recovery", risk:"DISRUPTIVE",
         runner:"src/validation/tests/diagnostics-failure-correlation-test.js",
         description:"Starts an isolated validation-only service, deliberately stops its heartbeat while it remains alive, verifies real health-to-diagnostics evidence and bounded explanation, then restores heartbeats and proves automatic incident resolution.",
