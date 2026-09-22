@@ -149,7 +149,7 @@
       "id": "m3-authority-direct",
       "milestone": "M3",
       "title": "Generic Authority — Direct Lease Slice",
-      "revision": 70,
+      "revision": 71,
       "requirements": [
         {
           "id": "authority-atomic",
@@ -173,6 +173,18 @@
           "id": "work-order-boundary",
           "title": "Work Order envelope is distinct and does not implicitly lend authority",
           "testId": "m3.authority.direct",
+          "validationVersion": 1
+        },
+        {
+          "id": "authority-restart-recovery",
+          "title": "Unexpired authority lease survives owner restart unchanged",
+          "testId": "m3.authority.restart",
+          "validationVersion": 1
+        },
+        {
+          "id": "authority-restart-expiry",
+          "title": "Restart does not extend authority and recovered lease expires fail-closed",
+          "testId": "m3.authority.restart",
           "validationVersion": 1
         }
       ]
