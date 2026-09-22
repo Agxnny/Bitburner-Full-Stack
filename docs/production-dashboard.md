@@ -159,6 +159,20 @@ Recent Events is bounded to meaningful Hacking production changes/completions ra
 
 ## Stocks
 
+**Visual/layout status: APPROVED.** The accepted Stocks render establishes the chart-dominant, high-density trading workspace. Placeholder real-world ticker names, values, news, and illustrative controls in the mockup are not part of the contract; runtime presentation uses Bitburner market symbols/data and only supported trader commands/configuration.
+
+### Approved physical hierarchy
+
+1. **Shared dashboard header and tab bar** — retain the approved Production shell, Stocks selected, and global ESTOP isolated at upper-right.
+2. **Trading summary row** — compact cards for **Trader Status**, **Trading Capital / Portfolio Value**, **Performance**, **Position Limits / Exposure**, and **Market State**. The final labels/data follow the canonical trader contract rather than mockup placeholders.
+3. **Primary workspace** — a large **Symbol Chart** dominates the left/center; a compact **Forecast / Opportunities** panel occupies the right. Symbol and timeframe controls remain attached to the chart.
+4. **Portfolio/performance workspace** — **Open Positions** receives the primary table; recent closed outcomes/performance sit beside or below it. The approved information model keeps winners/losers/flats and performance history available without overwhelming the chart.
+5. **Trader policy/status area** — supported trading configuration and limits may be visible in a compact side panel, but implementation must use the Settings/configuration contract and standard trader command path. Mockup sliders/toggles are illustrative, not automatic approval of arbitrary runtime controls.
+6. **Supporting footer** — bounded meaningful trade activity and useful operator actions may occupy the bottom. Generic real-world market news from the mockup is not part of the Bitburner Production Dashboard contract.
+
+The Stocks tab is expected to be one of the widest Production states. Dynamic sizing remains dashboard-owned and the existing docking coordinator preserves its relationship to Validation.
+
+
 Stocks is the trader/operator workspace. The stock trader remains the sole trade execution path, including trades requested by Stock Manipulation.
 
 ### Price chart
