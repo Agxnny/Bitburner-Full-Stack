@@ -149,7 +149,7 @@
       "id": "m3-authority-direct",
       "milestone": "M3",
       "title": "Generic Authority & Work Orders",
-      "revision": 72,
+      "revision": 73,
       "requirements": [
         {
           "id": "authority-atomic",
@@ -203,6 +203,24 @@
           "id": "delegated-parent-loss",
           "title": "Closing the order or losing parent authority immediately fails delegated execution closed",
           "testId": "m3.authority.delegated",
+          "validationVersion": 1
+        },
+        {
+          "id": "cleanup-drain-first",
+          "title": "Normal closure stops objective work and enters bounded CLOSING cleanup",
+          "testId": "m3.authority.cleanup",
+          "validationVersion": 1
+        },
+        {
+          "id": "cleanup-parent-loss",
+          "title": "Parent loss permits only bounded cleanup for existing delegated effects",
+          "testId": "m3.authority.cleanup",
+          "validationVersion": 1
+        },
+        {
+          "id": "cleanup-fail-closed",
+          "title": "Forced cancellation and cleanup timeout provide no continuing authority",
+          "testId": "m3.authority.cleanup",
           "validationVersion": 1
         }
       ]
