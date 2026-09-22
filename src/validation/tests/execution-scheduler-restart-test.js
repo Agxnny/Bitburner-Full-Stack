@@ -17,6 +17,8 @@ export async function main(ns){
   if((await authDecision(ns,tag+":grant",3000))?.outcome!=="GRANTED")throw new Error("Authority grant failed.");
   wo(ns,createWorkOrder({requestId:tag+":order",workOrderId:orderId,issuer,receiver,objective:"run-restart-fixture",claims:[claim],authorityLeaseId:leaseId,correlationId:tag,constraints:{validation:true},ttlMs:20000,cleanupTtlMs:1000}));
   if((await woDecision(ns,tag+":order",3000))?.outcome!=="GRANTED")throw new Error("Work Order failed.");
+  budget(ns,setRamBudget({requestId:tag+":budget",allocationId:tag+":ram",owner:receiver,limitGb:4,correlationId:tag}));
+  if((await budgetDecision(ns,tag+":budget",3000))?.outcome!=="GRANTED")throw new Error("RAM budget allocation failed.");
   ex(ns,requestExecution({requestId:tag+":run",executionId,workOrderId:orderId,receiver,correlationId:tag,budgetOwner:receiver,script:FIXTURE,threads:1,args:[6000],ttlMs:15000}));
   if((await exDecision(ns,tag+":run",3000))?.outcome!=="QUEUED")throw new Error("Execution request failed.");
   const before=await wait(ns,()=>{const e=findExecution(ns,executionId);return e?.state==="RUNNING"&&e.pid>0?e:null;},3000);fixturePid=before?.pid??0;
