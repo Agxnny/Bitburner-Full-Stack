@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 diagnostics / incident intelligence
-**Status:** Controlled failure-correlation validation implemented; r68 publication pending
+**Status:** Published as v0.6.0-r68; disruptive isolated runtime validation pending
 
 **Goal:** Add one durable diagnostics owner that turns structured runtime/deployment/health failures into evidence-backed incidents and concise Validation Dashboard explanations, so operators can distinguish observed symptoms, correlated evidence, and bounded inference without manually reconstructing failures.
 
@@ -36,7 +36,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Runtime proof:** r67 reported 10 healthy services including diagnostics-service. Validation Dashboard Diagnostics view loaded with no active incidents. SAFE m3.diagnostics.intelligence PASS: 7/7 assertions; the synthetic incident resolved and remained visible under Recently Resolved with one occurrence.
 
-**Exact next step:** Publish immutable r68, install it, then run DISRUPTIVE m3.diagnostics.failure-correlation from the Validation Dashboard.
+**Exact next step:** Install r68 cleanly, confirm normal service health, then run DISRUPTIVE m3.diagnostics.failure-correlation from the Validation Dashboard.
 
 ## Recently completed
 
