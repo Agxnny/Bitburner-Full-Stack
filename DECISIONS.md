@@ -300,3 +300,14 @@ Use one persistent diagnostics service to own explanatory incident state. Produc
 **Status:** Locked
 
 Once an instance has entered Health state, normal/intentional termination must be distinguishable from heartbeat loss. Ephemeral services publish a versioned retirement event for their exact service/instance identity before exit. Health may remove only that exact registered instance. Missing heartbeats without retirement continue to fail stale. Retirement is not encoded as a permanent health status.
+
+
+## D-039 — Authority is capability-scoped, durable, atomic, and fail-closed
+**Status:** Locked
+
+Use one persistent Authority Registry as the durable owner of permission. A claim is a typed resource plus capability, not simple ownership of the whole resource. Identical resource+capability claims conflict in the first slice; distinct capabilities may coexist. Multi-claim leases are all-or-nothing, carry owner/intent/correlation provenance, expire absolutely, and must be validated against current durable authority immediately before controlled side effects. Missing/stale/invalid authority denies action. Authority does not schedule, execute, budget, or choose strategy.
+
+## D-040 — Work Orders delegate outcomes, never functionality or implicit authority
+**Status:** Locked
+
+A higher-level coordinator requests an outcome from the domain controller that owns that function. Work Orders carry issuer/receiver/objective/scope/parent-authority/correlation provenance and an explicit lifecycle including CLOSING. A Work Order alone is not permission; delegated execution requires a separately validated authority chain. Normal revocation is designed as drain-first with bounded cleanup authority; forced revocation is immediate/fail-closed. These delegation/revocation mechanics are implemented only after the direct authority slice is proven.
