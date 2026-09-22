@@ -13,6 +13,7 @@ export const PORTS = Object.freeze({
     AUTHORITY: 7,
     WORK_ORDERS: 8,
     EXECUTION_SCHEDULER: 9,
+    RESOURCE_BUDGETS: 10,
 });
 
 export function observationPort(domain) {
