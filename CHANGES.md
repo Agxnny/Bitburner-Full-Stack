@@ -24,7 +24,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M3 Resource Budget Manager — Money first vertical slice
-**Status:** Money budget first-slice implementation complete; SAFE runtime validation pending
+**Status:** Published as v0.6.0-r82; SAFE money-budget runtime validation pending
 
 **Goal:** Extend the existing Resource Budget Manager with durable logical money allocations plus reservation/settlement/release accounting, without performing any real game purchase.
 
@@ -34,7 +34,7 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 **Validation:** SAFE m3.budgets.money registered. It proves missing-budget fail-closed reservation, durable synthetic $1,000 allocation, $600 reservation/remaining capacity, over-budget denial without reservation creation, release restoring capacity, $700 reservation settled at $650 into durable spent accounting, unchanged actual home money, and clean allocation retirement.
 
-**Exact next step:** Publish immutable r82 after exact release-ref inspection, install it, confirm resource-budget-manager migrates cleanly and remains healthy, then run SAFE m3.budgets.money. Do not permit real spending yet.
+**Exact next step:** Install r82, confirm resource-budget-manager and Aggregate Health are clean after schema migration, then run SAFE m3.budgets.money from the Validation Dashboard. Do not permit real spending yet.
 
 ## Recently completed
 
