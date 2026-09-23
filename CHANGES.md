@@ -24,17 +24,17 @@ When the change is complete, move a concise summary to **Recently completed** an
 ## Active change
 
 ### M7 Network — controller architecture
-**Status:** Design active; implementation not started
+**Status:** Design active; first controller/rooting boundary approved; implementation not started
 
 **Goal:** Define the first real production-domain controller on top of canonical state, Authority, Work Orders, Execution Scheduler, and Resource Budget Manager. The first M7 slice covers network discovery/rooting policy, safe idempotent rooting actions, execution-host eligibility/classification, production telemetry, and validation boundaries. Purchased-server purchase/upgrade behavior remains M9.
 
 **Files / areas touched:** `CHANGES.md` initially; expected design owners are `docs/network.md`, `ARCHITECTURE.md`, `DECISIONS.md`, `ROADMAP.md`, and later M7 source/validation files after design approval.
 
-**Decisions / constraints:** Canonical network state remains factual truth and is not duplicated by the controller. The controller decides desired network actions; side-effect execution is separate. Rooting must be authority-gated, idempotent, attributable, and fail closed on stale/invalid authority. Existing core Authority/Work Order/Scheduler/Budget abstractions must be reused where applicable. Network execution-host eligibility is classification/policy input to the existing scheduler, not a second placement/RAM allocator. Purchased-server spending/lifecycle is not part of the first M7 slice.
+**Decisions / constraints:** Canonical network state remains factual truth and is not duplicated by the controller. The controller decides desired network actions; side-effect execution is separate. Rooting classification is `ROOTED`, `ROOTABLE NOW`, `BLOCKED BY PORTS`, `BLOCKED BY HACKING LEVEL`, or `INELIGIBLE`. Rooting is one controller objective—obtain root access to a hostname—rather than separate controller decisions for each port opener and `nuke()`. The delegated executor performs the required opener sequence plus `nuke()` as one bounded idempotent operation, rechecking actual conditions before side effects. Rooting uses server-scoped `root-control` authority and remains distinct from later `hacking-control`. Rooting must be attributable and fail closed on stale/invalid authority. Existing core Authority/Work Order/Scheduler/Budget abstractions must be reused where applicable. Network execution-host eligibility is classification/policy input to the existing scheduler, not a second placement/RAM allocator. Purchased-server spending/lifecycle is not part of the first M7 slice.
 
 **Validation:** Design only. No M7 runtime behavior exists yet. Existing r82 foundation remains the validated runtime baseline.
 
-**Exact next step:** Inspect the existing network observation/canonical-state contract and current scheduler/authority boundaries, then propose the M7 Network controller contract for operator approval before implementation.
+**Exact next step:** Define and document the complete M7 first-slice controller contract: input facts, rooting eligibility rules, authority/work-order lifecycle, executor result/reconciliation behavior, execution-host classification, telemetry, and validation cases. Present that contract for operator approval before implementation.
 
 **Blockers / risks:** The current scheduler first slice is home-only. M7 may classify additional execution hosts without immediately enabling distributed scheduler placement; that boundary must remain explicit.
 
