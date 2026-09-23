@@ -394,7 +394,11 @@ Progression eventually covers programs, factions/augmentations, player work, hom
 
 ## Capability-specific tabs
 
-Hacknet, Sleeves, Gang, Bladeburner, Corporation, and later BitNode-specific tabs follow the same production contract when implemented:
+**Design status: DEFERRED / TBD by capability.** Hacknet, Sleeves, Gang, Bladeburner, Corporation, and later BitNode-specific workspaces do not receive speculative full layouts before their underlying automation/controller capability is designed and available. Until then, when a capability is surfaced at all, its tab is a minimal honest placeholder using the shared Production shell and may show only factual availability such as **Locked**, **Available/Detected**, or **TBD — automation not implemented**.
+
+When the corresponding system enters design, its tab follows the same render → review/change → explicit approval → documentation-lock workflow used for the permanent tabs.
+
+Once implemented, capability-specific tabs follow the same production contract:
 
 - at-a-glance state/resources;
 - what the system is doing;
