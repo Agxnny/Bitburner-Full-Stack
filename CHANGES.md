@@ -23,24 +23,28 @@ When the change is complete, move a concise summary to **Recently completed** an
 
 ## Active change
 
-### Production Dashboard — tab architecture locked; visual design active
-**Status:** Information architecture and feature contract locked; tab-by-tab visual/layout design is next; implementation not started
+### M7 Network — controller architecture
+**Status:** Design active; implementation not started
 
-**Goal:** Preserve the approved Production Dashboard navigation, operator-control boundaries, per-tab information model, stock-history/chart semantics, Settings boundary, and existing window-coordinator integration before visual layout or runtime implementation.
+**Goal:** Define the first real production-domain controller on top of canonical state, Authority, Work Orders, Execution Scheduler, and Resource Budget Manager. The first M7 slice covers network discovery/rooting policy, safe idempotent rooting actions, execution-host eligibility/classification, production telemetry, and validation boundaries. Purchased-server purchase/upgrade behavior remains M9.
 
-**Files / areas touched:** `docs/production-dashboard.md` (feature owner), `ARCHITECTURE.md`, `DECISIONS.md` (D-045/D-046), `ROADMAP.md`, and this working record. No runtime source, manifest, or deployment revision changed.
+**Files / areas touched:** `CHANGES.md` initially; expected design owners are `docs/network.md`, `ARCHITECTURE.md`, `DECISIONS.md`, `ROADMAP.md`, and later M7 source/validation files after design approval.
 
-**Decisions / constraints:** Permanent tabs are Overview, Hacking, Stocks, Stock Manipulation, Network, Progression, and Settings; capability tabs appear when their systems exist. Production is an operational consumer, not controller/diagnostic truth. Every controllable domain uses Start/Graceful Stop/Hard Stop/Restart through standard command paths. Overview ESTOP is latched and non-persistent-only. Persistent lifecycle mutation remains reserved to updater/deployment and explicitly authorized disruptive validation. Settings exposes supported configuration/policy parameters, including thresholds that influence decisions, but not editable controller logic or invariants. Existing measured sizing/four-side docking infrastructure is reused; Production normally anchors to Validation's right.
+**Decisions / constraints:** Canonical network state remains factual truth and is not duplicated by the controller. The controller decides desired network actions; side-effect execution is separate. Rooting must be authority-gated, idempotent, attributable, and fail closed on stale/invalid authority. Existing core Authority/Work Order/Scheduler/Budget abstractions must be reused where applicable. Network execution-host eligibility is classification/policy input to the existing scheduler, not a second placement/RAM allocator. Purchased-server spending/lifecycle is not part of the first M7 slice.
 
-**Validation:** Documentation-only architecture lock. Repository docs now have an explicit Production Dashboard feature owner and D-045/D-046 remain the architectural decisions. No runtime validation is required until an implementation slice exists. Existing r29 four-side docking/anchor behavior remains the integration contract.
+**Validation:** Design only. No M7 runtime behavior exists yet. Existing r82 foundation remains the validated runtime baseline.
 
-**Visual design progress:** All seven permanent Production Dashboard tabs are approved and locked in `docs/production-dashboard.md`: Overview, Hacking, Stocks, Stock Manipulation, Network, Progression, and Settings. Settings locks the dense grouped-configuration workspace while explicitly preserving the supported-policy boundary: mockup service/update/persistent-process controls are illustrative and do not create privileged lifecycle or implementation access.
+**Exact next step:** Inspect the existing network observation/canonical-state contract and current scheduler/authority boundaries, then propose the M7 Network controller contract for operator approval before implementation.
 
-**Permanent-tab visual design:** COMPLETE. The approved renders establish the Production shell, compact dark grey-blue visual language, tab-specific hierarchy/density, global ESTOP placement, and existing sizing/docking integration.
-
-**Exact next step:** Decide whether capability-specific tabs (Hacknet, Sleeves, Gang, Bladeburner, Corporation, later BitNode-specific systems) need generic visual contracts now or should remain deferred until their systems exist. Then define the smallest honest Production Dashboard implementation slice without creating future domain controllers early.
+**Blockers / risks:** The current scheduler first slice is home-only. M7 may classify additional execution hosts without immediately enabling distributed scheduler placement; that boundary must remain explicit.
 
 ## Recently completed
+
+### Production Dashboard — permanent-tab design
+**Status:** Design complete; runtime implementation deferred
+
+The seven permanent tabs—Overview, Hacking, Stocks, Stock Manipulation, Network, Progression, and Settings—have approved information architecture and visual layouts in `docs/production-dashboard.md`. Capability-dependent tabs are intentionally deferred as minimal TBD/availability placeholders until their underlying automation/controller capability is designed and available. Production Dashboard runtime implementation will follow honest available-domain data rather than pulling future controllers forward.
+
 
 ### M3 Resource Budget Manager — Money first vertical slice
 **Status:** Runtime validated through v0.6.0-r82
