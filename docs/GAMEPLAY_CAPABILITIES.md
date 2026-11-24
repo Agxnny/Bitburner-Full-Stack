@@ -42,3 +42,40 @@ Status: Proposed. All entries have undecided automation scope, implementation lo
 
 ## Review rules
 Expand each domain into individually classified tasks before approval. Distinguish manual actions, supported API actions and observations. No unsupported game-internal automation assumed. Identify access gates, RAM cost, resource conflicts, inputs, outputs and failure modes.
+
+
+## G01 review — Network discovery
+
+Five domain decisions locked (G01-D01–D05); see [decision register](DESIGN_DECISIONS.md). Detailed task inventory below is proposed; exact API costs, per-task classifications and implementation remain subject to verification.
+
+| ID | Task | Candidate execution | Candidate automation/dependency |
+|---|---|---|---|
+| G01.01 | Full standard network discovery | In-game | Full / Standalone |
+| G01.02 | Connection mapping | In-game | Full / Standalone |
+| G01.03 | Pathfinding | Either | Full / Standalone |
+| G01.04 | Network depth | Either | Full / Standalone |
+| G01.05 | Shared registry | In-game | Full / Standalone |
+| G01.06 | Change detection | In-game | Full / Standalone |
+| G01.07 | Server identification | In-game | Full / Standalone |
+| G01.08 | Ownership | In-game | Full / Standalone |
+| G01.09 | Nonexclusive role classification | Either | Full / Standalone |
+| G01.10 | Access status | In-game | Monitoring / Standalone |
+| G01.11 | Access requirements | In-game | Monitoring / Standalone |
+| G01.12 | Special servers | Either | Full / Standalone |
+| G01.13 | RAM capacity/usage | In-game | Monitoring / Standalone |
+| G01.14 | CPU cores | In-game | Monitoring / Standalone |
+| G01.15 | Money | In-game | Monitoring / Standalone |
+| G01.16 | Security | In-game | Monitoring / Standalone |
+| G01.17 | Growth | In-game | Monitoring / Standalone |
+| G01.18 | Ports | In-game | Monitoring / Standalone |
+| G01.19 | File inventory | In-game | Monitoring / Standalone |
+| G01.20 | Process inventory | In-game | Monitoring / Standalone |
+| G01.21 | Dynamic refresh | In-game | Full / Standalone |
+| G01.22 | Static refresh | In-game | Full / Standalone |
+| G01.23 | Freshness tracking | In-game | Monitoring / Standalone |
+| G01.24 | Snapshots | Hybrid | Full / Enhanced |
+| G01.25 | Historical tracking | External | Monitoring / External only |
+| G01.26 | State validation | Either | Full / Standalone |
+| G01.27 | Visualisation | External | Monitoring / External only |
+
+Standard network only; Darknet is G09, gaining access is G02. Collect comprehensive properties with optional fields distinguished from zero/false. Refresh static and dynamic fields according to need, support on-demand refresh, and validate live state when required. Candidate APIs: scan, getServer, cloud.getServerNames, serverExists, ls, ps; verify signatures and RAM costs against 3.0.1 before implementation. Consumers include G02–G07, G14, G23, G28, G30, T02, T03 and T11.
