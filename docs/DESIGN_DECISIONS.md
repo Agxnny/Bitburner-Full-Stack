@@ -20,3 +20,15 @@ States: Open (not discussed), Proposed (discussed, not approved), Locked (explic
 | D14 | Initialise repository with eight planning documents | Locked | User approved initialization |
 
 For future decisions record date, rationale, alternatives, impacted capability IDs and superseding decision where applicable.
+
+
+## Additional locked decisions — 2026-11-24
+
+| ID | Decision | State | Rationale |
+|---|---|---|---|
+| D15 | Maintain shared datasets wherever technically practical rather than duplicate collection tasks | Locked | User approved blanket policy across subsystems |
+| G01-D01 | Discover every standard network server regardless of root or usefulness | Locked | User approved |
+| G01-D02 | Maintain a shared network registry | Locked | User approved |
+| G01-D03 | Network discovery operates without companion | Locked | User approved |
+| G01-D04 | Support periodic and on-demand refresh | Locked | User approved |
+| G01-D05 | Collect comprehensive server information | Locked | User approved |
